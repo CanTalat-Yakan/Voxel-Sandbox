@@ -2,6 +2,7 @@
 
 using Engine.Components;
 using Engine.ECS;
+using Engine.Loader;
 using Engine.Utilities;
 
 public class GameManager : Component
@@ -12,11 +13,14 @@ public class GameManager : Component
     public MeshBuilder MeshBuilder = new();
     public NoiseSampler NoiseSampler = new();
 
-    Camera _camera = Camera.Main;
+    private Camera _camera = Camera.Main;
+    private float _timer = 0;
 
-    public override void OnStart()
+    public override void OnAwake()
     {
         Instance = this;
+
+        ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\Dirt.png");
 
         foreach (var entity in Entity.Manager.Entities.Values)
             if (entity.ID != Entity.ID && entity.GetComponentTypes().Contains(typeof(Mesh)) && !entity.Data.Name.Equals("Sky"))
@@ -24,22 +28,12 @@ public class GameManager : Component
 
         _camera.Entity.Transform.LocalPosition += Vector3.UnitY * 30;
         _camera.Entity.Transform.EulerAngles = Vector3.Zero;
+    }
 
+    public override void OnStart()
+    {
         Generator.Initialize(_camera.Entity.Transform.Position);
-        Generator.UpdateChunks(_camera.Entity.Transform.Position);
 
-        //ParallelOptions options = new() { MaxDegreeOfParallelism = Environment.ProcessorCount };
-        //Parallel.ForEach(_generator.GetChunksToGenerate(), options, chunk =>
-        //{
-        //    _noiseSampler.GenerateChunkContent(chunk);
-        //    _meshBuilder.GenerateMesh(chunk);
-        //});
-
-        //foreach (var chunk in Generator.GetChunksToGenerate())
-        //{
-        //    NoiseSampler.GenerateChunkContent(chunk);
-        //    MeshBuilder.GenerateMesh(chunk);
-        //}
         // Create a new thread to run the chunk processing
         Thread thread = new(() =>
         {
@@ -62,25 +56,8 @@ public class GameManager : Component
 
         // Start the thread
         thread.Start();
-
     }
 
-    float _timer = 0;
-    public override void OnUpdate()
-    {
-        //    if (_timer > 1.0f / 120.0f)
-        //    {
-        //        _timer = 0;
-
-        //        //if (Generator.GetChunksToGenerate().Any())
-        //        //{
-        //        //    var chunk = Generator.GetChunksToGenerate().Dequeue();
-
-        //        //    NoiseSampler.GenerateChunkContent(chunk);
-        //        //    MeshBuilder.GenerateMesh(chunk);
-        //        //}
-        //    }
-
+    public override void OnUpdate() =>
         _timer += Time.DeltaF;
-    }
 }

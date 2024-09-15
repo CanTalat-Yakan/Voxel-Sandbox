@@ -128,11 +128,13 @@ public class MeshBuilder
         }
 
         // Add vertices
-        int startIndex = vertices.Count;
-        foreach (var vertexPos in faceVertices)
-            vertices.Add(new Vertex(vertexPos, normal, Vector2.Zero, Vector3.Zero)); // Update with actual UVs, normals, etc.
+        vertices.Add(new Vertex(faceVertices[0], normal, new(0, 0), Vector3.Zero));
+        vertices.Add(new Vertex(faceVertices[1], normal, new(0, 1), Vector3.Zero));
+        vertices.Add(new Vertex(faceVertices[2], normal, new(1, 1), Vector3.Zero));
+        vertices.Add(new Vertex(faceVertices[3], normal, new(1, 0), Vector3.Zero));
 
         // Add indices
+        int startIndex = vertices.Count;
         indices.AddRange([startIndex, startIndex + 1, startIndex + 2, startIndex, startIndex + 2, startIndex + 3]);
     }
 }
