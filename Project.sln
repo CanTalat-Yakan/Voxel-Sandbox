@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Project", "Project.csproj", "{08437341-48C6-45CF-A14C-B54A6908292C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voxel-Sandbox", "Voxel-Sandbox.csproj", "{08437341-48C6-45CF-A14C-B54A6908292C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
