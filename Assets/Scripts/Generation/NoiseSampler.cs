@@ -14,6 +14,8 @@ public class NoiseSampler
             for (int z = 0; z <= Generator.BaseChunkSizeXZ + 1; z++)
             {
                 int surfaceHeight = GetSurfaceHeight(x + chunk.WorldPosition.X, z + chunk.WorldPosition.Z);
+                int undergroundDetail = GetSurfaceDetail(x + chunk.WorldPosition.X, z + chunk.WorldPosition.Z);
+                undergroundDetail = 20;
                 int bedrockHeight = random.Next(5);
 
                 for (int y = 0; y < Generator.BaseChunkSizeY; y++)
@@ -21,16 +23,17 @@ public class NoiseSampler
                     if (surfaceHeight > y)
                     {
                         // Check cave noise to determine if this voxel should be empty (cave)
-                        if (surfaceHeight > y + 20 && y > 20)
+                        if (surfaceHeight > y + undergroundDetail && y > undergroundDetail)
                         {
                             double caveValue = GetCaveNoise(x + chunk.WorldPosition.X, y * 2, z + chunk.WorldPosition.Z);
 
                             if ((caveValue < 0.45 || caveValue > 0.6))
                                 continue;
-                        }
 
-                        // Set the voxel as solid
-                        chunk.SetVoxel(new(x, y, z), VoxelType.Solid);
+                            chunk.SetVoxel(new(x, y, z), VoxelType.Stone);
+                        }
+                        else
+                        chunk.SetVoxel(new(x, y, z), VoxelType.Grass);
                     }
             }
 
@@ -39,6 +42,9 @@ public class NoiseSampler
 
     private int GetSurfaceHeight(int x, int z) =>
         (int)(Noise.OctavePerlin(x, 0, z, scale: 100) * 75) + 100;
+
+    private int GetSurfaceDetail(int x, int z) =>
+        (int)(Noise.OctavePerlin(x, 0, z, scale: 10) * 75) + 100;
 
     private double GetCaveNoise(int x, int y, int z) =>
         Noise.OctavePerlin(x, y, z, nOctaves: 4, scale: 50);

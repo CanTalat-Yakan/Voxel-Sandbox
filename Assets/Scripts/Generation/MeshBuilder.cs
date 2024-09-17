@@ -33,7 +33,7 @@ public class MeshBuilder
         chunk.Mesh = entity.AddComponent<Mesh>();
 
         chunk.Mesh.SetMeshData(Kernel.Instance.Context.CreateMeshData(indices, vertices.ToFloats(), positions));
-        chunk.Mesh.SetMaterialTextures([new("Default.png", 0)]);
+        chunk.Mesh.SetMaterialTextures([new("TextureAtlasBig.png", 0)]);
         chunk.Mesh.SetMaterialPipeline("SimpleLit");
     }
 
@@ -49,11 +49,11 @@ public class MeshBuilder
 
             // Check if the adjacent voxel is an empty voxel
             if (!chunk.HasVoxel(adjacentPosition))
-                AddFace(voxelPosition, normal, tangent, vertices, indices, voxelSize);
+                AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
         }
     }
 
-    private void AddFace(Vector3Byte position, Vector3Int normal, Vector3Int tangent, List<Vertex> vertices, List<int> indices, int voxelSize)
+    private void AddFace(int voxelSize, Vector3Byte voxelPosition, VoxelType voxelType, Vector3Int normal, Vector3Int tangent, List<Vertex> vertices, List<int> indices)
     {
         var faceVertices = new Vector3[4];
 
@@ -61,57 +61,66 @@ public class MeshBuilder
         if (normal == Vector3Int.Top)
             faceVertices =
             [
-                new Vector3(position.X,         position.Y + 1,     position.Z    ) * voxelSize,
-                new Vector3(position.X,         position.Y + 1,     position.Z + 1) * voxelSize,
-                new Vector3(position.X + 1,     position.Y + 1,     position.Z + 1) * voxelSize,
-                new Vector3(position.X + 1,     position.Y + 1,     position.Z    ) * voxelSize,
+                new Vector3(voxelPosition.X,         voxelPosition.Y + 1,     voxelPosition.Z    ) * voxelSize,
+                new Vector3(voxelPosition.X,         voxelPosition.Y + 1,     voxelPosition.Z + 1) * voxelSize,
+                new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z + 1) * voxelSize,
+                new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z    ) * voxelSize,
             ];
         else if (normal == Vector3Int.Bottom)
             faceVertices =
             [
-                new Vector3(position.X,         position.Y,         position.Z    ) * voxelSize,
-                new Vector3(position.X + 1,     position.Y,         position.Z    ) * voxelSize,
-                new Vector3(position.X + 1,     position.Y,         position.Z + 1) * voxelSize,
-                new Vector3(position.X,         position.Y,         position.Z + 1) * voxelSize,
+                new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z    ) * voxelSize,
+                new Vector3(voxelPosition.X + 1,     voxelPosition.Y,         voxelPosition.Z    ) * voxelSize,
+                new Vector3(voxelPosition.X + 1,     voxelPosition.Y,         voxelPosition.Z + 1) * voxelSize,
+                new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z + 1) * voxelSize,
             ];
         else if (normal == Vector3Int.Right)
             faceVertices =
             [
-                new Vector3(position.X + 1,     position.Y,         position.Z    ) * voxelSize,
-                new Vector3(position.X + 1,     position.Y + 1,     position.Z    ) * voxelSize,
-                new Vector3(position.X + 1,     position.Y + 1,     position.Z + 1) * voxelSize,
-                new Vector3(position.X + 1,     position.Y,         position.Z + 1) * voxelSize,
+                new Vector3(voxelPosition.X + 1,     voxelPosition.Y,         voxelPosition.Z    ) * voxelSize,
+                new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z    ) * voxelSize,
+                new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z + 1) * voxelSize,
+                new Vector3(voxelPosition.X + 1,     voxelPosition.Y,         voxelPosition.Z + 1) * voxelSize,
             ];
         else if (normal == Vector3Int.Left)
             faceVertices =
             [
-                new Vector3(position.X,         position.Y,         position.Z + 1) * voxelSize,
-                new Vector3(position.X,         position.Y + 1,     position.Z + 1) * voxelSize,
-                new Vector3(position.X,         position.Y + 1,     position.Z    ) * voxelSize,
-                new Vector3(position.X,         position.Y,         position.Z    ) * voxelSize,
+                new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z + 1) * voxelSize,
+                new Vector3(voxelPosition.X,         voxelPosition.Y + 1,     voxelPosition.Z + 1) * voxelSize,
+                new Vector3(voxelPosition.X,         voxelPosition.Y + 1,     voxelPosition.Z    ) * voxelSize,
+                new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z    ) * voxelSize,
             ];
         else if (normal == Vector3Int.Front)
             faceVertices =
             [
-                new Vector3(position.X + 1,     position.Y,         position.Z + 1) * voxelSize,
-                new Vector3(position.X + 1,     position.Y + 1,     position.Z + 1) * voxelSize,
-                new Vector3(position.X,         position.Y + 1,     position.Z + 1) * voxelSize,
-                new Vector3(position.X,         position.Y,         position.Z + 1) * voxelSize,
+                new Vector3(voxelPosition.X + 1,     voxelPosition.Y,         voxelPosition.Z + 1) * voxelSize,
+                new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z + 1) * voxelSize,
+                new Vector3(voxelPosition.X,         voxelPosition.Y + 1,     voxelPosition.Z + 1) * voxelSize,
+                new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z + 1) * voxelSize,
             ];
         else if (normal == Vector3Int.Back)
             faceVertices =
             [
-                new Vector3(position.X,         position.Y,         position.Z    ) * voxelSize,
-                new Vector3(position.X,         position.Y + 1,     position.Z    ) * voxelSize,
-                new Vector3(position.X + 1,     position.Y + 1,     position.Z    ) * voxelSize,
-                new Vector3(position.X + 1,     position.Y,         position.Z    ) * voxelSize,
+                new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z    ) * voxelSize,
+                new Vector3(voxelPosition.X,         voxelPosition.Y + 1,     voxelPosition.Z    ) * voxelSize,
+                new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z    ) * voxelSize,
+                new Vector3(voxelPosition.X + 1,     voxelPosition.Y,         voxelPosition.Z    ) * voxelSize,
             ];
 
+        // Get the indexed texture coordinate of the atlas texture array
+        Vector2 atlasUV = TextureAtlas.GetTextureCoordinate((int)voxelType);
+        float textureSize = TextureAtlas.TextureSize;
+
         // Add vertices
-        vertices.Add(new Vertex(faceVertices[0], normal.ToVector3(), tangent.ToVector3(), new(1, 1)));
-        vertices.Add(new Vertex(faceVertices[1], normal.ToVector3(), tangent.ToVector3(), new(1, 0)));
-        vertices.Add(new Vertex(faceVertices[2], normal.ToVector3(), tangent.ToVector3(), new(0, 0)));
-        vertices.Add(new Vertex(faceVertices[3], normal.ToVector3(), tangent.ToVector3(), new(0, 1)));
+        vertices.Add(new Vertex(faceVertices[0], normal.ToVector3(), tangent.ToVector3(), Vector2.One * textureSize + atlasUV));
+        vertices.Add(new Vertex(faceVertices[1], normal.ToVector3(), tangent.ToVector3(), Vector2.UnitX * textureSize + atlasUV));
+        vertices.Add(new Vertex(faceVertices[2], normal.ToVector3(), tangent.ToVector3(), Vector2.Zero * textureSize + atlasUV));
+        vertices.Add(new Vertex(faceVertices[3], normal.ToVector3(), tangent.ToVector3(), Vector2.UnitY * textureSize + atlasUV));
+        
+        //vertices.Add(new Vertex(faceVertices[0], normal.ToVector3(), tangent.ToVector3(), atlasUV));
+        //vertices.Add(new Vertex(faceVertices[1], normal.ToVector3(), tangent.ToVector3(), atlasUV - Vector2.UnitY / textureSize));
+        //vertices.Add(new Vertex(faceVertices[2], normal.ToVector3(), tangent.ToVector3(), atlasUV + Vector2.UnitX / textureSize - Vector2.UnitY / textureSize));
+        //vertices.Add(new Vertex(faceVertices[3], normal.ToVector3(), tangent.ToVector3(), atlasUV + Vector2.UnitX / textureSize));
 
         // Add indices
         int startIndex = vertices.Count;

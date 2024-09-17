@@ -22,11 +22,7 @@ public class GameManager : Component
     {
         Instance = this;
 
-        ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\Dirt.png");
-
-        foreach (var entity in Entity.Manager.Entities.Values)
-            if (entity.ID != Entity.ID && entity.GetComponentTypes().Contains(typeof(Mesh)) && !entity.Data.Name.Equals("Sky"))
-                entity.Data.IsEnabled = false;
+        ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlasBig.png");
 
         _camera.Entity.Transform.LocalPosition += Vector3.UnitY * 80;
         _camera.Entity.Transform.EulerAngles = Vector3.Zero;

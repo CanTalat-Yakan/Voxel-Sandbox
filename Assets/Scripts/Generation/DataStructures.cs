@@ -3,7 +3,22 @@
 public enum VoxelType
 {
     None,
-    Solid
+    Stone,
+    Grass,
+    Grass_Top,
+}
+
+public class TextureAtlas()
+{
+    public static int Resolution = 2048;
+    public static int Columns = 2;
+    public static int Rows = 2;
+
+    public static float TextureSize = 1.0f / Columns;
+
+    public static Vector2 GetTextureCoordinate(int index) =>
+        new(TextureSize * (index % Columns),
+            TextureSize * (index / Rows));
 }
 
 public struct Vector3Byte
@@ -63,7 +78,7 @@ public struct Vector3Byte
 
     public static Vector3Byte operator +(Vector3Byte a, Vector3Byte b) =>
         new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
-    
+
     public static bool operator ==(Vector3Byte a, Vector3Byte b) =>
         a.X == b.X && a.Y == b.Y && a.Z == b.Z;
 
