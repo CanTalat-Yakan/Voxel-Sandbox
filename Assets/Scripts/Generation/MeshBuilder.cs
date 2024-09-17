@@ -9,16 +9,6 @@ namespace VoxelSandbox;
 
 public class MeshBuilder
 {
-    Vector3Int[] _faceNormals =
-    {
-        Vector3Int.Top,
-        Vector3Int.Bottom,
-        Vector3Int.Right,
-        Vector3Int.Left,
-        Vector3Int.Front,
-        Vector3Int.Back
-    };
-
     public void GenerateMesh(Chunk chunk)
     {
         List<int> indices = new();
@@ -50,9 +40,9 @@ public class MeshBuilder
     private void AddVoxelFaces(Chunk chunk, int voxelSize, Vector3Byte voxelPosition, VoxelType voxelType, List<Vertex> vertices, List<int> indices)
     {
         // Check each face direction for visibility
-        for (int i = 0; i < _faceNormals.Length; i++)
+        for (int i = 0; i < Vector3Int.Directions.Length; i++)
         {
-            Vector3Int normal = _faceNormals[i];
+            Vector3Int normal = Vector3Int.Directions[i];
             Vector3Byte adjacentPosition = voxelPosition + normal;
 
             // Check if the adjacent voxel is an empty voxel

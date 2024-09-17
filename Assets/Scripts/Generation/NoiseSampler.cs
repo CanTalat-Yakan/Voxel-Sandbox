@@ -1,41 +1,72 @@
 ﻿using AVXPerlinNoise;
 
-namespace VoxelSandbox;
-
-public class NoiseSampler
+namespace VoxelSandbox
 {
-    private Perlin _perlin = new();
-
-    public void GenerateChunkContent(Chunk chunk)
+    public class NoiseSampler
     {
-        Random rnd = new();
+        public Perlin Noise = new();
 
-        for (int x = 0; x <= Generator.BaseChunkSizeXZ + 1; x++)
-            for (int z = 0; z <= Generator.BaseChunkSizeXZ + 1; z++)
-            {
-                int surfaceHeight = GetSurfaceHeight(x + chunk.WorldPosition.X, z + chunk.WorldPosition.Z);
+        private Stack<Vector3Byte> _unexposedVoxelsToRemove = new();
 
-                for (int y = 0; y < Generator.BaseChunkSizeY; y++)
-                    if (surfaceHeight > chunk.WorldPosition.Y + y)
-                        chunk.SetVoxel(new(x, y, z), VoxelType.Solid);
-            }
-    }
-
-    public bool GetVoxel(Vector3Byte localPosition, Vector3Int worldPosition, out VoxelType voxelType)
-    {
-        voxelType = VoxelType.None;
-
-        int surfaceHeight = GetSurfaceHeight(worldPosition.X, worldPosition.Z);
-        if (surfaceHeight > worldPosition.Y + localPosition.Y)
+        public void GenerateChunkContent(Chunk chunk)
         {
-            voxelType = VoxelType.Solid;
+            for (int x = 0; x <= Generator.BaseChunkSizeXZ + 1; x++)
+                for (int z = 0; z <= Generator.BaseChunkSizeXZ + 1; z++)
+                {
+                    int surfaceHeight = GetSurfaceHeight(x + chunk.WorldPosition.X, z + chunk.WorldPosition.Z);
 
-            return true;
+                    for (int y = 0; y < Generator.BaseChunkSizeY; y++)
+                        if (surfaceHeight > chunk.WorldPosition.Y + y)
+                            chunk.SetVoxel(new(x, y, z), VoxelType.Solid);
+                }
+
+            // Check if the voxel is not exposed (has no neighbor that is empty)
+            foreach (var voxel in chunk.VoxelData)
+                if (!IsVoxelExposed(chunk, voxel.Key))
+                    _unexposedVoxelsToRemove.Push(voxel.Key);
+
+            foreach (var voxel in _unexposedVoxelsToRemove)
+                chunk.VoxelData.Remove(voxel);
+            _unexposedVoxelsToRemove.Clear();
+
+            GameManager.Instance.Generator.ChunksToBuild.Enqueue(chunk);
         }
 
-        return false;
-    }
+        private int GetSurfaceHeight(int x, int z) =>
+            (int)(Noise.OctavePerlin(x, 0, z, scale: 100) * 75);
 
-    private int GetSurfaceHeight(int x, int z) =>
-        (int)(_perlin.OctavePerlin(x, 0, z) * 8) + 4;
+        private bool IsVoxelSolid(int x, int y, int z) =>
+            y <= GetSurfaceHeight(x, z);
+
+        private bool IsVoxelSolid(Vector3Byte localPosition) =>
+            IsVoxelSolid(localPosition.X, localPosition.Y, localPosition.Z);
+
+        private bool IsVoxelExposed(Chunk chunk, Vector3Byte localPosition)
+        {
+            foreach (var direction in Vector3Int.Directions)
+            {
+                Vector3Int neighbor = direction + localPosition;
+
+                // If the neighbor is not withing the bounds of the chunk
+                if (neighbor.X <= 0 || neighbor.X >= Generator.BaseChunkSizeXZ + 1
+                 || neighbor.Z <= 0 || neighbor.Z >= Generator.BaseChunkSizeXZ + 1)
+                    continue;
+
+                // If the neighbor is below ground, consider it as solid
+                if (neighbor.Y < 0)
+                    return false;
+
+                // If the neighbor is outside the world bounds, consider it as empty
+                if (neighbor.Y > Generator.BaseChunkSizeY)
+                    return true;
+
+                // If the neighbor voxel is empty, the current voxel is exposed
+                if (!chunk.HasVoxel(neighbor.ToVector3Byte()))
+                    return true;
+            }
+
+            // All neighbors are solid and the voxel is not exposed
+            return false;
+        }
+    }
 }

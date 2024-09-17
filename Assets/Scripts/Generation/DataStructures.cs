@@ -58,12 +58,12 @@ public struct Vector3Byte
         }
     }
 
-    public static Vector3Byte operator +(Vector3Byte a, Vector3Byte b) =>
-        new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
-    
     public static Vector3Byte operator +(Vector3Byte a, Vector3Int b) =>
         new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 
+    public static Vector3Byte operator +(Vector3Byte a, Vector3Byte b) =>
+        new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+    
     public static bool operator ==(Vector3Byte a, Vector3Byte b) =>
         a.X == b.X && a.Y == b.Y && a.Z == b.Z;
 
@@ -83,6 +83,16 @@ public struct Vector3Int
     public static readonly Vector3Int Left = new(-1, 0, 0);
     public static readonly Vector3Int Front = new(0, 0, 1);
     public static readonly Vector3Int Back = new(0, 0, -1);
+
+    public static readonly Vector3Int[] Directions =
+    {
+        Top,
+        Bottom,
+        Right,
+        Left,
+        Front,
+        Back
+    };
 
     public Vector3Int(int x, int y, int z)
     {
@@ -129,6 +139,9 @@ public struct Vector3Int
 
         return a;
     }
+
+    public static Vector3Int operator +(Vector3Int a, Vector3Byte b) =>
+        new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 
     public static Vector3Int operator +(Vector3Int a, Vector3Int b) =>
         new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
