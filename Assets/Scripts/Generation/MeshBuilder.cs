@@ -43,15 +43,17 @@ public class MeshBuilder
         for (int i = 0; i < Vector3Int.Directions.Length; i++)
         {
             Vector3Int normal = Vector3Int.Directions[i];
+            Vector3Int tangent = Vector3Int.OrthogonalDirections[i];
+
             Vector3Byte adjacentPosition = voxelPosition + normal;
 
             // Check if the adjacent voxel is an empty voxel
             if (!chunk.HasVoxel(adjacentPosition))
-                AddFace(voxelPosition, normal, vertices, indices, voxelSize);
+                AddFace(voxelPosition, normal, tangent, vertices, indices, voxelSize);
         }
     }
 
-    private void AddFace(Vector3Byte position, Vector3Int normal, List<Vertex> vertices, List<int> indices, int voxelSize)
+    private void AddFace(Vector3Byte position, Vector3Int normal, Vector3Int tangent, List<Vertex> vertices, List<int> indices, int voxelSize)
     {
         var faceVertices = new Vector3[4];
 
@@ -64,7 +66,7 @@ public class MeshBuilder
                 new Vector3(position.X + 1,     position.Y + 1,     position.Z + 1) * voxelSize,
                 new Vector3(position.X + 1,     position.Y + 1,     position.Z    ) * voxelSize,
             ];
-        if (normal == Vector3Int.Bottom)
+        else if (normal == Vector3Int.Bottom)
             faceVertices =
             [
                 new Vector3(position.X,         position.Y,         position.Z    ) * voxelSize,
@@ -72,7 +74,7 @@ public class MeshBuilder
                 new Vector3(position.X + 1,     position.Y,         position.Z + 1) * voxelSize,
                 new Vector3(position.X,         position.Y,         position.Z + 1) * voxelSize,
             ];
-        if (normal == Vector3Int.Right)
+        else if (normal == Vector3Int.Right)
             faceVertices =
             [
                 new Vector3(position.X + 1,     position.Y,         position.Z    ) * voxelSize,
@@ -80,7 +82,7 @@ public class MeshBuilder
                 new Vector3(position.X + 1,     position.Y + 1,     position.Z + 1) * voxelSize,
                 new Vector3(position.X + 1,     position.Y,         position.Z + 1) * voxelSize,
             ];
-        if (normal == Vector3Int.Left)
+        else if (normal == Vector3Int.Left)
             faceVertices =
             [
                 new Vector3(position.X,         position.Y,         position.Z + 1) * voxelSize,
@@ -88,7 +90,7 @@ public class MeshBuilder
                 new Vector3(position.X,         position.Y + 1,     position.Z    ) * voxelSize,
                 new Vector3(position.X,         position.Y,         position.Z    ) * voxelSize,
             ];
-        if (normal == Vector3Int.Front)
+        else if (normal == Vector3Int.Front)
             faceVertices =
             [
                 new Vector3(position.X + 1,     position.Y,         position.Z + 1) * voxelSize,
@@ -96,7 +98,7 @@ public class MeshBuilder
                 new Vector3(position.X,         position.Y + 1,     position.Z + 1) * voxelSize,
                 new Vector3(position.X,         position.Y,         position.Z + 1) * voxelSize,
             ];
-        if (normal == Vector3Int.Back)
+        else if (normal == Vector3Int.Back)
             faceVertices =
             [
                 new Vector3(position.X,         position.Y,         position.Z    ) * voxelSize,
@@ -106,10 +108,10 @@ public class MeshBuilder
             ];
 
         // Add vertices
-        vertices.Add(new Vertex(faceVertices[0], normal.ToVector3(), Vector3.Zero, new(0, 0)));
-        vertices.Add(new Vertex(faceVertices[1], normal.ToVector3(), Vector3.Zero, new(0, 1)));
-        vertices.Add(new Vertex(faceVertices[2], normal.ToVector3(), Vector3.Zero, new(1, 1)));
-        vertices.Add(new Vertex(faceVertices[3], normal.ToVector3(), Vector3.Zero, new(1, 0)));
+        vertices.Add(new Vertex(faceVertices[0], normal.ToVector3(), tangent.ToVector3(), new(1, 1)));
+        vertices.Add(new Vertex(faceVertices[1], normal.ToVector3(), tangent.ToVector3(), new(1, 0)));
+        vertices.Add(new Vertex(faceVertices[2], normal.ToVector3(), tangent.ToVector3(), new(0, 0)));
+        vertices.Add(new Vertex(faceVertices[3], normal.ToVector3(), tangent.ToVector3(), new(0, 1)));
 
         // Add indices
         int startIndex = vertices.Count;

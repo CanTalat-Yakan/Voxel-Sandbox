@@ -94,6 +94,16 @@ public struct Vector3Int
         Back
     };
 
+    public static readonly Vector3Int[] OrthogonalDirections =
+    {
+        Right,
+        Left,
+        Front,
+        Back,
+        Top,
+        Bottom
+    };
+
     public Vector3Int(int x, int y, int z)
     {
         X = x;
