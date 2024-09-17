@@ -29,7 +29,7 @@ public class MeshBuilder
         }
 
         var entity = GameManager.Instance.Entity.Manager.CreateEntity();
-        entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
+        entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3() - Vector3.UnitY * 64;
         chunk.Mesh = entity.AddComponent<Mesh>();
 
         chunk.Mesh.SetMeshData(Kernel.Instance.Context.CreateMeshData(indices, vertices.ToFloats(), positions));

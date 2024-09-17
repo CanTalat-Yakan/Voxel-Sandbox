@@ -30,6 +30,7 @@ public class GameManager : Component
 
         _camera.Entity.Transform.LocalPosition += Vector3.UnitY * 30;
         _camera.Entity.Transform.EulerAngles = Vector3.Zero;
+        _camera.Clipping.Y = 10000;
     }
 
     public override void OnStart()

@@ -36,7 +36,7 @@ public class Generator
     {
         int lod = 0;
         int chunkSize = LODSizes[0];
-        int nativeRadius = 20;
+        int nativeRadius = 12;
 
         // Calculate the center chunk position for the player
         Vector3Int centerChunkPos = new(
