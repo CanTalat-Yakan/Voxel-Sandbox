@@ -23,7 +23,7 @@ public class NoiseSampler
                         // Check cave noise to determine if this voxel should be empty (cave)
                         if (surfaceHeight > y + 20 && y > 20)
                         {
-                            double caveValue = GetCaveNoise(x + chunk.WorldPosition.X, (int)(y * 2), z + chunk.WorldPosition.Z);
+                            double caveValue = GetCaveNoise(x + chunk.WorldPosition.X, y * 2, z + chunk.WorldPosition.Z);
 
                             if ((caveValue < 0.45 || caveValue > 0.6))
                                 continue;
@@ -33,15 +33,6 @@ public class NoiseSampler
                         chunk.SetVoxel(new(x, y, z), VoxelType.Solid);
                     }
             }
-
-        //Stack<Vector3Byte> unexposedVoxelsToRemove = new();
-        //// Check if the voxel is not exposed (has no neighbor that is empty)
-        //foreach (var voxel in chunk.VoxelData)
-        //    if (!IsVoxelExposed(chunk, voxel.Key))
-        //        unexposedVoxelsToRemove.Push(voxel.Key);
-
-        //foreach (var voxel in unexposedVoxelsToRemove)
-        //    chunk.VoxelData.Remove(voxel);
 
         GameManager.Instance.Generator.ChunksToBuild.Enqueue(chunk);
     }
@@ -83,4 +74,16 @@ public class NoiseSampler
         // All neighbors are solid and the voxel is not exposed
         return false;
     }
+
+    //private void RemoveUnexposedVoxels()
+    //{
+    //    Stack<Vector3Byte> unexposedVoxelsToRemove = new();
+    //    // Check if the voxel is not exposed (has no neighbor that is empty)
+    //    foreach (var voxel in chunk.VoxelData)
+    //        if (!IsVoxelExposed(chunk, voxel.Key))
+    //            unexposedVoxelsToRemove.Push(voxel.Key);
+
+    //    foreach (var voxel in unexposedVoxelsToRemove)
+    //        chunk.VoxelData.Remove(voxel);
+    //}
 }

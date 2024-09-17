@@ -28,7 +28,7 @@ public class GameManager : Component
             if (entity.ID != Entity.ID && entity.GetComponentTypes().Contains(typeof(Mesh)) && !entity.Data.Name.Equals("Sky"))
                 entity.Data.IsEnabled = false;
 
-        _camera.Entity.Transform.LocalPosition += Vector3.UnitY * 30;
+        _camera.Entity.Transform.LocalPosition += Vector3.UnitY * 80;
         _camera.Entity.Transform.EulerAngles = Vector3.Zero;
         _camera.Clipping.Y = 10000;
     }
