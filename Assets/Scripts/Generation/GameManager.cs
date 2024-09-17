@@ -5,6 +5,8 @@ using Engine.ECS;
 using Engine.Loader;
 using Engine.Utilities;
 
+namespace VoxelSandbox;
+
 public class GameManager : Component
 {
     public static GameManager Instance { get; private set; }
@@ -39,17 +41,12 @@ public class GameManager : Component
         {
             while (true)
             {
-                if (_timer > 1.0f / 120.0f)
+                if (Generator.GetChunksToGenerate().Any())
                 {
-                    _timer = 0;
+                    var chunk = Generator.GetChunksToGenerate().Dequeue();
 
-                    if (Generator.GetChunksToGenerate().Any())
-                    {
-                        var chunk = Generator.GetChunksToGenerate().Dequeue();
-
-                        NoiseSampler.GenerateChunkContent(chunk);
-                        MeshBuilder.GenerateMesh(chunk);
-                    }
+                    NoiseSampler.GenerateChunkContent(chunk);
+                    MeshBuilder.GenerateMesh(chunk);
                 }
             }
         });
@@ -57,7 +54,4 @@ public class GameManager : Component
         // Start the thread
         thread.Start();
     }
-
-    public override void OnUpdate() =>
-        _timer += Time.DeltaF;
 }

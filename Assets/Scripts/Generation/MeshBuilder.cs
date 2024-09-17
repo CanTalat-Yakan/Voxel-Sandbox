@@ -5,49 +5,41 @@ using Engine.Components;
 using Engine.DataStructures;
 using Engine.Helper;
 
+namespace VoxelSandbox;
+
 public class MeshBuilder
 {
-    private int _voxelsize;
-
-    // Define possible face directions
-    Vector3[] _faceNormals =
+    Vector3Int[] _faceNormals =
     {
-        Vector3.UnitY, // Top
-        -Vector3.UnitY, // Bottom
-        Vector3.UnitX, // Right
-        -Vector3.UnitX, // Left
-        Vector3.UnitZ, // Front
-        -Vector3.UnitZ // Back
+        Vector3Int.Top,
+        Vector3Int.Bottom,
+        Vector3Int.Right,
+        Vector3Int.Left,
+        Vector3Int.Front,
+        Vector3Int.Back
     };
 
-    // Modular function to generate the mesh from a chunk
     public void GenerateMesh(Chunk chunk)
     {
         List<int> indices = new();
         List<Vertex> vertices = new();
         List<Vector3> positions = new();
 
-        _voxelsize = chunk.VoxelSize;
-
         // Iterate through each voxel in the chunk
-        for (int x = 0; x < chunk.Size; x += _voxelsize)
-            for (int y = 0; y < chunk.Size; y += _voxelsize)
-                for (int z = 0; z < chunk.Size; z += _voxelsize)
-                {
-                    Voxel voxel = chunk.GetVoxel(x, y, z);
-                    Vector3 localPos = new Vector3(x, y, z);
+        foreach (var voxel in chunk.VoxelData)
+        {
+            // Skip border voxel
+            if(!chunk.IsWithinBounds(voxel.Key))
+                continue;
 
-                    // Skip empty or air voxels
-                    if (voxel.Type == 0) continue;
+            // Add faces for each visible side of the voxel
+            AddVoxelFaces(chunk, chunk.VoxelSize, voxel.Key, voxel.Value, vertices, indices);
 
-                    // Add faces for each visible side of the voxel
-                    AddVoxelFaces(chunk, localPos, voxel, vertices, indices);
-
-                    positions.Add(new Vector3(x, y, z));
-                }
+            positions.Add(voxel.Key.ToVector3());
+        }
 
         var entity = GameManager.Instance.Entity.Manager.CreateEntity();
-        entity.Transform.LocalPosition = chunk.WorldPosition;
+        entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
         chunk.Mesh = entity.AddComponent<Mesh>();
 
         chunk.Mesh.SetMeshData(Kernel.Instance.Context.CreateMeshData(indices, vertices.ToFloats(), positions));
@@ -55,83 +47,79 @@ public class MeshBuilder
         chunk.Mesh.SetMaterialPipeline("SimpleLit");
     }
 
-    // Adds voxel faces to the mesh
-    private void AddVoxelFaces(Chunk chunk, Vector3 localPos, Voxel voxel, List<Vertex> vertices, List<int> indices)
+    private void AddVoxelFaces(Chunk chunk, int voxelSize, Vector3Byte voxelPosition, VoxelType voxelType, List<Vertex> vertices, List<int> indices)
     {
         // Check each face direction for visibility
         for (int i = 0; i < _faceNormals.Length; i++)
         {
-            Vector3 normal = _faceNormals[i];
-            Vector3 adjacentPos = localPos + normal;
+            Vector3Int normal = _faceNormals[i];
+            Vector3Byte adjacentPosition = voxelPosition + normal;
 
-            // Check if the adjacent voxel is within bounds and is an air voxel
-            if (!chunk.IsWithinBounds(adjacentPos))
-            {
-                if (GameManager.Instance.NoiseSampler.GetVoxel((int)adjacentPos.X, (int)adjacentPos.Y, (int)adjacentPos.Z, chunk.WorldPosition).Type == (int)VoxelType.Air)
-                    // Add the face to the mesh
-                    AddFace(localPos, normal, vertices, indices);
-            }
-            else if (chunk.GetVoxel(adjacentPos).Type == (int)VoxelType.Air)
-                // Add the face to the mesh
-                AddFace(localPos, normal, vertices, indices);
+            // Check if the adjacent voxel is an empty voxel
+            if (!chunk.HasVoxel(adjacentPosition))
+                AddFace(voxelPosition, normal, vertices, indices, voxelSize);
         }
     }
 
-    // Adds a single face to the mesh
-    private void AddFace(Vector3 position, Vector3 normal, List<Vertex> vertices, List<int> indices)
+    private void AddFace(Vector3Byte position, Vector3Int normal, List<Vertex> vertices, List<int> indices, int voxelSize)
     {
-        // Define face vertices
-        Vector3[] faceVertices = new Vector3[4];
+        var faceVertices = new Vector3[4];
 
         // Compute the vertices of the face based on normal direction
-        if (normal == Vector3.UnitY) // Top face
-        {
-            faceVertices[0] = position + new Vector3(0, 1, 0) * _voxelsize;
-            faceVertices[1] = position + new Vector3(0, 1, 1) * _voxelsize;
-            faceVertices[2] = position + new Vector3(1, 1, 1) * _voxelsize;
-            faceVertices[3] = position + new Vector3(1, 1, 0) * _voxelsize;
-        }
-        if (normal == -Vector3.UnitY) // Bottom face
-        {
-            faceVertices[0] = position + new Vector3(0, 0, 0) * _voxelsize;
-            faceVertices[1] = position + new Vector3(1, 0, 0) * _voxelsize;
-            faceVertices[2] = position + new Vector3(1, 0, 1) * _voxelsize;
-            faceVertices[3] = position + new Vector3(0, 0, 1) * _voxelsize;
-        }
-        if (normal == Vector3.UnitX) // Right face
-        {
-            faceVertices[0] = position + new Vector3(1, 0, 0) * _voxelsize;
-            faceVertices[1] = position + new Vector3(1, 1, 0) * _voxelsize;
-            faceVertices[2] = position + new Vector3(1, 1, 1) * _voxelsize;
-            faceVertices[3] = position + new Vector3(1, 0, 1) * _voxelsize;
-        }
-        if (normal == -Vector3.UnitX) // Left face
-        {
-            faceVertices[0] = position + new Vector3(0, 0, 1) * _voxelsize;
-            faceVertices[1] = position + new Vector3(0, 1, 1) * _voxelsize;
-            faceVertices[2] = position + new Vector3(0, 1, 0) * _voxelsize;
-            faceVertices[3] = position + new Vector3(0, 0, 0) * _voxelsize;
-        }
-        if (normal == Vector3.UnitZ) // Front face
-        {
-            faceVertices[0] = position + new Vector3(1, 0, 1) * _voxelsize;
-            faceVertices[1] = position + new Vector3(1, 1, 1) * _voxelsize;
-            faceVertices[2] = position + new Vector3(0, 1, 1) * _voxelsize;
-            faceVertices[3] = position + new Vector3(0, 0, 1) * _voxelsize;
-        }
-        if (normal == -Vector3.UnitZ) // Back face
-        {
-            faceVertices[0] = position + new Vector3(0, 0, 0) * _voxelsize;
-            faceVertices[1] = position + new Vector3(0, 1, 0) * _voxelsize;
-            faceVertices[2] = position + new Vector3(1, 1, 0) * _voxelsize;
-            faceVertices[3] = position + new Vector3(1, 0, 0) * _voxelsize;
-        }
+        if (normal == Vector3Int.Top)
+            faceVertices =
+            [
+                new Vector3(position.X,         position.Y + 1,     position.Z    ) * voxelSize,
+                new Vector3(position.X,         position.Y + 1,     position.Z + 1) * voxelSize,
+                new Vector3(position.X + 1,     position.Y + 1,     position.Z + 1) * voxelSize,
+                new Vector3(position.X + 1,     position.Y + 1,     position.Z    ) * voxelSize,
+            ];
+        if (normal == Vector3Int.Bottom)
+            faceVertices =
+            [
+                new Vector3(position.X,         position.Y,         position.Z    ) * voxelSize,
+                new Vector3(position.X + 1,     position.Y,         position.Z    ) * voxelSize,
+                new Vector3(position.X + 1,     position.Y,         position.Z + 1) * voxelSize,
+                new Vector3(position.X,         position.Y,         position.Z + 1) * voxelSize,
+            ];
+        if (normal == Vector3Int.Right)
+            faceVertices =
+            [
+                new Vector3(position.X + 1,     position.Y,         position.Z    ) * voxelSize,
+                new Vector3(position.X + 1,     position.Y + 1,     position.Z    ) * voxelSize,
+                new Vector3(position.X + 1,     position.Y + 1,     position.Z + 1) * voxelSize,
+                new Vector3(position.X + 1,     position.Y,         position.Z + 1) * voxelSize,
+            ];
+        if (normal == Vector3Int.Left)
+            faceVertices =
+            [
+                new Vector3(position.X,         position.Y,         position.Z + 1) * voxelSize,
+                new Vector3(position.X,         position.Y + 1,     position.Z + 1) * voxelSize,
+                new Vector3(position.X,         position.Y + 1,     position.Z    ) * voxelSize,
+                new Vector3(position.X,         position.Y,         position.Z    ) * voxelSize,
+            ];
+        if (normal == Vector3Int.Front)
+            faceVertices =
+            [
+                new Vector3(position.X + 1,     position.Y,         position.Z + 1) * voxelSize,
+                new Vector3(position.X + 1,     position.Y + 1,     position.Z + 1) * voxelSize,
+                new Vector3(position.X,         position.Y + 1,     position.Z + 1) * voxelSize,
+                new Vector3(position.X,         position.Y,         position.Z + 1) * voxelSize,
+            ];
+        if (normal == Vector3Int.Back)
+            faceVertices =
+            [
+                new Vector3(position.X,         position.Y,         position.Z    ) * voxelSize,
+                new Vector3(position.X,         position.Y + 1,     position.Z    ) * voxelSize,
+                new Vector3(position.X + 1,     position.Y + 1,     position.Z    ) * voxelSize,
+                new Vector3(position.X + 1,     position.Y,         position.Z    ) * voxelSize,
+            ];
 
         // Add vertices
-        vertices.Add(new Vertex(faceVertices[0], normal, new(0, 0), Vector3.Zero));
-        vertices.Add(new Vertex(faceVertices[1], normal, new(0, 1), Vector3.Zero));
-        vertices.Add(new Vertex(faceVertices[2], normal, new(1, 1), Vector3.Zero));
-        vertices.Add(new Vertex(faceVertices[3], normal, new(1, 0), Vector3.Zero));
+        vertices.Add(new Vertex(faceVertices[0], normal.ToVector3(), new(0, 0), Vector3.Zero));
+        vertices.Add(new Vertex(faceVertices[1], normal.ToVector3(), new(0, 1), Vector3.Zero));
+        vertices.Add(new Vertex(faceVertices[2], normal.ToVector3(), new(1, 1), Vector3.Zero));
+        vertices.Add(new Vertex(faceVertices[3], normal.ToVector3(), new(1, 0), Vector3.Zero));
 
         // Add indices
         int startIndex = vertices.Count;

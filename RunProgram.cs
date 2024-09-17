@@ -8,7 +8,7 @@
     public static void Frame()
     {
         if (!_initialized)
-            Engine.Kernel.Instance.SystemManager.MainEntityManager.CreateEntity().AddComponent<GameManager>();
+            Engine.Kernel.Instance.SystemManager.MainEntityManager.CreateEntity().AddComponent<VoxelSandbox.GameManager>();
 
         _initialized = true;
     }
