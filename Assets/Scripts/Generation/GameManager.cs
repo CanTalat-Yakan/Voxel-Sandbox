@@ -51,7 +51,6 @@ public class GameManager : Component
             }
         });
 
-        // Start the thread
         thread.Start();
     }
 }
