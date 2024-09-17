@@ -106,10 +106,10 @@ public class MeshBuilder
             ];
 
         // Add vertices
-        vertices.Add(new Vertex(faceVertices[0], normal.ToVector3(), new(0, 0), Vector3.Zero));
-        vertices.Add(new Vertex(faceVertices[1], normal.ToVector3(), new(0, 1), Vector3.Zero));
-        vertices.Add(new Vertex(faceVertices[2], normal.ToVector3(), new(1, 1), Vector3.Zero));
-        vertices.Add(new Vertex(faceVertices[3], normal.ToVector3(), new(1, 0), Vector3.Zero));
+        vertices.Add(new Vertex(faceVertices[0], normal.ToVector3(), Vector3.Zero, new(0, 0)));
+        vertices.Add(new Vertex(faceVertices[1], normal.ToVector3(), Vector3.Zero, new(0, 1)));
+        vertices.Add(new Vertex(faceVertices[2], normal.ToVector3(), Vector3.Zero, new(1, 1)));
+        vertices.Add(new Vertex(faceVertices[3], normal.ToVector3(), Vector3.Zero, new(1, 0)));
 
         // Add indices
         int startIndex = vertices.Count;
