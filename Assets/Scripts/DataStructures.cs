@@ -1,5 +1,7 @@
 ﻿using System.Numerics;
 
+namespace VoxelSandbox;
+
 public enum VoxelType
 {
     None,

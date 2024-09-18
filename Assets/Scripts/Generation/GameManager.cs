@@ -30,17 +30,11 @@ public class GameManager : Component
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlasBig.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
-        for (int i = 0; i < 4; i++)
-        {
-            if (Generator.ChunksToGenerate.Any())
-                NoiseSampler.GenerateChunkContent(Generator.ChunksToGenerate.Dequeue());
-            if (Generator.ChunksToBuild.Any())
-                MeshBuilder.GenerateMesh(Generator.ChunksToBuild.Dequeue());
-        }
-
         var controller = Entity.Manager.CreateCamera(name: "Controller").Entity;
         controller.Transform.SetPosition(y: 152);
         controller.AddComponent<PlayerMovement>();
+        controller.AddComponent<RayCaster>().SetCamera(controller);
+        controller.GetComponent<Camera>()[0].FOV = 100;
     }
 
     public override void OnStart()

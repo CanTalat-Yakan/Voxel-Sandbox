@@ -6,6 +6,7 @@
     <OutputType>WinExe</OutputType>
     <StartupObject>RunProgram</StartupObject>
 	<PublishAot>true</PublishAot>
+	<RootNamespace />
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
