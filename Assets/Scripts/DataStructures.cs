@@ -2,7 +2,7 @@
 
 namespace VoxelSandbox;
 
-public enum VoxelType
+public enum VoxelType : byte
 {
     None,
     Stone,

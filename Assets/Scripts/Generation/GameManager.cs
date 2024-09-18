@@ -1,9 +1,6 @@
-﻿using System.Numerics;
-
-using Engine;
+﻿using Engine;
 using Engine.Components;
 using Engine.ECS;
-using Engine.Essentials;
 using Engine.Loader;
 using Engine.Utilities;
 
@@ -16,8 +13,6 @@ public class GameManager : Component
     public Generator Generator = new();
     public MeshBuilder MeshBuilder = new();
     public NoiseSampler NoiseSampler = new();
-
-    private float _timer = 0;
 
     public override void OnAwake()
     {
@@ -49,7 +44,7 @@ public class GameManager : Component
                 {
                     Profiler.Start(out var stopwatch);
                     NoiseSampler.GenerateChunkContent(Generator.ChunksToGenerate.Dequeue());
-                    //Output.Log($"CB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                    Output.Log($"CB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
                     Profiler.Stop(stopwatch, "Chunks Generation");
                 }
         });
@@ -60,7 +55,7 @@ public class GameManager : Component
                 {
                     Profiler.Start(out var stopwatch);
                     MeshBuilder.GenerateMesh(Generator.ChunksToBuild.Dequeue());
-                    //Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                    Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
                     Profiler.Stop(stopwatch, "Mesh Generation");
                 }
         });

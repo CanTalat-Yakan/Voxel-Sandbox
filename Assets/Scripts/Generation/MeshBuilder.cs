@@ -81,7 +81,7 @@ public class MeshBuilder
             ];
 
             if (Enum.IsDefined(typeof(VoxelType), enumName + "_Top"))
-                atlasUV = TextureAtlas.GetTextureCoordinate((int)Enum.Parse(typeof(VoxelType), enumName + "_Top"));
+                atlasUV = TextureAtlas.GetTextureCoordinate((int)(VoxelType)Enum.Parse(typeof(VoxelType), enumName + "_Top"));
         }
         else if (normal == Vector3Int.Bottom)
         {
@@ -94,7 +94,7 @@ public class MeshBuilder
             ];
 
             if (Enum.IsDefined(typeof(VoxelType), enumName + "_Bottom"))
-                atlasUV = TextureAtlas.GetTextureCoordinate((int)Enum.Parse(typeof(VoxelType), enumName + "_Bottom"));
+                atlasUV = TextureAtlas.GetTextureCoordinate((int)(VoxelType)Enum.Parse(typeof(VoxelType), enumName + "_Bottom"));
         }
         else if (normal == Vector3Int.Right)
             faceVertices =

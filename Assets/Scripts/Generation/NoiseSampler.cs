@@ -1,192 +1,86 @@
-﻿using AVXPerlinNoise;
-using System.Numerics;
+﻿using LibNoise.Filter;
+using LibNoise.Primitive;
 
 namespace VoxelSandbox;
 
 public class NoiseSampler
 {
-    public Perlin Noise = new();
-    private Random random = new();
+    Billow SurfaceNoise = new()
+    {
+        Primitive2D = s_perlinPrimitive,
+        OctaveCount = 8,        // Fewer octaves for a smoother look
+        Frequency = 0.01f,      // Lower frequency for broader features
+        Scale = 7.5f,           // Adjust scale to manage the level of detail
+    };
 
-    // Biome definitions
-    private enum BiomeType { Plains, Mountains, Desert, Forest }
-    private const int BiomeSize = 500; // Adjust to control biome size
+    Billow UndergroundNoise = new()
+    {
+        Primitive2D = s_perlinPrimitive,
+        OctaveCount = 6,
+        Frequency = 0.05f,      
+        Scale = 15f,
+    };
+
+    Billow CaveNoise = new()
+    {
+        Primitive3D = s_perlinPrimitive,
+        OctaveCount = 6,
+        Frequency = 0.005f,
+        Scale = 0.5f
+    };
+
+    private static SimplexPerlin s_perlinPrimitive = new() { Seed = 1234 };
 
     public void GenerateChunkContent(Chunk chunk)
     {
+        Random random = new();
+
         for (int x = 0; x <= Generator.BaseChunkSizeXZ + 1; x++)
-        {
+
             for (int z = 0; z <= Generator.BaseChunkSizeXZ + 1; z++)
             {
-                int worldX = x + chunk.WorldPosition.X;
-                int worldZ = z + chunk.WorldPosition.Z;
+                int surfaceHeight = GetSurfaceHeight(x + chunk.WorldPosition.X, z + chunk.WorldPosition.Z);
+                int undergroundDetail = GetUndergroundDetail(x + chunk.WorldPosition.X, z + chunk.WorldPosition.Z);
+                int bedrockHeight = random.Next(5);
 
-                // Determine the biome at this location
-                BiomeType biome = GetBiome(worldX, worldZ);
-
-                // Get surface height based on biome
-                int surfaceHeight = GetSurfaceHeight(worldX, worldZ, biome);
-
-                // Generate terrain
                 for (int y = 0; y < Generator.BaseChunkSizeY; y++)
-                {
-                    Vector3Byte voxelPosition = new(x, y, z);
+                    // Only generate solid voxels below the surface
+                    if (y < surfaceHeight)
+                    {
+                        Vector3Byte voxelPosition = new(x, y, z);
 
-                    if (y > surfaceHeight)
-                    {
-                        // Air above the surface
-                        continue;
-                    }
-                    else if (y == surfaceHeight)
-                    {
-                        // Surface block
-                        VoxelType surfaceBlock = GetSurfaceBlockType(biome);
-                        chunk.SetVoxel(voxelPosition, surfaceBlock);
+                        // Check cave noise to determine if this voxel should be empty (cave)
+                        if (y < undergroundDetail)
+                            chunk.SetVoxel(voxelPosition, y < bedrockHeight ? VoxelType.Stone : VoxelType.Stone);
+                        else if (y + undergroundDetail < surfaceHeight)
+                        {
+                            double caveValue = GetCaveNoise(x + chunk.WorldPosition.X, y * 2, z + chunk.WorldPosition.Z);
 
-                        // Add trees in forest biome
-                        if (biome == BiomeType.Forest && random.NextDouble() < 0.05)
-                        {
-                            GenerateTree(chunk, x, y + 1, z);
+                            if (caveValue < 0.25 || caveValue > 0.6)
+                                continue;
+
+                            chunk.SetVoxel(voxelPosition, VoxelType.Stone);
                         }
-                    }
-                    else if (y > surfaceHeight - 5)
-                    {
-                        // Sub-surface blocks
-                        VoxelType subSurfaceBlock = GetSubSurfaceBlockType(biome);
-                        chunk.SetVoxel(voxelPosition, subSurfaceBlock);
-                    }
-                    else
-                    {
-                        // Underground blocks
-                        // Check for caves
-                        double caveValue = GetCaveNoise(worldX, y, worldZ);
-                        if (caveValue > 0.5)
-                        {
-                            // Air in caves
-                            continue;
-                        }
+                        else if (y + undergroundDetail - 5 < surfaceHeight)
+                            chunk.SetVoxel(voxelPosition, VoxelType.Stone);
                         else
-                        {
-                            // Chance to generate ores
-                            VoxelType undergroundBlock = GetUndergroundBlockType(y);
-                            chunk.SetVoxel(voxelPosition, undergroundBlock);
-                        }
+                            chunk.SetVoxel(voxelPosition, VoxelType.Grass);
                     }
-                }
             }
-        }
 
         RemoveUnexposedVoxels(chunk);
 
         GameManager.Instance.Generator.ChunksToBuild.Enqueue(chunk);
     }
 
-    private BiomeType GetBiome(int x, int z)
-    {
-        double biomeNoise = Noise.OctavePerlin(x, 0, z, scale: BiomeSize);
-        if (biomeNoise < 0.25)
-            return BiomeType.Desert;
-        else if (biomeNoise < 0.5)
-            return BiomeType.Plains;
-        else if (biomeNoise < 0.75)
-            return BiomeType.Forest;
-        else
-            return BiomeType.Mountains;
-    }
+    private int GetSurfaceHeight(int x, int z) =>
+        (int)SurfaceNoise.GetValue(x, z) + 100;
 
-    private int GetSurfaceHeight(int x, int z, BiomeType biome)
-    {
-        double height = 0;
-        switch (biome)
-        {
-            case BiomeType.Plains:
-                height = Noise.OctavePerlin(x, 0, z, scale: 100) * 10 + 64;
-                break;
-            case BiomeType.Mountains:
-                double mountainNoise = Noise.OctavePerlin(x, 0, z, scale: 50) * 30;
-                double hillNoise = Noise.OctavePerlin(x, 0, z, scale: 100) * 10;
-                height = mountainNoise + hillNoise + 80;
-                break;
-            case BiomeType.Desert:
-                height = Noise.OctavePerlin(x, 0, z, scale: 100) * 5 + 62;
-                break;
-            case BiomeType.Forest:
-                height = Noise.OctavePerlin(x, 0, z, scale: 80) * 12 + 68;
-                break;
-        }
-        return (int)height;
-    }
+    private int GetUndergroundDetail(int x, int z) =>
+        (int)UndergroundNoise.GetValue(x, z) + 10;
 
-    private VoxelType GetSurfaceBlockType(BiomeType biome)
-    {
-        switch (biome)
-        {
-            case BiomeType.Plains:
-            case BiomeType.Forest:
-                return VoxelType.Grass;
-            case BiomeType.Mountains:
-                return VoxelType.Stone;
-            case BiomeType.Desert:
-                return VoxelType.Sand;
-            default:
-                return VoxelType.Grass;
-        }
-    }
-
-    private VoxelType GetSubSurfaceBlockType(BiomeType biome)
-    {
-        switch (biome)
-        {
-            case BiomeType.Plains:
-            case BiomeType.Forest:
-                return VoxelType.Dirt;
-            case BiomeType.Mountains:
-                return VoxelType.Stone;
-            case BiomeType.Desert:
-                return VoxelType.Sandstone;
-            default:
-                return VoxelType.Dirt;
-        }
-    }
-
-    private VoxelType GetUndergroundBlockType(int y)
-    {
-        // Chance to generate ores
-        if (y < 20 && random.NextDouble() < 0.02)
-            return VoxelType.DiamondOre;
-        else if (y < 40 && random.NextDouble() < 0.04)
-            return VoxelType.IronOre;
-        else
-            return VoxelType.Stone;
-    }
-
-    private double GetCaveNoise(int x, int y, int z)
-    {
-        return Noise.OctavePerlin(x, y, z, nOctaves: 3, scale: 60);
-    }
-
-    private void GenerateTree(Chunk chunk, int x, int y, int z)
-    {
-        // Simple tree structure
-        int height = random.Next(4, 7);
-        for (int i = 0; i < height; i++)
-        {
-            Vector3Byte trunkPosition = new(x, y + i, z);
-            chunk.SetVoxel(trunkPosition, VoxelType.Log);
-        }
-
-        //// Add leaves at the top
-        //for (int dx = -2; dx <= 2; dx++)
-        //    for (int dy = 0; dy <= 2; dy++)
-        //        for (int dz = -2; dz <= 2; dz++)
-        //        {
-        //            if (dx * dx + dy * dy + dz * dz <= 3)
-        //            {
-        //                Vector3Byte leafPosition = new(x + dx, y + height + dy, z + dz);
-        //                chunk.SetVoxel(leafPosition, VoxelType.Leaves);
-        //            }
-        //        }
-    }
+    private double GetCaveNoise(int x, int y, int z) =>
+        CaveNoise.GetValue(x, y, z);
 
     private void RemoveUnexposedVoxels(Chunk chunk)
     {

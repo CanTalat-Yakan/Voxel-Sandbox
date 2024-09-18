@@ -19,10 +19,10 @@
 
   <ItemGroup>
   	<PackageReference Include="3DEngine" Version="3.0.17" />
-  	<PackageReference Include="AVX2PerlinNoise" Version="2.0.0" />
   	<PackageReference Include="Costura.Fody" Version="5.7.0">
   	  <PrivateAssets>all</PrivateAssets>
   	</PackageReference>
+  	<PackageReference Include="LibNoise" Version="0.2.0" />
   </ItemGroup>
 
   <ItemGroup>
