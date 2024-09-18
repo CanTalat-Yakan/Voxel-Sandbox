@@ -22,24 +22,24 @@ public class Generator
         UpdateChunks(playerPosition);
     }
 
-    public static void GetChunkFromPosition(Vector3Int playerPosition, out Chunk chunk, out Vector3Byte localVoxelPosition)
+    public static void GetChunkFromPosition(Vector3Int worldPosition, out Chunk chunk, out Vector3Byte localVoxelPosition)
     {
         Vector3Int chunkPosition = new Vector3Int();
         chunkPosition.Y = 0;
 
-        chunkPosition.X = playerPosition.X / BaseChunkSizeXZ * BaseChunkSizeXZ;
-        if (playerPosition.X < 0 && (playerPosition.X % BaseChunkSizeXZ) != 0)
+        chunkPosition.X = worldPosition.X / BaseChunkSizeXZ * BaseChunkSizeXZ;
+        if (worldPosition.X < 0 && (worldPosition.X % BaseChunkSizeXZ) != 0)
             chunkPosition.X -= BaseChunkSizeXZ;
 
-        chunkPosition.Z = playerPosition.Z / BaseChunkSizeXZ * BaseChunkSizeXZ;
-        if (playerPosition.Z < 0 && (playerPosition.Z % BaseChunkSizeXZ) != 0)
+        chunkPosition.Z = worldPosition.Z / BaseChunkSizeXZ * BaseChunkSizeXZ;
+        if (worldPosition.Z < 0 && (worldPosition.Z % BaseChunkSizeXZ) != 0)
             chunkPosition.Z -= BaseChunkSizeXZ;
 
         chunk = null;
         if (GeneratedChunks[0].ContainsKey(chunkPosition))
             chunk = GeneratedChunks[0][chunkPosition];
 
-        localVoxelPosition = (playerPosition - chunkPosition).ToVector3Byte();
+        localVoxelPosition = (worldPosition - chunkPosition).ToVector3Byte();
     }
 
     public void UpdateChunks(Vector3Int newPlayerPosition)
@@ -96,7 +96,7 @@ public class Generator
 
     private void CheckChunk(int lod, Vector3Int chunkWorldPosition)
     {
-        if (IsChunkGenerated(chunkWorldPosition, lod))
+        if (GeneratedChunks[lod].Keys.Contains(chunkWorldPosition))
             GeneratedChunks[lod][chunkWorldPosition].Mesh.IsEnabled = true;
         else
         {
@@ -105,7 +105,4 @@ public class Generator
             ChunksToGenerate.Enqueue(newChunk);
         }
     }
-
-    private bool IsChunkGenerated(Vector3Int chunkPosition, int lodLevel) =>
-        GeneratedChunks[lodLevel].Keys.Contains(chunkPosition);
 }
