@@ -29,7 +29,7 @@ public class MeshBuilder
         }
 
         var entity = GameManager.Instance.Entity.Manager.CreateEntity();
-        entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3() - Vector3.UnitY * 64;
+        entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
 
         chunk.Mesh = entity.AddComponent<Mesh>();
         chunk.Mesh.SetMeshData(Kernel.Instance.Context.CreateMeshData(indices, vertices.ToFloats(), positions));
@@ -52,12 +52,12 @@ public class MeshBuilder
             {
                 //Check if the adjacent voxel is an empty voxel
                 if (chunk.GetVoxel(voxelPosition, out var voxelTypeCheck))
-                    if ((voxelTypeCheck != VoxelType.None) && (voxelTypeCheck != VoxelType.Air))
+                    if ((voxelTypeCheck is not VoxelType.None) && (voxelTypeCheck is not VoxelType.Air))
                     {
                         if (!chunk.IsWithinBounds(adjacentVoxelPosition))
                             AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
                         else if (chunk.GetVoxel(adjacentVoxelPosition, out var adjacentVoxelTypeCheck))
-                            if (adjacentVoxelTypeCheck == VoxelType.None)
+                            if (adjacentVoxelTypeCheck is VoxelType.None)
                                 AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
                     }
             }

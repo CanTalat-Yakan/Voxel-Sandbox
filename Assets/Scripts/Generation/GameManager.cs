@@ -3,6 +3,7 @@
 using Engine;
 using Engine.Components;
 using Engine.ECS;
+using Engine.Essentials;
 using Engine.Loader;
 using Engine.Utilities;
 
@@ -16,27 +17,33 @@ public class GameManager : Component
     public MeshBuilder MeshBuilder = new();
     public NoiseSampler NoiseSampler = new();
 
-    private Camera _camera = Camera.Main;
+    private Camera _camera;
     private float _timer = 0;
 
     public override void OnAwake()
     {
         Instance = this;
-         
+
+        foreach (var entity in Entity.Manager.Entities.Values)
+            if (entity.Data.Tag != "DefaultSky")
+                Entity.Manager.DestroyEntity(entity);
+
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlasBig.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
-        _camera.Entity.Transform.LocalPosition += Vector3.UnitY * 80;
+        var controller = Entity.Manager.CreateEntity(name: "Controller");
+        _camera = Entity.Manager.CreateCamera(parent: controller);
+        _camera.Entity.Transform.SetPosition(y: 384);
         _camera.Entity.Transform.EulerAngles = Vector3.Zero;
-        _camera.Clipping.Y = 10000;
+        _camera.Entity.AddComponent<PlayerMovement>();
     }
 
     public override void OnStart()
     {
-        Generator.Initialize(_camera.Entity.Transform.Position);
+        Generator.Initialize(new Vector3Int(0, 0, 0));
 
         // Create a new thread to run the chunk processing
-        Thread thread = new(() =>
+        Thread ChunkGenerationThread = new(() =>
         {
             while (true)
                 if (Generator.ChunksToGenerate.Any())
@@ -47,7 +54,7 @@ public class GameManager : Component
                     Profiler.Stop(stopwatch, "Chunks Generation");
                 }
         });
-        Thread thread2 = new(() =>
+        Thread MeshBuildingThread = new(() =>
         {
             while (true)
                 if (Generator.ChunksToBuild.Any())
@@ -59,7 +66,7 @@ public class GameManager : Component
                 }
         });
 
-        thread.Start();
-        thread2.Start();
+        ChunkGenerationThread.Start();
+        MeshBuildingThread.Start();
     }
 }

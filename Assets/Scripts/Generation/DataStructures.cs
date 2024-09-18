@@ -73,6 +73,9 @@ public struct Vector3Byte
         }
     }
 
+    public static Vector3Byte operator -(Vector3Byte a, Vector3 b) =>
+        new(a.X - (int)b.X, a.Y - (int)b.Y, a.Z - (int)b.Z);
+    
     public static Vector3Byte operator +(Vector3Byte a, Vector3Int b) =>
         new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 
@@ -154,6 +157,15 @@ public struct Vector3Int
             hash = hash * 31 + Z.GetHashCode();
             return hash;
         }
+    }
+
+    public static Vector3Int operator *(Vector3Int a, int b)
+    {
+        a.X *= b;
+        a.Y *= b;
+        a.Z *= b;
+
+        return a;
     }
 
     public static Vector3Int operator /(Vector3Int a, int b)

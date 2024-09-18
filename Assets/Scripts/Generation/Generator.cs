@@ -1,12 +1,10 @@
-﻿using System.Numerics;
-
-namespace VoxelSandbox;
+﻿namespace VoxelSandbox;
 
 public class Generator
 {
     // Sparse storage for chunks
     // Dictionary to store generated chunks by LOD level
-    public Dictionary<int, Dictionary<Vector3Int, Chunk>> GeneratedChunks = new();
+    public static Dictionary<int, Dictionary<Vector3Int, Chunk>> GeneratedChunks = new();
 
     public const int BaseChunkSizeXZ = 32;
     public const int BaseChunkSizeY = 384;
@@ -15,7 +13,7 @@ public class Generator
     public Queue<Chunk> ChunksToGenerate = new();
     public Queue<Chunk> ChunksToBuild = new();
 
-    public void Initialize(Vector3 playerPosition)
+    public void Initialize(Vector3Int playerPosition)
     {
         // Initialize generatedChunks dictionary for all LOD levels
         for (int i = 0; i < LODSizes.Length; i++)
@@ -24,15 +22,35 @@ public class Generator
         UpdateChunks(playerPosition);
     }
 
-    public void UpdateChunks(Vector3 newPlayerPosition)
+    public static void GetChunkFromPosition(Vector3Int playerPosition, out Chunk chunk, out Vector3Byte localVoxelPosition)
     {
-        // Clear the list of chunks to be generated
+        Vector3Int chunkPosition = new Vector3Int();
+        chunkPosition.Y = 0;
+
+        chunkPosition.X = playerPosition.X / BaseChunkSizeXZ * BaseChunkSizeXZ;
+        if (playerPosition.X < 0 && (playerPosition.X % BaseChunkSizeXZ) != 0)
+            chunkPosition.X -= BaseChunkSizeXZ;
+
+        chunkPosition.Z = playerPosition.Z / BaseChunkSizeXZ * BaseChunkSizeXZ;
+        if (playerPosition.Z < 0 && (playerPosition.Z % BaseChunkSizeXZ) != 0)
+            chunkPosition.Z -= BaseChunkSizeXZ;
+
+        chunk = null;
+        if (GeneratedChunks[0].ContainsKey(chunkPosition))
+            chunk = GeneratedChunks[0][chunkPosition];
+
+        localVoxelPosition = (playerPosition - chunkPosition).ToVector3Byte();
+    }
+
+    public void UpdateChunks(Vector3Int newPlayerPosition)
+    {
         ChunksToGenerate.Clear();
+        ChunksToBuild.Clear();
 
         CalculateChunks(newPlayerPosition);
     }
 
-    private void CalculateChunks(Vector3 worldPosition)
+    private void CalculateChunks(Vector3Int worldPosition)
     {
         int lod = 0;
         int chunkSize = LODSizes[0];
@@ -40,9 +58,9 @@ public class Generator
 
         // Calculate the center chunk position for the player
         Vector3Int centerChunkPos = new(
-            (int)(worldPosition.X / BaseChunkSizeXZ) * BaseChunkSizeXZ,
+            worldPosition.X / BaseChunkSizeXZ * BaseChunkSizeXZ,
             0,
-            (int)(worldPosition.Z / BaseChunkSizeXZ) * BaseChunkSizeXZ);
+            worldPosition.Z / BaseChunkSizeXZ * BaseChunkSizeXZ);
 
         foreach (var chunk in GeneratedChunks[lod].Values)
             chunk.Mesh.IsEnabled = false;
@@ -79,11 +97,12 @@ public class Generator
     private void CheckChunk(int lod, Vector3Int chunkWorldPosition)
     {
         if (IsChunkGenerated(chunkWorldPosition, lod))
-            GeneratedChunks[0][chunkWorldPosition].Mesh.IsEnabled = true;
+            GeneratedChunks[lod][chunkWorldPosition].Mesh.IsEnabled = true;
         else
         {
             Chunk newChunk = new(chunkWorldPosition, LODSizes[lod]);
-            ChunksToGenerate.Enqueue(newChunk); // Add to the generation list if not generated
+            GeneratedChunks[lod].Add(chunkWorldPosition, newChunk);
+            ChunksToGenerate.Enqueue(newChunk);
         }
     }
 
