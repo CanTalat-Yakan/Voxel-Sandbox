@@ -5,10 +5,12 @@ namespace VoxelSandbox;
 public class Chunk
 {
     public Mesh Mesh;
+
     public Dictionary<Vector3Byte, VoxelType> VoxelData = new();
 
     public Vector3Int WorldPosition { get; private set; } // Position of the chunk in world space (32, 0, 0)
     public Vector3Int ScaledPosition => WorldPosition / Size; // Position of the chunk in world space divided by the chunk size (1, 0, 0)
+
     public int Size { get; private set; } // Size of the chunk (32, 64, 128, etc.)
     public int VoxelSize => Size / Generator.BaseChunkSizeXZ;
 

@@ -4,6 +4,10 @@ namespace VoxelSandbox;
 
 public class Generator
 {
+    // Sparse storage for chunks
+    // Dictionary to store generated chunks by LOD level
+    public Dictionary<int, Dictionary<Vector3Int, Chunk>> GeneratedChunks = new();
+
     public const int BaseChunkSizeXZ = 32;
     public const int BaseChunkSizeY = 384;
     public readonly int[] LODSizes = { 32, 64, 128 };
@@ -11,15 +15,11 @@ public class Generator
     public Queue<Chunk> ChunksToGenerate = new();
     public Queue<Chunk> ChunksToBuild = new();
 
-    // Sparse storage for chunks
-    // Dictionary to store generated chunks by LOD level
-    private Dictionary<int, Dictionary<Vector3Int, Chunk>> _generatedChunks = new();
-
     public void Initialize(Vector3 playerPosition)
     {
         // Initialize generatedChunks dictionary for all LOD levels
         for (int i = 0; i < LODSizes.Length; i++)
-            _generatedChunks[i] = new();
+            GeneratedChunks[i] = new();
 
         UpdateChunks(playerPosition);
     }
@@ -44,7 +44,7 @@ public class Generator
             0,
             (int)(worldPosition.Z / BaseChunkSizeXZ) * BaseChunkSizeXZ);
 
-        foreach (var chunk in _generatedChunks[lod].Values)
+        foreach (var chunk in GeneratedChunks[lod].Values)
             chunk.Mesh.IsEnabled = false;
 
         for (int i = 0; i < nativeRadius; i++)
@@ -79,7 +79,7 @@ public class Generator
     private void CheckChunk(int lod, Vector3Int chunkWorldPosition)
     {
         if (IsChunkGenerated(chunkWorldPosition, lod))
-            _generatedChunks[0][chunkWorldPosition].Mesh.IsEnabled = true;
+            GeneratedChunks[0][chunkWorldPosition].Mesh.IsEnabled = true;
         else
         {
             Chunk newChunk = new(chunkWorldPosition, LODSizes[lod]);
@@ -88,5 +88,5 @@ public class Generator
     }
 
     private bool IsChunkGenerated(Vector3Int chunkPosition, int lodLevel) =>
-        _generatedChunks[lodLevel].Keys.Contains(chunkPosition);
+        GeneratedChunks[lodLevel].Keys.Contains(chunkPosition);
 }

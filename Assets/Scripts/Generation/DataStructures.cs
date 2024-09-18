@@ -6,6 +6,7 @@ public enum VoxelType
     Stone,
     Grass,
     Grass_Top,
+    Air,
 }
 
 public class TextureAtlas()

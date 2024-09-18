@@ -33,9 +33,11 @@ public class NoiseSampler
                             chunk.SetVoxel(new(x, y, z), VoxelType.Stone);
                         }
                         else
-                        chunk.SetVoxel(new(x, y, z), VoxelType.Grass);
+                            chunk.SetVoxel(new(x, y, z), VoxelType.Grass);
                     }
             }
+
+        RemoveUnexposedVoxels(chunk);
 
         GameManager.Instance.Generator.ChunksToBuild.Enqueue(chunk);
     }
@@ -49,47 +51,71 @@ public class NoiseSampler
     private double GetCaveNoise(int x, int y, int z) =>
         Noise.OctavePerlin(x, y, z, nOctaves: 4, scale: 50);
 
-    private bool IsVoxelExposed(Chunk chunk, Vector3Byte localPosition)
+    private void RemoveUnexposedVoxels(Chunk chunk)
     {
-        Vector3Int neighbor = new();
+        Dictionary<Vector3Byte, VoxelType> exposedVoxels = new();
+
+        // Check if the voxel is exposed (has at least one neighbor that is empty)
+        foreach (var voxel in chunk.VoxelData)
+        {
+            bool funcIsExposed = false;
+            bool isExposed = IterateAdjacentVoxels(chunk, voxel.Key, (Vector3Byte adjacentLocalPosition) =>
+            {
+                // If the neighbor voxel is empty, the current voxel is exposed
+                if (!chunk.HasVoxel(adjacentLocalPosition))
+                    if (!funcIsExposed)
+                        funcIsExposed = true;
+            }, continueOnEdgeCases: false);
+
+            if (isExposed)
+                exposedVoxels.Add(voxel.Key, voxel.Value);
+            else if (funcIsExposed)
+                exposedVoxels.Add(voxel.Key, voxel.Value);
+        }
+
+        foreach (var voxel in exposedVoxels.Keys.ToArray())
+            IterateAdjacentVoxels(chunk, voxel, (Vector3Byte adjacentLocalPosition) =>
+            {
+                if (!exposedVoxels.ContainsKey(adjacentLocalPosition))
+                    if (chunk.VoxelData.ContainsKey(adjacentLocalPosition))
+                        exposedVoxels.Add(adjacentLocalPosition, VoxelType.Air);
+                    else
+                        exposedVoxels.Add(adjacentLocalPosition, VoxelType.None);
+            });
+
+        chunk.VoxelData.Clear();
+        chunk.VoxelData = exposedVoxels;
+    }
+
+    private bool IterateAdjacentVoxels(Chunk chunk, Vector3Byte localPosition, Action<Vector3Byte> func, bool continueOnEdgeCases = true)
+    {
+        Vector3Int adjacentVoxel = new();
 
         foreach (var direction in Vector3Int.Directions)
         {
-            neighbor.X = direction.X + localPosition.X;
-            neighbor.Y = direction.Y + localPosition.Y;
-            neighbor.Z = direction.Z + localPosition.Z;
+            adjacentVoxel.X = direction.X + localPosition.X;
+            adjacentVoxel.Y = direction.Y + localPosition.Y;
+            adjacentVoxel.Z = direction.Z + localPosition.Z;
 
-            // If the neighbor is not withing the bounds of the chunk
-            if (neighbor.X <= 0 || neighbor.X >= Generator.BaseChunkSizeXZ + 1
-             || neighbor.Z <= 0 || neighbor.Z >= Generator.BaseChunkSizeXZ + 1)
+            if (adjacentVoxel.X <= 0 || adjacentVoxel.X >= Generator.BaseChunkSizeXZ + 1
+             || adjacentVoxel.Z <= 0 || adjacentVoxel.Z >= Generator.BaseChunkSizeXZ + 1)
                 continue;
 
-            // If the neighbor is below ground, consider it as solid
-            if (neighbor.Y < 0)
-                return false;
-
             // If the neighbor is outside the world bounds, consider it as empty
-            if (neighbor.Y > Generator.BaseChunkSizeY)
-                return true;
+            if (adjacentVoxel.Y > Generator.BaseChunkSizeY)
+                if (continueOnEdgeCases) continue;
+                else return true;
+
+            // If the neighbor is below ground, consider it as solid
+            if (adjacentVoxel.Y < 0)
+                if (continueOnEdgeCases) continue;
+                else return false;
 
             // If the neighbor voxel is empty, the current voxel is exposed
-            if (!chunk.HasVoxel(new(neighbor.X, neighbor.Y, neighbor.Z)))
-                return true;
+            func.Invoke(new(adjacentVoxel.X, adjacentVoxel.Y, adjacentVoxel.Z));
         }
 
         // All neighbors are solid and the voxel is not exposed
         return false;
     }
-
-    //private void RemoveUnexposedVoxels()
-    //{
-    //    Stack<Vector3Byte> unexposedVoxelsToRemove = new();
-    //    // Check if the voxel is not exposed (has no neighbor that is empty)
-    //    foreach (var voxel in chunk.VoxelData)
-    //        if (!IsVoxelExposed(chunk, voxel.Key))
-    //            unexposedVoxelsToRemove.Push(voxel.Key);
-
-    //    foreach (var voxel in unexposedVoxelsToRemove)
-    //        chunk.VoxelData.Remove(voxel);
-    //}
 }
