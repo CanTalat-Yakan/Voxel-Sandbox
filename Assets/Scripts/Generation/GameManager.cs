@@ -37,18 +37,24 @@ public class GameManager : Component
         Thread thread = new(() =>
         {
             while (true)
-            {
                 if (Generator.ChunksToGenerate.Any())
+                {
+                    Profiler.Start(out var stopwatch);
                     NoiseSampler.GenerateChunkContent(Generator.ChunksToGenerate.Dequeue());
-            }
+                    Output.Log($"CB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                    Profiler.Stop(stopwatch, "Chunks Generation");
+                }
         });
         Thread thread2 = new(() =>
         {
             while (true)
-            {
                 if (Generator.ChunksToBuild.Any())
+                {
+                    Profiler.Start(out var stopwatch);
                     MeshBuilder.GenerateMesh(Generator.ChunksToBuild.Dequeue());
-            }
+                    Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                    Profiler.Stop(stopwatch, "Mesh Generation");
+                }
         });
 
         thread.Start();
