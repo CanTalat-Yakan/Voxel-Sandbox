@@ -11,17 +11,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;NET;NET8_0;</DefineConstants>
   </PropertyGroup>
-
-  <ItemGroup>
-	<Folder Include="Assets\Shaders\" />
-  </ItemGroup>
   
   <ItemGroup>
    	<None Remove="FodyWeavers.xml" />
   </ItemGroup>
 
   <ItemGroup>
-  	<PackageReference Include="3DEngine" Version="3.0.15" />
+  	<PackageReference Include="3DEngine" Version="3.0.17" />
   	<PackageReference Include="AVX2PerlinNoise" Version="2.0.0" />
   	<PackageReference Include="Costura.Fody" Version="5.7.0">
   	  <PrivateAssets>all</PrivateAssets>
@@ -29,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	<Content Update="C:\Users\Can\.nuget\packages\3dengine\3.0.15\contentFiles\any\net8.0-windows10.0.22621\Assets\Resources\**\*">
+	<Content Update="C:\Users\Can\.nuget\packages\3dengine\3.0.17\contentFiles\any\net8.0-windows10.0.22621\Assets\Resources\**\*">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Content>
     <None Update="Assets\**\*">

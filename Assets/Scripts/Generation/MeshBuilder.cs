@@ -4,6 +4,7 @@ using Engine;
 using Engine.Components;
 using Engine.DataStructures;
 using Engine.Helper;
+using Engine.Utilities;
 
 namespace VoxelSandbox;
 
@@ -34,7 +35,7 @@ public class MeshBuilder
         chunk.Mesh = entity.AddComponent<Mesh>();
         chunk.Mesh.SetMeshData(Kernel.Instance.Context.CreateMeshData(indices, vertices.ToFloats(), positions));
         chunk.Mesh.SetMaterialTextures([new("TextureAtlasBig.png", 0)]);
-        chunk.Mesh.SetMaterialPipeline("SimpleLit");
+        chunk.Mesh.SetMaterialPipeline("VoxelShader");
     }
 
     private void AddVoxelFaces(Chunk chunk, int voxelSize, Vector3Byte voxelPosition, VoxelType voxelType, List<Vertex> vertices, List<int> indices)
@@ -70,8 +71,14 @@ public class MeshBuilder
     {
         var faceVertices = new Vector3[4];
 
+        // Get the indexed texture coordinate of the atlas
+        Vector2 atlasUV = TextureAtlas.GetTextureCoordinate((int)voxelType);
+        float atlasTileSize = TextureAtlas.AtlasTileSize;
+        string enumName = voxelType.ToString();
+
         // Compute the vertices of the face based on normal direction
         if (normal == Vector3Int.Top)
+        {
             faceVertices =
             [
                 new Vector3(voxelPosition.X,         voxelPosition.Y + 1,     voxelPosition.Z    ) * voxelSize,
@@ -79,6 +86,10 @@ public class MeshBuilder
                 new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z + 1) * voxelSize,
                 new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z    ) * voxelSize,
             ];
+
+            if (Enum.IsDefined(typeof(VoxelType), enumName + "_Top"))
+                atlasUV = TextureAtlas.GetTextureCoordinate((int)Enum.Parse(typeof(VoxelType), enumName + "_Top"));
+        }
         else if (normal == Vector3Int.Bottom)
             faceVertices =
             [
@@ -120,15 +131,11 @@ public class MeshBuilder
                 new Vector3(voxelPosition.X + 1,     voxelPosition.Y,         voxelPosition.Z    ) * voxelSize,
             ];
 
-        // Get the indexed texture coordinate of the atlas texture array
-        Vector2 atlasUV = TextureAtlas.GetTextureCoordinate((int)voxelType);
-        float textureSize = TextureAtlas.TextureSize;
-
         // Add vertices
-        vertices.Add(new Vertex(faceVertices[0], normal.ToVector3(), tangent.ToVector3(), Vector2.One * textureSize + atlasUV));
-        vertices.Add(new Vertex(faceVertices[1], normal.ToVector3(), tangent.ToVector3(), Vector2.UnitX * textureSize + atlasUV));
-        vertices.Add(new Vertex(faceVertices[2], normal.ToVector3(), tangent.ToVector3(), Vector2.Zero * textureSize + atlasUV));
-        vertices.Add(new Vertex(faceVertices[3], normal.ToVector3(), tangent.ToVector3(), Vector2.UnitY * textureSize + atlasUV));
+        vertices.Add(new Vertex(faceVertices[0], normal.ToVector3(), tangent.ToVector3(), Vector2.One * atlasTileSize + atlasUV));
+        vertices.Add(new Vertex(faceVertices[1], normal.ToVector3(), tangent.ToVector3(), Vector2.UnitX * atlasTileSize + atlasUV));
+        vertices.Add(new Vertex(faceVertices[2], normal.ToVector3(), tangent.ToVector3(), Vector2.Zero * atlasTileSize + atlasUV));
+        vertices.Add(new Vertex(faceVertices[3], normal.ToVector3(), tangent.ToVector3(), Vector2.UnitY * atlasTileSize + atlasUV));
 
         // Add indices
         int startIndex = vertices.Count;

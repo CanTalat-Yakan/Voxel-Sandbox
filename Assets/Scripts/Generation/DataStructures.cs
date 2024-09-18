@@ -12,14 +12,13 @@ public enum VoxelType
 public class TextureAtlas()
 {
     public static int Resolution = 2048;
-    public static int Columns = 2;
-    public static int Rows = 2;
+    public static int RowsColumns = 2;
 
-    public static float TextureSize = 1.0f / Columns;
+    public static float AtlasTileSize = 1.0f / RowsColumns;
 
     public static Vector2 GetTextureCoordinate(int index) =>
-        new(TextureSize * (index % Columns),
-            TextureSize * (index / Rows));
+        new(AtlasTileSize * (index % RowsColumns),
+            AtlasTileSize * (index / RowsColumns));
 }
 
 public struct Vector3Byte

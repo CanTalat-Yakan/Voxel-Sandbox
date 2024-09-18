@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
-
+using Engine;
 using Engine.Components;
 using Engine.ECS;
 using Engine.Loader;
@@ -21,8 +21,9 @@ public class GameManager : Component
     public override void OnAwake()
     {
         Instance = this;
-
+         
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlasBig.png");
+        Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
         _camera.Entity.Transform.LocalPosition += Vector3.UnitY * 80;
         _camera.Entity.Transform.EulerAngles = Vector3.Zero;

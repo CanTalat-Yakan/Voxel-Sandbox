@@ -14,26 +14,31 @@ public class NoiseSampler
             for (int z = 0; z <= Generator.BaseChunkSizeXZ + 1; z++)
             {
                 int surfaceHeight = GetSurfaceHeight(x + chunk.WorldPosition.X, z + chunk.WorldPosition.Z);
-                int undergroundDetail = GetSurfaceDetail(x + chunk.WorldPosition.X, z + chunk.WorldPosition.Z);
-                undergroundDetail = 20;
+                int undergroundDetail = GetUndergroundDetail(x + chunk.WorldPosition.X, z + chunk.WorldPosition.Z);
                 int bedrockHeight = random.Next(5);
 
                 for (int y = 0; y < Generator.BaseChunkSizeY; y++)
                     // Only generate solid voxels below the surface
                     if (surfaceHeight > y)
                     {
+                        Vector3Byte voxelPosition = new(x, y, z);
+
                         // Check cave noise to determine if this voxel should be empty (cave)
-                        if (surfaceHeight > y + undergroundDetail && y > undergroundDetail)
+                        if (y < undergroundDetail)
+                            chunk.SetVoxel(voxelPosition, y < bedrockHeight ? VoxelType.Stone : VoxelType.Stone);
+                        else if (y + undergroundDetail < surfaceHeight)
                         {
                             double caveValue = GetCaveNoise(x + chunk.WorldPosition.X, y * 2, z + chunk.WorldPosition.Z);
 
                             if ((caveValue < 0.25 || caveValue > 0.6))
                                 continue;
 
-                            chunk.SetVoxel(new(x, y, z), VoxelType.Stone);
+                            chunk.SetVoxel(voxelPosition, VoxelType.Stone);
                         }
+                        else if (y + undergroundDetail - 5 < surfaceHeight)
+                            chunk.SetVoxel(voxelPosition, VoxelType.Stone);
                         else
-                            chunk.SetVoxel(new(x, y, z), VoxelType.Grass);
+                            chunk.SetVoxel(voxelPosition, VoxelType.Grass);
                     }
             }
 
@@ -45,8 +50,8 @@ public class NoiseSampler
     private int GetSurfaceHeight(int x, int z) =>
         (int)(Noise.OctavePerlin(x, 0, z, scale: 100) * 75) + 100;
 
-    private int GetSurfaceDetail(int x, int z) =>
-        (int)(Noise.OctavePerlin(x, 0, z, scale: 10) * 75) + 100;
+    private int GetUndergroundDetail(int x, int z) =>
+        (int)(Noise.OctavePerlin(x, 0, z, scale: 10) * 50);
 
     private double GetCaveNoise(int x, int y, int z) =>
         Noise.OctavePerlin(x, y, z, nOctaves: 4, scale: 50);
