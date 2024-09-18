@@ -72,7 +72,7 @@ public class NoiseSampler
             }
 
             bool funcIsExposed = false;
-            bool isExposed = IterateAdjacentVoxels(chunk, voxel.Key, (Vector3Byte adjacentLocalPosition) =>
+            bool isExposed = IterateAdjacentVoxels(voxel.Key, (Vector3Byte adjacentLocalPosition) =>
             {
                 // If the neighbor voxel is empty, the current voxel is exposed
                 if (!chunk.HasVoxel(adjacentLocalPosition))
@@ -87,7 +87,7 @@ public class NoiseSampler
         }
 
         foreach (var voxel in exposedVoxels.Keys.ToArray())
-            IterateAdjacentVoxels(chunk, voxel, (Vector3Byte adjacentLocalPosition) =>
+            IterateAdjacentVoxels(voxel, (Vector3Byte adjacentLocalPosition) =>
             {
                 if (!exposedVoxels.ContainsKey(adjacentLocalPosition))
                     if (chunk.VoxelData.ContainsKey(adjacentLocalPosition))
@@ -100,7 +100,7 @@ public class NoiseSampler
         chunk.VoxelData = exposedVoxels;
     }
 
-    private bool IterateAdjacentVoxels(Chunk chunk, Vector3Byte localPosition, Action<Vector3Byte> func, bool continueOnEdgeCases = true)
+    private bool IterateAdjacentVoxels(Vector3Byte localPosition, Action<Vector3Byte> action, bool continueOnEdgeCases = true)
     {
         Vector3Int adjacentVoxel = new();
 
@@ -125,7 +125,7 @@ public class NoiseSampler
                 else return false;
 
             // If the neighbor voxel is empty, the current voxel is exposed
-            func.Invoke(new(adjacentVoxel.X, adjacentVoxel.Y, adjacentVoxel.Z));
+            action.Invoke(new(adjacentVoxel.X, adjacentVoxel.Y, adjacentVoxel.Z));
         }
 
         // All neighbors are solid and the voxel is not exposed
