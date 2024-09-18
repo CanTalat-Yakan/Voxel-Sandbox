@@ -17,7 +17,6 @@ public class GameManager : Component
     public MeshBuilder MeshBuilder = new();
     public NoiseSampler NoiseSampler = new();
 
-    private Camera _camera;
     private float _timer = 0;
 
     public override void OnAwake()
@@ -39,11 +38,9 @@ public class GameManager : Component
                 MeshBuilder.GenerateMesh(Generator.ChunksToBuild.Dequeue());
         }
 
-        var controller = Entity.Manager.CreateEntity(name: "Controller");
-        _camera = Entity.Manager.CreateCamera(parent: controller);
-        _camera.Entity.Transform.SetPosition(y: 152);
-        _camera.Entity.Transform.EulerAngles = Vector3.Zero;
-        _camera.Entity.AddComponent<PlayerMovement>();
+        var controller = Entity.Manager.CreateCamera(name: "Controller").Entity;
+        controller.Transform.SetPosition(y: 152);
+        controller.AddComponent<PlayerMovement>();
     }
 
     public override void OnStart()

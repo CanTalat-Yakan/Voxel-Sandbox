@@ -47,22 +47,16 @@ public class MeshBuilder
 
             Vector3Byte adjacentVoxelPosition = voxelPosition + normal;
 
-            bool removedUnexposedVoxels = true;
-            if (removedUnexposedVoxels)
-            {
-                //Check if the adjacent voxel is an empty voxel
-                if (chunk.GetVoxel(voxelPosition, out var voxelTypeCheck))
-                    if ((voxelTypeCheck is not VoxelType.None) && (voxelTypeCheck is not VoxelType.Air))
-                    {
-                        if (!chunk.IsWithinBounds(adjacentVoxelPosition))
+            //Check if the adjacent voxel is an empty voxel
+            if (chunk.GetVoxel(voxelPosition, out var voxelTypeCheck))
+                if ((voxelTypeCheck is not VoxelType.None) && (voxelTypeCheck is not VoxelType.Air))
+                {
+                    if (!chunk.IsWithinBounds(adjacentVoxelPosition))
+                        AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
+                    else if (chunk.GetVoxel(adjacentVoxelPosition, out var adjacentVoxelTypeCheck))
+                        if (adjacentVoxelTypeCheck is VoxelType.None)
                             AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
-                        else if (chunk.GetVoxel(adjacentVoxelPosition, out var adjacentVoxelTypeCheck))
-                            if (adjacentVoxelTypeCheck is VoxelType.None)
-                                AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
-                    }
-            }
-            else if (!chunk.HasVoxel(adjacentVoxelPosition))
-                AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
+                }
         }
     }
 

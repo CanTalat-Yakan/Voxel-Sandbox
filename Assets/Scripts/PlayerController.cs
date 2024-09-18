@@ -1,9 +1,11 @@
 using System.Numerics;
+
+using Vortice.DirectInput;
+
 using Engine.Components;
 using Engine.ECS;
 using Engine.Helper;
 using Engine.Utilities;
-using Vortice.DirectInput;
 
 namespace VoxelSandbox
 {
@@ -18,22 +20,22 @@ namespace VoxelSandbox
         public float JumpForce = 7.5f;
 
         // Player dimensions
-        public float PlayerHeight = 1.8f; // Adjust based on your player model
-        public float PlayerWidth = 0.6f;   // Adjust based on your player model
-        public float PlayerDepth = 0.6f;   // Adjust based on your player model
+        public float PlayerHeight = 1.8f;
+        public float PlayerWidth = 0.6f;
+        public float PlayerDepth = 0.6f;
 
         // Step settings
-        public float StepHeight = 0.6f; // Maximum height the player can step over
+        public float StepHeight = 0.6f;
 
         private Vector3 _velocity;
-        private Vector2 _cameraRotation;
+        private Vector3 _euler;
+
         private bool _isGrounded = false;
 
         public override void OnUpdate()
         {
             HandleMovement();
             HandleRotation();
-            UpdateTransform();
         }
 
         private void HandleMovement()
@@ -106,9 +108,7 @@ namespace VoxelSandbox
                     finalPosition.Y = groundY + PlayerHeight;
                 }
                 else
-                {
                     _isGrounded = false;
-                }
             }
             // Check for ceiling collision
             else if (_velocity.Y > 0)
@@ -203,22 +203,16 @@ namespace VoxelSandbox
 
             // Loop through all voxels that the bounding box occupies
             for (int x = (int)Math.Floor(minX); x <= (int)Math.Floor(maxX); x++)
-            {
                 for (int y = (int)Math.Floor(minY); y <= (int)Math.Floor(maxY); y++)
-                {
                     for (int z = (int)Math.Floor(minZ); z <= (int)Math.Floor(maxZ); z++)
                     {
                         Vector3Int voxelPosition = new Vector3Int(x, y, z);
                         Generator.GetChunkFromPosition(voxelPosition, out var chunk, out var localVoxelPosition);
 
                         if (chunk != null && chunk.GetVoxel(localVoxelPosition, out var voxelType) && voxelType != VoxelType.None)
-                        {
                             // Collision detected
                             return true;
-                        }
                     }
-                }
-            }
 
             // No collision detected
             return false;
@@ -226,30 +220,17 @@ namespace VoxelSandbox
 
         private void HandleRotation()
         {
-            if (!Input.GetButton(MouseButton.Right))
-                return;
+            Vector2 mouseDelta = Input.GetMouseDelta();
 
-            var mouseInput = Input.GetMouseDelta();
-            _cameraRotation.Y -= mouseInput.X * RotationSpeed * Time.DeltaF;
-            _cameraRotation.X -= mouseInput.Y * RotationSpeed * Time.DeltaF;
-            _cameraRotation.X = Math.Clamp(_cameraRotation.X, -89f, 89f);
-        }
+            _euler.X = mouseDelta.Y;
+            _euler.Y = mouseDelta.X;
 
-        private void UpdateTransform()
-        {
-            // Update rotation
-            if (_cameraRotation.IsNaN())
-                return;
+            Entity.Transform.EulerAngles -= _euler * Time.DeltaF * RotationSpeed;
 
-            Entity.Transform.EulerAngles = Vector3.UnitY * _cameraRotation.Y;
-
-            if (Camera.Main != null)
-            {
-                // Set camera rotation
-                Camera.Main.Entity.Transform.EulerAngles = Vector3.UnitX * _cameraRotation.X;
-
-                Camera.Main.Entity.Transform.LocalPosition = Entity.Transform.LocalPosition;
-            }
+            // Clamp Vertical Rotation to ~90 degrees up and down.
+            var clampedEuler = Entity.Transform.EulerAngles;
+            clampedEuler.X = Math.Clamp(clampedEuler.X, -89, 89);
+            Entity.Transform.EulerAngles = clampedEuler;
         }
     }
 }
