@@ -31,9 +31,17 @@ public class GameManager : Component
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlasBig.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
+        for (int i = 0; i < 4; i++)
+        {
+            if (Generator.ChunksToGenerate.Any())
+                NoiseSampler.GenerateChunkContent(Generator.ChunksToGenerate.Dequeue());
+            if (Generator.ChunksToBuild.Any())
+                MeshBuilder.GenerateMesh(Generator.ChunksToBuild.Dequeue());
+        }
+
         var controller = Entity.Manager.CreateEntity(name: "Controller");
         _camera = Entity.Manager.CreateCamera(parent: controller);
-        _camera.Entity.Transform.SetPosition(y: 384);
+        _camera.Entity.Transform.SetPosition(y: 152);
         _camera.Entity.Transform.EulerAngles = Vector3.Zero;
         _camera.Entity.AddComponent<PlayerMovement>();
     }
@@ -50,7 +58,7 @@ public class GameManager : Component
                 {
                     Profiler.Start(out var stopwatch);
                     NoiseSampler.GenerateChunkContent(Generator.ChunksToGenerate.Dequeue());
-                    Output.Log($"CB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                    //Output.Log($"CB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
                     Profiler.Stop(stopwatch, "Chunks Generation");
                 }
         });
@@ -61,7 +69,7 @@ public class GameManager : Component
                 {
                     Profiler.Start(out var stopwatch);
                     MeshBuilder.GenerateMesh(Generator.ChunksToBuild.Dequeue());
-                    Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                    //Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
                     Profiler.Stop(stopwatch, "Mesh Generation");
                 }
         });
