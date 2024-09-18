@@ -33,7 +33,7 @@ public class MeshBuilder
 
         chunk.Mesh = entity.AddComponent<Mesh>();
         chunk.Mesh.SetMeshData(Kernel.Instance.Context.CreateMeshData(indices, vertices.ToFloats(), positions));
-        chunk.Mesh.SetMaterialTextures([new("TextureAtlasBig.png", 0)]);
+        chunk.Mesh.SetMaterialTextures([new("TextureAtlasBig2.png", 0)]);
         chunk.Mesh.SetMaterialPipeline("VoxelShader");
     }
 
@@ -84,6 +84,7 @@ public class MeshBuilder
                 atlasUV = TextureAtlas.GetTextureCoordinate((int)Enum.Parse(typeof(VoxelType), enumName + "_Top"));
         }
         else if (normal == Vector3Int.Bottom)
+        {
             faceVertices =
             [
                 new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z    ) * voxelSize,
@@ -91,6 +92,10 @@ public class MeshBuilder
                 new Vector3(voxelPosition.X + 1,     voxelPosition.Y,         voxelPosition.Z + 1) * voxelSize,
                 new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z + 1) * voxelSize,
             ];
+
+            if (Enum.IsDefined(typeof(VoxelType), enumName + "_Bottom"))
+                atlasUV = TextureAtlas.GetTextureCoordinate((int)Enum.Parse(typeof(VoxelType), enumName + "_Bottom"));
+        }
         else if (normal == Vector3Int.Right)
             faceVertices =
             [

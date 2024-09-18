@@ -8,13 +8,23 @@ public enum VoxelType
     Stone,
     Grass,
     Grass_Top,
+    Dirt,
+    Sand,
+    Sandstone,
+    Sandstone_Top,
+    Sandstone_Bottom,
+    IronOre,
+    DiamondOre,
+    Log,
+    Log_Top,
+    Leaves,
     Air,
 }
 
 public class TextureAtlas()
 {
     public static int Resolution = 2048;
-    public static int RowsColumns = 2;
+    public static int RowsColumns = 4;
 
     public static float AtlasTileSize = 1.0f / RowsColumns;
 

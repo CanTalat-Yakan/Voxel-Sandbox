@@ -27,7 +27,7 @@ public class GameManager : Component
             if (entity.Data.Tag != "DefaultSky")
                 Entity.Manager.DestroyEntity(entity);
 
-        ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlasBig.png");
+        ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlasBig2.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
         var controller = Entity.Manager.CreateCamera(name: "Controller").Entity;
