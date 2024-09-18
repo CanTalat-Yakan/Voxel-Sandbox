@@ -27,7 +27,7 @@ public class NoiseSampler
                         {
                             double caveValue = GetCaveNoise(x + chunk.WorldPosition.X, y * 2, z + chunk.WorldPosition.Z);
 
-                            if ((caveValue < 0.45 || caveValue > 0.6))
+                            if ((caveValue < 0.25 || caveValue > 0.6))
                                 continue;
 
                             chunk.SetVoxel(new(x, y, z), VoxelType.Stone);
@@ -58,6 +58,14 @@ public class NoiseSampler
         // Check if the voxel is exposed (has at least one neighbor that is empty)
         foreach (var voxel in chunk.VoxelData)
         {
+            // Set border voxels as exposed
+            if (!chunk.IsWithinBounds(voxel.Key))
+            {
+                exposedVoxels.Add(voxel.Key, voxel.Value);
+
+                continue;
+            }
+
             bool funcIsExposed = false;
             bool isExposed = IterateAdjacentVoxels(chunk, voxel.Key, (Vector3Byte adjacentLocalPosition) =>
             {
@@ -99,7 +107,7 @@ public class NoiseSampler
 
             if (adjacentVoxel.X <= 0 || adjacentVoxel.X >= Generator.BaseChunkSizeXZ + 1
              || adjacentVoxel.Z <= 0 || adjacentVoxel.Z >= Generator.BaseChunkSizeXZ + 1)
-                continue;
+                if (continueOnEdgeCases) continue;
 
             // If the neighbor is outside the world bounds, consider it as empty
             if (adjacentVoxel.Y > Generator.BaseChunkSizeY)

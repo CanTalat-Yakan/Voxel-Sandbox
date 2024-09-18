@@ -53,9 +53,13 @@ public class MeshBuilder
                 //Check if the adjacent voxel is an empty voxel
                 if (chunk.GetVoxel(voxelPosition, out var voxelTypeCheck))
                     if ((voxelTypeCheck != VoxelType.None) && (voxelTypeCheck != VoxelType.Air))
-                        if (chunk.GetVoxel(adjacentVoxelPosition, out var adjacentVoxelTypeCheck))
+                    {
+                        if (!chunk.IsWithinBounds(adjacentVoxelPosition))
+                            AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
+                        else if (chunk.GetVoxel(adjacentVoxelPosition, out var adjacentVoxelTypeCheck))
                             if (adjacentVoxelTypeCheck == VoxelType.None)
                                 AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
+                    }
             }
             else if (!chunk.HasVoxel(adjacentVoxelPosition))
                 AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
