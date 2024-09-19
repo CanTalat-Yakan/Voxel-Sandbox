@@ -23,19 +23,18 @@ public enum VoxelType : byte
 
 public struct VoxelData()
 {
-    public Vector3Byte Position { get; private set; }
     public VoxelType Type { get; private set; }
 
     public bool Empty => !Exists;
     public bool Exists => _exists == -42069;
     private int _exists;
 
-    public void SetVoxel(Vector3Byte position, VoxelType type)
+    public VoxelData Set(VoxelType type)
     {
-        Position = position;
         Type = type;
-
         _exists = -42069;
+
+        return this;
     }
 }
 
@@ -105,7 +104,7 @@ public struct Vector3Byte
 
     public static Vector3Byte operator -(Vector3Byte a, Vector3 b) =>
         new(a.X - (int)b.X, a.Y - (int)b.Y, a.Z - (int)b.Z);
-    
+
     public static Vector3Byte operator +(Vector3Byte a, Vector3Int b) =>
         new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 

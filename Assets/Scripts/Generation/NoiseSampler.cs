@@ -36,7 +36,8 @@ public class NoiseSampler
 
     private Random _random = new();
 
-    private Dictionary<int, Dictionary<Vector3Byte, VoxelType>> _rentablePools = new();
+    private Dictionary<int, Dictionary<Vector3Byte, VoxelData>> _rentableDictionaries = new();
+    private List<Dictionary<Vector3Byte, VoxelData>> _pool = new();
 
     public const int BaseChunkSizeXZ = Generator.ChunkSizeXZ + 2;
     public const int BaseChunkSizeY = Generator.ChunkSizeY + 2;
@@ -45,8 +46,10 @@ public class NoiseSampler
     public void GenerateChunkContent(Chunk chunk)
     {
         int threadID = _random.Next(0, 100);
-        var voxelArray = _rentablePools.Rent(BaseChunkTotalVoxelCount / 2);
-        _rentablePools.Add(threadID, voxelArray);
+        if (!_pool.Any())
+            _pool.Add(new(BaseChunkTotalVoxelCount));
+        _rentableDictionaries.Add(threadID, _pool.First());
+        var voxelArray = _rentableDictionaries[threadID];
 
         for (int x = 0; x <= Generator.ChunkSizeXZ + 1; x++)
             for (int z = 0; z <= Generator.ChunkSizeXZ + 1; z++)
@@ -62,7 +65,7 @@ public class NoiseSampler
 
                         // Check cave noise to determine if this voxel should be empty (cave)
                         if (y < undergroundDetail)
-                            voxelArray[GetIndex(voxelPosition)].SetVoxel(voxelPosition, VoxelType.Stone);
+                            voxelArray[voxelPosition] = new VoxelData().Set(VoxelType.Stone);
                         else if (y + undergroundDetail < surfaceHeight)
                         {
                             double caveValue = GetCaveNoise(x + chunk.WorldPosition.X, y * 2, z + chunk.WorldPosition.Z);
@@ -70,12 +73,12 @@ public class NoiseSampler
                             if (caveValue < 0.25 || caveValue > 0.6)
                                 continue;
 
-                            voxelArray[GetIndex(voxelPosition)].SetVoxel(voxelPosition, VoxelType.Stone);
+                            voxelArray[voxelPosition] = new VoxelData().Set(VoxelType.Stone);
                         }
                         else if (y + undergroundDetail - 5 < surfaceHeight)
-                            voxelArray[GetIndex(voxelPosition)].SetVoxel(voxelPosition, VoxelType.Stone);
+                            voxelArray[voxelPosition] = new VoxelData().Set(VoxelType.Stone);
                         else
-                            voxelArray[GetIndex(voxelPosition)].SetVoxel(voxelPosition, VoxelType.Grass);
+                            voxelArray[voxelPosition] = new VoxelData().Set(VoxelType.Grass);
                     }
             }
 
@@ -83,8 +86,8 @@ public class NoiseSampler
 
         GameManager.Instance.Generator.ChunksToBuild.Enqueue(chunk);
 
-        _pool.Return(voxelArray);
-        _rentablePools.Remove(threadID);
+        _pool.Add(voxelArray);
+        _rentableDictionaries.Remove(threadID);
     }
 
     private int GetSurfaceHeight(int x, int z) =>
@@ -98,38 +101,38 @@ public class NoiseSampler
 
     private void RemoveUnexposedVoxels(Chunk chunk, int threadID)
     {
-        var voxelArray = _rentablePools[threadID];
+        var voxelArray = _rentableDictionaries[threadID];
 
         // Check if the voxel is exposed (has at least one neighbor that is empty)
         foreach (var voxel in voxelArray)
         {
-            if (!voxel.Exists)
+            if (!voxel.Value.Exists)
                 continue;
 
             // Set border voxels as exposed
-            if (!chunk.IsWithinBounds(voxel.Position))
+            if (!chunk.IsWithinBounds(voxel.Key))
             {
-                chunk.VoxelData.Add(voxel.Position, voxel.Type);
+                chunk.VoxelData.Add(voxel.Key, voxel.Value.Type);
                 continue;
             }
 
             bool IsVoxelExposed = false;
-            bool IsEdgeCaseExposed = IterateAdjacentVoxels(voxel.Position, (Vector3Byte adjacentLocalPosition) =>
+            bool IsEdgeCaseExposed = IterateAdjacentVoxels(voxel.Key, (Vector3Byte adjacentLocalPosition) =>
             {
                 // If the adjacent voxel is empty, the current voxel is exposed
-                if (voxelArray[GetIndex(adjacentLocalPosition)].Empty && !IsVoxelExposed)
+                if (voxelArray[adjacentLocalPosition].Empty && !IsVoxelExposed)
                     IsVoxelExposed = true;
             }, continueOnEdgeCases: false);
 
             if (IsEdgeCaseExposed || IsVoxelExposed)
-                chunk.VoxelData.Add(voxel.Position, voxel.Type);
+                chunk.VoxelData.Add(voxel.Key, voxel.Value.Type);
         }
 
         foreach (var voxel in chunk.VoxelData.Keys.ToArray())
             IterateAdjacentVoxels(voxel, (Vector3Byte adjacentLocalPosition) =>
             {
                 if (!chunk.VoxelData.ContainsKey(adjacentLocalPosition))
-                    if (voxelArray[GetIndex(adjacentLocalPosition)].Exists)
+                    if (voxelArray[adjacentLocalPosition].Exists)
                         chunk.VoxelData.Add(adjacentLocalPosition, VoxelType.None);
                     else
                         chunk.VoxelData.Add(adjacentLocalPosition, VoxelType.Air);
@@ -167,7 +170,4 @@ public class NoiseSampler
         // All neighbors are solid and the voxel is not exposed
         return false;
     }
-
-    public static int GetIndex(Vector3Byte position) =>
-        position.X + (BaseChunkSizeXZ * position.Z) + (BaseChunkSizeY * position.Y);
 }
