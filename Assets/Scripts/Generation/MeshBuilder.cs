@@ -54,7 +54,7 @@ public class MeshBuilder
                     if (!chunk.IsWithinBounds(adjacentVoxelPosition))
                         AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
                     else if (chunk.GetVoxel(adjacentVoxelPosition, out var adjacentVoxelTypeCheck))
-                        if (adjacentVoxelTypeCheck is VoxelType.None)
+                        if (adjacentVoxelTypeCheck is VoxelType.Air)
                             AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
                 }
         }

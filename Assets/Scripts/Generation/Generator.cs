@@ -6,8 +6,8 @@ public class Generator
     // Dictionary to store generated chunks by LOD level
     public static Dictionary<int, Dictionary<Vector3Int, Chunk>> GeneratedChunks = new();
 
-    public const int BaseChunkSizeXZ = 32;
-    public const int BaseChunkSizeY = 384;
+    public const int ChunkSizeXZ = 32;
+    public const int ChunkSizeY = 384;
     public readonly int[] LODSizes = { 32, 64, 128 };
 
     public Queue<Chunk> ChunksToGenerate = new();
@@ -27,13 +27,13 @@ public class Generator
         Vector3Int chunkPosition = new Vector3Int();
         chunkPosition.Y = 0;
 
-        chunkPosition.X = worldPosition.X / BaseChunkSizeXZ * BaseChunkSizeXZ;
-        if (worldPosition.X < 0 && (worldPosition.X % BaseChunkSizeXZ) != 0)
-            chunkPosition.X -= BaseChunkSizeXZ;
+        chunkPosition.X = worldPosition.X / ChunkSizeXZ * ChunkSizeXZ;
+        if (worldPosition.X < 0 && (worldPosition.X % ChunkSizeXZ) != 0)
+            chunkPosition.X -= ChunkSizeXZ;
 
-        chunkPosition.Z = worldPosition.Z / BaseChunkSizeXZ * BaseChunkSizeXZ;
-        if (worldPosition.Z < 0 && (worldPosition.Z % BaseChunkSizeXZ) != 0)
-            chunkPosition.Z -= BaseChunkSizeXZ;
+        chunkPosition.Z = worldPosition.Z / ChunkSizeXZ * ChunkSizeXZ;
+        if (worldPosition.Z < 0 && (worldPosition.Z % ChunkSizeXZ) != 0)
+            chunkPosition.Z -= ChunkSizeXZ;
 
         chunk = null;
         if (GeneratedChunks[0].ContainsKey(chunkPosition))
@@ -58,9 +58,9 @@ public class Generator
 
         // Calculate the center chunk position for the player
         Vector3Int centerChunkPos = new(
-            worldPosition.X / BaseChunkSizeXZ * BaseChunkSizeXZ,
+            worldPosition.X / ChunkSizeXZ * ChunkSizeXZ,
             0,
-            worldPosition.Z / BaseChunkSizeXZ * BaseChunkSizeXZ);
+            worldPosition.Z / ChunkSizeXZ * ChunkSizeXZ);
 
         foreach (var chunk in GeneratedChunks[lod].Values)
             chunk.Mesh.IsEnabled = false;

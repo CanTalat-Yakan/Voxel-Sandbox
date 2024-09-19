@@ -12,7 +12,7 @@ public class Chunk
     public Vector3Int ScaledPosition => WorldPosition / Size; // Position of the chunk in world space divided by the chunk size (1, 0, 0)
 
     public int Size { get; private set; } // Size of the chunk (32, 64, 128, etc.)
-    public int VoxelSize => Size / Generator.BaseChunkSizeXZ;
+    public int VoxelSize => Size / Generator.ChunkSizeXZ;
 
     public Chunk(Vector3Int worldPosition, int chunkSize)
     {
@@ -24,9 +24,9 @@ public class Chunk
     }
 
     public bool IsWithinBounds(Vector3Byte localPosition) =>
-        localPosition.X >= 1 && localPosition.X <= Generator.BaseChunkSizeXZ
-     && localPosition.Y >= 1 && localPosition.Y <= Generator.BaseChunkSizeY
-     && localPosition.Z >= 1 && localPosition.Z <= Generator.BaseChunkSizeXZ;
+        localPosition.X >= 1 && localPosition.X <= Generator.ChunkSizeXZ
+     && localPosition.Y >= 1 && localPosition.Y <= Generator.ChunkSizeY
+     && localPosition.Z >= 1 && localPosition.Z <= Generator.ChunkSizeXZ;
 
     public bool HasVoxel(Vector3Byte localPosition) =>
         VoxelData.ContainsKey(localPosition);
