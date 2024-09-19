@@ -39,8 +39,8 @@ public class NoiseSampler
                 int surfaceHeight = GetSurfaceHeight(x + chunk.WorldPosition.X * chunk.VoxelSize, z + chunk.WorldPosition.Z * chunk.VoxelSize);
                 int undergroundDetail = GetUndergroundDetail(x + chunk.WorldPosition.X * chunk.VoxelSize, z + chunk.WorldPosition.Z * chunk.VoxelSize);
                 int bedrockHeight = random.Next(5);
-
-                for (int y = 0; y < Generator.LODSizesY[chunk.LevelOfDetail]; y++)
+                
+                for (int y = 0; y < Generator.ChunkSizeY; y += (int)Math.Pow(2, chunk.LevelOfDetail))
                     // Only generate solid voxels below the surface
                     if (y < surfaceHeight)
                     {

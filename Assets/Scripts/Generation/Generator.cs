@@ -8,8 +8,7 @@ public class Generator
 
     public const int ChunkSizeXZ = 32;
     public const int ChunkSizeY = 384;
-    public static readonly int[] LODSizesXZ = { ChunkSizeXZ, ChunkSizeXZ * 2, ChunkSizeXZ * 4 };
-    public static readonly int[] LODSizesY = { ChunkSizeY, ChunkSizeY / 2, ChunkSizeY / 4 };
+    public static readonly int[] LODSizesXZ = { 32, 64, 128 };
 
     public Queue<Chunk> ChunksToGenerate = new();
     public Queue<Chunk> ChunksToBuild = new();
@@ -58,7 +57,7 @@ public class Generator
 
         Func<int, int> currentLOD = i => i / (nativeRadius);
         Func<int, int> chunkSize = i => LODSizesXZ[currentLOD(i)];
-        Func<int, int> currentXZChunkCount = i => currentLOD(i) == 0 ? i : i / (2 * currentLOD(i));
+        Func<int, int> currentXZChunkCount = i => i / (int)Math.Pow(2, currentLOD(i));
 
         // Calculate the center chunk position for the player
         Vector3Int centerChunkPosition = new(
