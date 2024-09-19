@@ -36,8 +36,7 @@ public class NoiseSampler
 
     private Random _random = new();
 
-    private Dictionary<int, VoxelData[]> _rentedArrays = new();
-    private ArrayPool<VoxelData> _pool = ArrayPool<VoxelData>.Shared;
+    private Dictionary<int, Dictionary<Vector3Byte, VoxelType>> _rentablePools = new();
 
     public const int BaseChunkSizeXZ = Generator.ChunkSizeXZ + 2;
     public const int BaseChunkSizeY = Generator.ChunkSizeY + 2;
@@ -46,8 +45,8 @@ public class NoiseSampler
     public void GenerateChunkContent(Chunk chunk)
     {
         int threadID = _random.Next(0, 100);
-        var voxelArray = _pool.Rent(BaseChunkTotalVoxelCount / 2);
-        _rentedArrays.Add(threadID, voxelArray);
+        var voxelArray = _rentablePools.Rent(BaseChunkTotalVoxelCount / 2);
+        _rentablePools.Add(threadID, voxelArray);
 
         for (int x = 0; x <= Generator.ChunkSizeXZ + 1; x++)
             for (int z = 0; z <= Generator.ChunkSizeXZ + 1; z++)
@@ -85,7 +84,7 @@ public class NoiseSampler
         GameManager.Instance.Generator.ChunksToBuild.Enqueue(chunk);
 
         _pool.Return(voxelArray);
-        _rentedArrays.Remove(threadID);
+        _rentablePools.Remove(threadID);
     }
 
     private int GetSurfaceHeight(int x, int z) =>
@@ -99,7 +98,7 @@ public class NoiseSampler
 
     private void RemoveUnexposedVoxels(Chunk chunk, int threadID)
     {
-        var voxelArray = _rentedArrays[threadID];
+        var voxelArray = _rentablePools[threadID];
 
         // Check if the voxel is exposed (has at least one neighbor that is empty)
         foreach (var voxel in voxelArray)
@@ -147,8 +146,8 @@ public class NoiseSampler
             adjacentVoxel.Y = direction.Y + localPosition.Y;
             adjacentVoxel.Z = direction.Z + localPosition.Z;
 
-            if (adjacentVoxel.X <= 0 || adjacentVoxel.X >= Generator.ChunkSizeXZ + 1
-             || adjacentVoxel.Z <= 0 || adjacentVoxel.Z >= Generator.ChunkSizeXZ + 1)
+            if (adjacentVoxel.X <= 0 || adjacentVoxel.X >= BaseChunkSizeXZ
+             || adjacentVoxel.Z <= 0 || adjacentVoxel.Z >= BaseChunkSizeXZ)
                 if (continueOnEdgeCases) continue;
 
             // If the neighbor is outside the world bounds, consider it as empty
