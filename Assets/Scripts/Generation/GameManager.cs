@@ -28,13 +28,8 @@ public class GameManager : Component
         //var controller = Entity.Manager.CreateCamera(name: "Controller").Entity;
         //controller.Transform.SetPosition(y: 152);
         //controller.AddComponent<PlayerMovement>();
+        //controller.AddComponent<RayCaster>().SetCamera(controller);
         //controller.GetComponent<Camera>()[0].FOV = 100;
-
-        //var cube = Entity.Manager.CreatePrimitive().Entity;
-        //cube.Transform.LocalPosition = new(0, 10, 0);
-        //raycaster.SetCube(cube);
-        //var raycaster = controller.AddComponent<RayCaster>();
-        //raycaster.SetCamera(controller);
     }
 
     public override void OnStart()

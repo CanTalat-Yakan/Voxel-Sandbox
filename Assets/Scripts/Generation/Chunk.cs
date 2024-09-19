@@ -9,18 +9,14 @@ public class Chunk
     public Dictionary<Vector3Byte, VoxelType> VoxelData = new();
 
     public Vector3Int WorldPosition { get; private set; } // Position of the chunk in world space (32, 0, 0)
-    public Vector3Int ScaledPosition => WorldPosition / Size; // Position of the chunk in world space divided by the chunk size (1, 0, 0)
 
-    public int Size { get; private set; } // Size of the chunk (32, 64, 128, etc.)
-    public int VoxelSize => Size / Generator.ChunkSizeXZ;
+    public int LevelOfDetail { get; private set; } // Size of the chunk (32, 64, 128, etc.)
+    public int VoxelSize => Generator.LODSizesXZ[LevelOfDetail] / Generator.ChunkSizeXZ;
 
-    public Chunk(Vector3Int worldPosition, int chunkSize)
+    public Chunk(Vector3Int worldPosition, int levelOfDetail)
     {
-        if ((chunkSize & (chunkSize - 1)) != 0 || chunkSize < 32)
-            throw new ArgumentException("Size must be a power of 2 and at least 32.");
-
         WorldPosition = worldPosition;
-        Size = chunkSize;
+        LevelOfDetail = levelOfDetail;
     }
 
     public bool IsWithinBounds(Vector3Byte localPosition) =>

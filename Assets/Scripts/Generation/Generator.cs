@@ -8,7 +8,8 @@ public class Generator
 
     public const int ChunkSizeXZ = 32;
     public const int ChunkSizeY = 384;
-    public readonly int[] LODSizes = { 32, 64, 128 };
+    public static readonly int[] LODSizesXZ = { ChunkSizeXZ, ChunkSizeXZ * 2, ChunkSizeXZ * 4 };
+    public static readonly int[] LODSizesY = { ChunkSizeY, ChunkSizeY / 2, ChunkSizeY / 4 };
 
     public Queue<Chunk> ChunksToGenerate = new();
     public Queue<Chunk> ChunksToBuild = new();
@@ -16,7 +17,7 @@ public class Generator
     public void Initialize(Vector3Int playerPosition)
     {
         // Initialize generatedChunks dictionary for all LOD levels
-        for (int i = 0; i < LODSizes.Length; i++)
+        for (int i = 0; i < LODSizesXZ.Length; i++)
             GeneratedChunks[i] = new();
 
         UpdateChunks(playerPosition);
@@ -52,11 +53,11 @@ public class Generator
 
     private void CalculateChunks(Vector3Int worldPosition)
     {
-        int nativeRadius = 14;
-        int sumLodRadius = nativeRadius * LODSizes.Length;
+        int nativeRadius = 4;
+        int CombinedLODRadius = nativeRadius * LODSizesXZ.Length;
 
-        Func<int, int> currentLOD = i => i / nativeRadius;
-        Func<int, int> chunkSize = i => LODSizes[currentLOD(i)];
+        Func<int, int> currentLOD = i => i / (nativeRadius);
+        Func<int, int> chunkSize = i => LODSizesXZ[currentLOD(i)];
         Func<int, int> currentXZChunkCount = i => currentLOD(i) == 0 ? i : i / (2 * currentLOD(i));
 
         // Calculate the center chunk position for the player
@@ -64,17 +65,17 @@ public class Generator
             worldPosition.X / ChunkSizeXZ * ChunkSizeXZ, 0,
             worldPosition.Z / ChunkSizeXZ * ChunkSizeXZ);
 
-        foreach (var LODChunks in GeneratedChunks.Values)
-            foreach (var chunk in LODChunks.Values)
-                chunk.Mesh.IsEnabled = false;
+        //foreach (var LODChunks in GeneratedChunks.Values)
+        //    foreach (var chunk in LODChunks.Values)
+        //        chunk.Mesh.IsEnabled = false;
 
-        for (int i = 0; i < sumLodRadius; i++)
+        for (int i = 0; i < CombinedLODRadius; i++)
             for (int j = -i; j <= currentXZChunkCount(i); j++)
             {
                 // Front
                 CheckChunk(currentLOD(i), new(
-                    centerChunkPosition.X + i * chunkSize(i), 0,
-                    centerChunkPosition.Z + j * chunkSize(i)));
+                    centerChunkPosition.X + (i) * chunkSize(i), 0,
+                    centerChunkPosition.Z + (j) * chunkSize(i)));
 
                 // Back
                 CheckChunk(currentLOD(i), new(
@@ -83,24 +84,24 @@ public class Generator
 
                 // Right
                 CheckChunk(currentLOD(i), new(
-                    centerChunkPosition.X + j       * chunkSize(i), 0,
-                    centerChunkPosition.Z + (i + 1) * chunkSize(i)));
+                    centerChunkPosition.X + (j     ) * chunkSize(i), 0,
+                    centerChunkPosition.Z + (i + 1 ) * chunkSize(i)));
 
                 // Left
                 CheckChunk(currentLOD(i), new(
-                    centerChunkPosition.X - (j + 1) * chunkSize(i), 0,
-                    centerChunkPosition.Z - (i)     * chunkSize(i)));
+                    centerChunkPosition.X - (j + 1 ) * chunkSize(i), 0,
+                    centerChunkPosition.Z - (i     ) * chunkSize(i)));
             }
     }
 
-    private void CheckChunk(int lod, Vector3Int chunkWorldPosition)
+    private void CheckChunk(int levelOfDetail, Vector3Int chunkWorldPosition)
     {
-        if (GeneratedChunks[lod].Keys.Contains(chunkWorldPosition))
-            GeneratedChunks[lod][chunkWorldPosition].Mesh.IsEnabled = true;
+        if (GeneratedChunks[levelOfDetail].Keys.Contains(chunkWorldPosition))
+            GeneratedChunks[levelOfDetail][chunkWorldPosition].Mesh.IsEnabled = true;
         else
         {
-            Chunk newChunk = new(chunkWorldPosition, LODSizes[lod]);
-            GeneratedChunks[lod].Add(chunkWorldPosition, newChunk);
+            Chunk newChunk = new(chunkWorldPosition, levelOfDetail);
+            GeneratedChunks[levelOfDetail].Add(chunkWorldPosition, newChunk);
             ChunksToGenerate.Enqueue(newChunk);
         }
     }
