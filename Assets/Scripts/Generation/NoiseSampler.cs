@@ -36,11 +36,11 @@ public class NoiseSampler
         for (int x = 0; x <= Generator.ChunkSizeXZ + 1; x++)
             for (int z = 0; z <= Generator.ChunkSizeXZ + 1; z++)
             {
-                int surfaceHeight = GetSurfaceHeight(x + chunk.WorldPosition.X, z + chunk.WorldPosition.Z);
-                int undergroundDetail = GetUndergroundDetail(x + chunk.WorldPosition.X, z + chunk.WorldPosition.Z);
+                int surfaceHeight = GetSurfaceHeight(x + chunk.WorldPosition.X * chunk.VoxelSize, z + chunk.WorldPosition.Z * chunk.VoxelSize);
+                int undergroundDetail = GetUndergroundDetail(x + chunk.WorldPosition.X * chunk.VoxelSize, z + chunk.WorldPosition.Z * chunk.VoxelSize);
                 int bedrockHeight = random.Next(5);
 
-                for (int y = 0; y < Generator.ChunkSizeY; y++)
+                for (int y = 0; y < Generator.LODSizesY[chunk.LevelOfDetail]; y++)
                     // Only generate solid voxels below the surface
                     if (y < surfaceHeight)
                     {
@@ -51,7 +51,7 @@ public class NoiseSampler
                             chunk.SetVoxel(voxelPosition, y < bedrockHeight ? VoxelType.Stone : VoxelType.Stone);
                         else if (y + undergroundDetail < surfaceHeight)
                         {
-                            double caveValue = GetCaveNoise(x + chunk.WorldPosition.X, y * 2, z + chunk.WorldPosition.Z);
+                            double caveValue = GetCaveNoise(x + chunk.WorldPosition.X * chunk.VoxelSize, y * 2, z + chunk.WorldPosition.Z * chunk.VoxelSize);
 
                             if (caveValue < 0.25 || caveValue > 0.6)
                                 continue;
