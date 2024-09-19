@@ -63,7 +63,7 @@ public class MeshBuilder
     private void AddFace(int voxelSize, Vector3Byte voxelPosition, VoxelType voxelType, Vector3Int normal, Vector3Int tangent, List<Vertex> vertices, List<int> indices)
     {
         var faceVertices = new Vector3[4];
-        voxelType = VoxelType.Stone;
+
         // Get the indexed texture coordinate of the atlas
         Vector2 atlasUV = TextureAtlas.GetTextureCoordinate((int)voxelType);
         float atlasTileSize = TextureAtlas.AtlasTileSize;
@@ -80,8 +80,8 @@ public class MeshBuilder
                 new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z    ) * voxelSize,
             ];
 
-            //if (Enum.IsDefined(typeof(VoxelType), enumName + "_Top"))
-            //    atlasUV = TextureAtlas.GetTextureCoordinate((int)(VoxelType)Enum.Parse(typeof(VoxelType), enumName + "_Top"));
+            if (Enum.IsDefined(typeof(VoxelType), enumName + "_Top"))
+                atlasUV = TextureAtlas.GetTextureCoordinate((int)(VoxelType)Enum.Parse(typeof(VoxelType), enumName + "_Top"));
         }
         else if (normal == Vector3Int.Bottom)
         {
@@ -93,8 +93,8 @@ public class MeshBuilder
                 new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z + 1) * voxelSize,
             ];
 
-            //if (Enum.IsDefined(typeof(VoxelType), enumName + "_Bottom"))
-            //    atlasUV = TextureAtlas.GetTextureCoordinate((int)(VoxelType)Enum.Parse(typeof(VoxelType), enumName + "_Bottom"));
+            if (Enum.IsDefined(typeof(VoxelType), enumName + "_Bottom"))
+                atlasUV = TextureAtlas.GetTextureCoordinate((int)(VoxelType)Enum.Parse(typeof(VoxelType), enumName + "_Bottom"));
         }
         else if (normal == Vector3Int.Right)
             faceVertices =

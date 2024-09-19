@@ -64,32 +64,32 @@ public class Generator
             worldPosition.X / ChunkSizeXZ * ChunkSizeXZ, 0,
             worldPosition.Z / ChunkSizeXZ * ChunkSizeXZ);
 
-        //foreach (var LODChunks in GeneratedChunks.Values)
-        //    foreach (var chunk in LODChunks.Values)
-        //        chunk.Mesh.IsEnabled = false;
+        foreach (var LODChunks in GeneratedChunks.Values)
+            foreach (var chunk in LODChunks.Values)
+                chunk.Mesh.IsEnabled = false;
 
-        for (int i = 0; i < nativeRadius; i++)
-            for (int j = -i; j <= i; j++)
+        for (int i = 0; i < sumLodRadius; i++)
+            for (int j = -i; j <= currentXZChunkCount(i); j++)
             {
                 // Front
                 CheckChunk(currentLOD(i), new(
-                    centerChunkPosition.X + i * 32, 0,
-                    centerChunkPosition.Z + j * 32));
+                    centerChunkPosition.X + i * chunkSize(i), 0,
+                    centerChunkPosition.Z + j * chunkSize(i)));
 
                 // Back
                 CheckChunk(currentLOD(i), new(
-                    centerChunkPosition.X - (i + 1) * 32, 0,
-                    centerChunkPosition.Z - (j - 1) * 32));
+                    centerChunkPosition.X - (i + 1) * chunkSize(i), 0,
+                    centerChunkPosition.Z - (j - 1) * chunkSize(i)));
 
                 // Right
                 CheckChunk(currentLOD(i), new(
-                    centerChunkPosition.X + j * 32, 0,
-                    centerChunkPosition.Z + (i + 1) * 32));
+                    centerChunkPosition.X + j       * chunkSize(i), 0,
+                    centerChunkPosition.Z + (i + 1) * chunkSize(i)));
 
                 // Left
                 CheckChunk(currentLOD(i), new(
-                    centerChunkPosition.X - (j + 1) * 32, 0,
-                    centerChunkPosition.Z - (i) * 32));
+                    centerChunkPosition.X - (j + 1) * chunkSize(i), 0,
+                    centerChunkPosition.Z - (i)     * chunkSize(i)));
             }
     }
 
