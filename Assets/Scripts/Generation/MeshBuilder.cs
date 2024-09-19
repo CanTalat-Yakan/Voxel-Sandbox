@@ -22,8 +22,8 @@ public class MeshBuilder
             if (!chunk.IsWithinBounds(voxel.Key))
                 continue;
 
-            if (chunk.GetVoxel(voxelPosition, out var voxelTypeCheck))
-                if ((voxelTypeCheck is not VoxelType.None) && (voxelTypeCheck is not VoxelType.Air))
+            if (chunk.GetVoxel(voxel.Key, out var voxelType))
+                if ((voxelType is not VoxelType.None) && (voxelType is not VoxelType.Air))
                     // Add faces for each visible side of the voxel
                     AddVoxelFaces(chunk, chunk.VoxelSize, voxel.Key, voxel.Value, vertices, indices);
 
