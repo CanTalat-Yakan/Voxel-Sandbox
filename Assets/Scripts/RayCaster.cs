@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 
-using Engine.Components;
 using Engine.ECS;
 
 namespace VoxelSandbox;
@@ -17,20 +16,19 @@ public class RayCaster : Component
     private Entity _cube;
     private Entity _camera;
 
-    public override void OnStart()
-    {
-        _cube = Entity.Manager.CreatePrimitive().Entity;
-        _cube.Transform.LocalScale *= 1.1f;
-    }
-
     public override void OnUpdate()
     {
         PerformRayCast();
 
-        if (TargetVoxelPosition is not null)
-            _cube.Transform.LocalPosition = TargetVoxelPosition.Value.ToVector3();
+        //if (TargetVoxelPosition is not null)
+        //    _cube.Transform.SetPosition(y: 120);
+
+        //_cube.Transform.LocalPosition = TargetVoxelPosition.Value.ToVector3();
     }
 
+    public void SetCube(Entity cube) =>
+        _cube = cube;
+    
     public void SetCamera(Entity camera) =>
         _camera = camera;
 

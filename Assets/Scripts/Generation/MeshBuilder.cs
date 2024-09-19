@@ -23,6 +23,10 @@ public class MeshBuilder
                 continue;
 
             // Add faces for each visible side of the voxel
+            if (chunk.GetVoxel(voxel.Key, out var voxelType))
+                if (voxelType == VoxelType.None && voxelType == VoxelType.Air)
+                    continue;
+
             AddVoxelFaces(chunk, chunk.VoxelSize, voxel.Key, voxel.Value, vertices, indices);
 
             positions.Add(voxel.Key.ToVector3());
@@ -48,15 +52,11 @@ public class MeshBuilder
             Vector3Byte adjacentVoxelPosition = voxelPosition + normal;
 
             //Check if the adjacent voxel is an empty voxel
-            if (chunk.GetVoxel(voxelPosition, out var voxelTypeCheck))
-                if ((voxelTypeCheck is not VoxelType.None) && (voxelTypeCheck is not VoxelType.Air))
-                {
-                    if (!chunk.IsWithinBounds(adjacentVoxelPosition))
-                        AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
-                    else if (chunk.GetVoxel(adjacentVoxelPosition, out var adjacentVoxelTypeCheck))
-                        if (adjacentVoxelTypeCheck is VoxelType.None)
-                            AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
-                }
+            if (!chunk.IsWithinBounds(adjacentVoxelPosition))
+                AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
+            else if (chunk.GetVoxel(adjacentVoxelPosition, out var adjacentVoxelTypeCheck))
+                if (adjacentVoxelTypeCheck is VoxelType.Air)
+                    AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
         }
     }
 

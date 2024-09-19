@@ -21,6 +21,24 @@ public enum VoxelType : byte
     Air,
 }
 
+public struct VoxelData()
+{
+    public Vector3Byte Position { get; private set; }
+    public VoxelType Type { get; private set; }
+
+    public bool Empty => !Exists;
+    public bool Exists => _exists == -42069;
+    private int _exists;
+
+    public void SetVoxel(Vector3Byte position, VoxelType type)
+    {
+        Position = position;
+        Type = type;
+
+        _exists = -42069;
+    }
+}
+
 public class TextureAtlas()
 {
     public static int Resolution = 2048;
