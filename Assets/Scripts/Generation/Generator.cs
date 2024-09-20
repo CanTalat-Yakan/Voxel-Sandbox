@@ -8,7 +8,7 @@ public class Generator
 
     public const int ChunkSizeXZ = 32;
     public const int ChunkSizeY = 384;
-    public static readonly int LODCount = 4;
+    public static readonly int LODCount = 3;
 
     public Queue<Chunk> ChunksToGenerate = new();
     public Queue<Chunk> ChunksToBuild = new();
@@ -60,6 +60,7 @@ public class Generator
         Func<int, int> previousChunkSize = i => chunkSize(Math.Max(0, currentLOD(i) - 1));
         Func<int, int> chunkOffset = i => Math.Min(1, currentLOD(i)) * (currentLOD(i) * chunkSize(i) + chunkSize(i));
         Func<int, int> originOffset = i => currentLOD(i) * nativeRadius * chunkSize(i) - chunkOffset(i);
+        Func<int, int> lodOffset = i => previousChunkSize(i) * (int)Math.Pow(2, currentLOD(i));
         Func<int, int> currentLODStartLengthXZ = i => currentLOD(i) == 1 ? nativeRadius + 1 : nativeRadius + 1 + (int)Math.Pow(2, Math.Max(1, currentLOD(i) - 1)) + nativeRadius / 2 / currentLOD(i);
         Func<int, int> chunkCountXZ = i => currentLOD(i) == 0 ? i : i % nativeRadius + (currentLODStartLengthXZ(i) - 1) / 2;
 
@@ -78,22 +79,22 @@ public class Generator
                 // Front
                 CheckChunk(currentLOD(i), new(
                     centerChunkPosition.X + i * chunkSize(i) - originOffset(i), 0,
-                    centerChunkPosition.Z + j * chunkSize(i)));
+                    centerChunkPosition.Z + j * chunkSize(i) - lodOffset(i)));
 
                 // Back
                 CheckChunk(currentLOD(i), new(
                     centerChunkPosition.X - (i + 1) * chunkSize(i) + originOffset(i), 0,
-                    centerChunkPosition.Z - (j - 1) * chunkSize(i)));
+                    centerChunkPosition.Z - (j - 1) * chunkSize(i) - lodOffset(i)));
 
                 // Right
                 CheckChunk(currentLOD(i), new(
                     centerChunkPosition.X + j * chunkSize(i), 0,
-                    centerChunkPosition.Z + (i + 1) * chunkSize(i) - originOffset(i)));
+                    centerChunkPosition.Z + (i + 1) * chunkSize(i) - originOffset(i) - lodOffset(i)));
 
                 // Left
                 CheckChunk(currentLOD(i), new(
                     centerChunkPosition.X - (j + 1) * chunkSize(i), 0,
-                    centerChunkPosition.Z - i * chunkSize(i)  + originOffset(i)));
+                    centerChunkPosition.Z - i * chunkSize(i) + originOffset(i) - lodOffset(i)));
             }
     }
 
