@@ -58,7 +58,7 @@ public class Generator
         Func<int, int> currentLOD = i => i / nativeRadius;
         Func<int, int> chunkSize = i => LODSizesXZ[currentLOD(i)];
         Func<int, int> chunkOffset = i => (int)Math.Pow(currentLOD(i), 2);
-        Func<int, int> chunkCountXZ = i => currentLOD(i) == 0 ? i : i / (2 * currentLOD(i));
+        Func<int, int> chunkCountXZ = i => currentLOD(i) == 0 ? i : chunkOffset(i);
 
         // Calculate the center chunk position for the player
         Vector3Int centerChunkPosition = new(
@@ -73,22 +73,22 @@ public class Generator
             for (int j = -chunkCountXZ(i); j <= chunkCountXZ(i); j++)
             {
                 // Front
-                CheckChunk(0, new(
+                CheckChunk(currentLOD(i), new(
                     centerChunkPosition.X + (i - chunkOffset(i)) * chunkSize(i), 0,
                     centerChunkPosition.Z + j * chunkSize(i)));
 
                 // Back
-                CheckChunk(0, new(
+                CheckChunk(currentLOD(i), new(
                     centerChunkPosition.X - ((i - chunkOffset(i)) + 1) * chunkSize(i), 0,
                     centerChunkPosition.Z - (j - 1) * chunkSize(i)));
 
                 // Right
-                CheckChunk(0, new(
+                CheckChunk(currentLOD(i), new(
                     centerChunkPosition.X + j * chunkSize(i), 0,
                     centerChunkPosition.Z + ((i - chunkOffset(i)) + 1) * chunkSize(i)));
 
                 // Left
-                CheckChunk(0, new(
+                CheckChunk(currentLOD(i), new(
                     centerChunkPosition.X - (j + 1) * chunkSize(i), 0,
                     centerChunkPosition.Z - (i - chunkOffset(i)) * chunkSize(i)));
             }
