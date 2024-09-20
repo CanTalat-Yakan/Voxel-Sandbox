@@ -10,7 +10,8 @@ public class Chunk
 
     public Vector3Int WorldPosition { get; private set; }
     public int LevelOfDetail { get; private set; }
-    public int VoxelSize => Generator.LODSizesXZ[LevelOfDetail] / Generator.ChunkSizeXZ;
+
+    public int VoxelSize => (int)Math.Pow(2, LevelOfDetail);
 
     public Chunk(Vector3Int worldPosition, int levelOfDetail)
     {
