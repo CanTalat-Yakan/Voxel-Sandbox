@@ -30,6 +30,7 @@ public class GameManager : Component
         //controller.AddComponent<PlayerMovement>();
         //controller.AddComponent<RayCaster>().SetCamera(controller);
         //controller.GetComponent<Camera>()[0].FOV = 100;
+        //controller.GetComponent<Camera>()[0].Clipping.Y = 10000;
     }
 
     public override void OnStart()

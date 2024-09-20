@@ -52,13 +52,15 @@ public class Generator
 
     private void CalculateChunks(Vector3Int worldPosition)
     {
-        int nativeRadius = 4;
-        int CombinedLODRadius = nativeRadius * LODSizesXZ.Length;
+        int nativeRadius = 8;
+        int combinedLODRadius = nativeRadius * LODSizesXZ.Length;
+
 
         Func<int, int> currentLOD = i => i / nativeRadius;
         Func<int, int> chunkSize = i => LODSizesXZ[currentLOD(i)];
         Func<int, int> chunkOffset = i => (int)Math.Pow(currentLOD(i), 2);
-        Func<int, int> chunkCountXZ = i => currentLOD(i) == 0 ? i : i / (2 * currentLOD(i));
+        Func<int, int> currentLODStartLength = i => currentLOD(i) == 1 ? nativeRadius + 1 : nativeRadius + 1 + nativeRadius / 2 / currentLOD(i);
+        Func<int, int> chunkCountXZ = i => currentLOD(i) == 0 ? i : i % nativeRadius + (currentLODStartLength(i) - 1) / 2;
 
         // Calculate the center chunk position for the player
         Vector3Int centerChunkPosition = new(
@@ -69,7 +71,7 @@ public class Generator
             foreach (var chunk in LODChunks.Values)
                 chunk.Mesh.IsEnabled = false;
 
-        for (int i = 0; i < CombinedLODRadius; i++)
+        for (int i = 0; i < combinedLODRadius; i++)
             for (int j = -chunkCountXZ(i); j <= chunkCountXZ(i); j++)
             {
                 // Front
