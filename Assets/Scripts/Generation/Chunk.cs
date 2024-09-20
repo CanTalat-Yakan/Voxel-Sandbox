@@ -8,9 +8,8 @@ public class Chunk
 
     public Dictionary<Vector3Byte, VoxelType> VoxelData = new();
 
-    public Vector3Int WorldPosition { get; private set; } // Position of the chunk in world space (32, 0, 0)
-
-    public int LevelOfDetail { get; private set; } // Size of the chunk (32, 64, 128, etc.)
+    public Vector3Int WorldPosition { get; private set; }
+    public int LevelOfDetail { get; private set; }
     public int VoxelSize => Generator.LODSizesXZ[LevelOfDetail] / Generator.ChunkSizeXZ;
 
     public Chunk(Vector3Int worldPosition, int levelOfDetail)
@@ -19,7 +18,7 @@ public class Chunk
         LevelOfDetail = levelOfDetail;
     }
 
-    public bool IsWithinBounds(Vector3Byte localPosition) =>
+    public static bool IsWithinBounds(Vector3Byte localPosition) =>
         localPosition.X >= 1 && localPosition.X <= Generator.ChunkSizeXZ
      && localPosition.Y >= 1 && localPosition.Y <= Generator.ChunkSizeY
      && localPosition.Z >= 1 && localPosition.Z <= Generator.ChunkSizeXZ;

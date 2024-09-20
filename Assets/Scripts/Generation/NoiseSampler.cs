@@ -33,14 +33,14 @@ public class NoiseSampler
     {
         Random random = new();
 
-        for (int x = 0; x <= Generator.ChunkSizeXZ + 1; x++)
-            for (int z = 0; z <= Generator.ChunkSizeXZ + 1; z++)
+        for (int x = 1; x <= Generator.ChunkSizeXZ; x++)
+            for (int z = 1; z <= Generator.ChunkSizeXZ; z++)
             {
                 int surfaceHeight = GetSurfaceHeight(x + chunk.WorldPosition.X * chunk.VoxelSize, z + chunk.WorldPosition.Z * chunk.VoxelSize);
                 int undergroundDetail = GetUndergroundDetail(x + chunk.WorldPosition.X * chunk.VoxelSize, z + chunk.WorldPosition.Z * chunk.VoxelSize);
                 int bedrockHeight = random.Next(5);
-                
-                for (int y = 0; y < Generator.ChunkSizeY; y += (int)Math.Pow(2, chunk.LevelOfDetail))
+
+                for (int y = 1; y < Generator.ChunkSizeY; y += (int)Math.Pow(2, chunk.LevelOfDetail))
                     // Only generate solid voxels below the surface
                     if (y < surfaceHeight)
                     {
@@ -86,70 +86,48 @@ public class NoiseSampler
         // Check if the voxel is exposed (has at least one neighbor that is empty)
         foreach (var voxel in chunk.VoxelData)
         {
-            // Set border voxels as exposed
-            if (!chunk.IsWithinBounds(voxel.Key))
-            {
-                exposedVoxels.Add(voxel.Key, voxel.Value);
-                continue;
-            }
-
             bool IsVoxelExposed = false;
-            bool IsEdgeCaseExposed = IterateAdjacentVoxels(voxel.Key, (Vector3Byte adjacentLocalPosition) =>
-            {
-                // If the adjacent voxel is empty, the current voxel is exposed
-                if (!chunk.HasVoxel(adjacentLocalPosition))
-                    if (!IsVoxelExposed)
-                        IsVoxelExposed = true;
-            }, continueOnEdgeCases: false);
+            bool IsEdgeCaseExposed = IterateAdjacentVoxels(continueOnOutsideBounds: false, voxel.Key,
+                (Vector3Byte adjacentLocalPosition) =>
+                {
+                    // If the adjacent voxel is empty, the current voxel is exposed
+                    if (!chunk.HasVoxel(adjacentLocalPosition))
+                        if (!IsVoxelExposed)
+                            IsVoxelExposed = true;
+                });
 
             if (IsEdgeCaseExposed || IsVoxelExposed)
                 exposedVoxels.Add(voxel.Key, voxel.Value);
         }
 
+        // Add further voxel information for mesh building
         foreach (var voxel in exposedVoxels.Keys.ToArray())
-            IterateAdjacentVoxels(voxel, (Vector3Byte adjacentLocalPosition) =>
-            {
-                if (!exposedVoxels.ContainsKey(adjacentLocalPosition))
-                    // If the adjacent voxel is empty, it is set to none for inside and air for outside the mesh
-                    if (chunk.VoxelData.ContainsKey(adjacentLocalPosition))
-                        exposedVoxels.Add(adjacentLocalPosition, VoxelType.None);
-                    else
-                        exposedVoxels.Add(adjacentLocalPosition, VoxelType.Air);
-            });
+            IterateAdjacentVoxels(continueOnOutsideBounds: true, voxel,
+                (Vector3Byte adjacentLocalPosition) =>
+                {
+                    if (!exposedVoxels.ContainsKey(adjacentLocalPosition))
+                        exposedVoxels.Add(adjacentLocalPosition,
+                            chunk.VoxelData.ContainsKey(adjacentLocalPosition)
+                            ? VoxelType.None  // None for inside the mesh
+                            : VoxelType.Air); // Air for outside the mesh
+                });
 
         chunk.VoxelData.Clear();
         chunk.VoxelData = exposedVoxels;
     }
 
-    private bool IterateAdjacentVoxels(Vector3Byte localPosition, Action<Vector3Byte> action, bool continueOnEdgeCases = true)
+    private bool IterateAdjacentVoxels(bool continueOnOutsideBounds, Vector3Byte localPosition, Action<Vector3Byte> action)
     {
-        Vector3Int adjacentVoxel = new();
-
         foreach (var direction in Vector3Int.Directions)
         {
-            adjacentVoxel.X = direction.X + localPosition.X;
-            adjacentVoxel.Y = direction.Y + localPosition.Y;
-            adjacentVoxel.Z = direction.Z + localPosition.Z;
+            Vector3Byte adjacentVoxel = (direction + localPosition).ToVector3Byte();
 
-            if (adjacentVoxel.X <= 0 || adjacentVoxel.X >= Generator.ChunkSizeXZ + 1
-             || adjacentVoxel.Z <= 0 || adjacentVoxel.Z >= Generator.ChunkSizeXZ + 1)
-                if (continueOnEdgeCases) continue;
+            if (!Chunk.IsWithinBounds(adjacentVoxel))
+                if (continueOnOutsideBounds) continue;
 
-            // If the neighbor is outside the world bounds, consider it as empty
-            if (adjacentVoxel.Y > Generator.ChunkSizeY)
-                if (continueOnEdgeCases) continue;
-                else return true;
-
-            // If the neighbor is below ground, consider it as solid
-            if (adjacentVoxel.Y < 0)
-                if (continueOnEdgeCases) continue;
-                else return false;
-
-            // If the neighbor voxel is empty, the current voxel is exposed
             action.Invoke(new(adjacentVoxel.X, adjacentVoxel.Y, adjacentVoxel.Z));
         }
 
-        // All neighbors are solid and the voxel is not exposed
         return false;
     }
 }
