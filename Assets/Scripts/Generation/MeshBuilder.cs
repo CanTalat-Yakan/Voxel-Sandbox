@@ -23,7 +23,7 @@ public class MeshBuilder
                     // Add faces for each visible side of the voxel
                     AddVoxelFaces(chunk, chunk.VoxelSize, voxel.Key, voxel.Value, vertices, indices);
 
-            positions.Add(voxel.Key.ToVector3());
+            positions.Add(voxel.Key.ToVector3() * chunk.VoxelSize);
         }
 
         var entity = GameManager.Instance.Entity.Manager.CreateEntity();
