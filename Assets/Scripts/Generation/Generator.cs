@@ -52,15 +52,14 @@ public class Generator
 
     private void CalculateChunks(Vector3Int worldPosition)
     {
-        int nativeRadius = 8;
+        int nativeRadius = 4;
         int combinedLODRadius = nativeRadius * LODSizesXZ.Length;
-
 
         Func<int, int> currentLOD = i => i / nativeRadius;
         Func<int, int> chunkSize = i => LODSizesXZ[currentLOD(i)];
         Func<int, int> chunkOffset = i => (int)Math.Pow(currentLOD(i), 2);
-        Func<int, int> currentLODStartLength = i => currentLOD(i) == 1 ? nativeRadius + 1 : nativeRadius + 1 + nativeRadius / 2 / currentLOD(i);
-        Func<int, int> chunkCountXZ = i => currentLOD(i) == 0 ? i : i % nativeRadius + (currentLODStartLength(i) - 1) / 2;
+        Func<int, int> currentLODStartLengthXZ = i => currentLOD(i) == 1 ? nativeRadius + 1 : nativeRadius + 1 + nativeRadius / 2 / currentLOD(i);
+        Func<int, int> chunkCountXZ = i => currentLOD(i) == 0 ? i : i % nativeRadius + (currentLODStartLengthXZ(i) - 1) / 2;
 
         // Calculate the center chunk position for the player
         Vector3Int centerChunkPosition = new(
@@ -79,20 +78,20 @@ public class Generator
                     centerChunkPosition.X + (i - chunkOffset(i)) * chunkSize(i), 0,
                     centerChunkPosition.Z + j * chunkSize(i)));
 
-                // Back
-                CheckChunk(currentLOD(i), new(
-                    centerChunkPosition.X - ((i - chunkOffset(i)) + 1) * chunkSize(i), 0,
-                    centerChunkPosition.Z - (j - 1) * chunkSize(i)));
+                //// Back
+                //CheckChunk(currentLOD(i), new(
+                //    centerChunkPosition.X - (i - chunkOffset(i) + 1) * chunkSize(i), 0,
+                //    centerChunkPosition.Z - (j - 1) * chunkSize(i)));
 
-                // Right
-                CheckChunk(currentLOD(i), new(
-                    centerChunkPosition.X + j * chunkSize(i), 0,
-                    centerChunkPosition.Z + ((i - chunkOffset(i)) + 1) * chunkSize(i)));
+                //// Right
+                //CheckChunk(currentLOD(i), new(
+                //    centerChunkPosition.X + j * chunkSize(i), 0,
+                //    centerChunkPosition.Z + (i - chunkOffset(i) + 1) * chunkSize(i)));
 
-                // Left
-                CheckChunk(currentLOD(i), new(
-                    centerChunkPosition.X - (j + 1) * chunkSize(i), 0,
-                    centerChunkPosition.Z - (i - chunkOffset(i)) * chunkSize(i)));
+                //// Left
+                //CheckChunk(currentLOD(i), new(
+                //    centerChunkPosition.X - (j + 1) * chunkSize(i), 0,
+                //    centerChunkPosition.Z - (i - chunkOffset(i)) * chunkSize(i)));
             }
     }
 
