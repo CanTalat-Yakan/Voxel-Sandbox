@@ -39,16 +39,17 @@ public class NoiseSampler
                 int surfaceHeight = GetSurfaceHeight(x + chunk.WorldPosition.X * chunk.VoxelSize, z + chunk.WorldPosition.Z * chunk.VoxelSize);
                 int undergroundDetail = GetUndergroundDetail(x + chunk.WorldPosition.X * chunk.VoxelSize, z + chunk.WorldPosition.Z * chunk.VoxelSize);
                 int bedrockHeight = random.Next(5);
+                int voxelOffset = (int)Math.Pow(2, chunk.LevelOfDetail);
 
-                for (int y = 1; y < Generator.ChunkSizeY; y += (int)Math.Pow(2, chunk.LevelOfDetail))
+                for (int y = 1 + voxelOffset; y < Generator.ChunkSizeY / voxelOffset; y += voxelOffset)
                     // Only generate solid voxels below the surface
                     if (y < surfaceHeight)
                     {
-                        Vector3Byte voxelPosition = new(x, y, z);
+                        Vector3Byte voxelPosition = new(x, y / voxelOffset, z);
 
                         // Check cave noise to determine if this voxel should be empty (cave)
                         if (y < undergroundDetail)
-                            chunk.SetVoxel(voxelPosition, y < bedrockHeight ? VoxelType.Stone : VoxelType.Stone);
+                            chunk.SetVoxel(voxelPosition, y - 1 < bedrockHeight ? VoxelType.DiamondOre : VoxelType.Stone);
                         else if (y + undergroundDetail < surfaceHeight)
                         {
                             double caveValue = GetCaveNoise(x + chunk.WorldPosition.X * chunk.VoxelSize, y * 2, z + chunk.WorldPosition.Z * chunk.VoxelSize);
@@ -61,8 +62,10 @@ public class NoiseSampler
                         else if (y + undergroundDetail - 5 < surfaceHeight)
                             chunk.SetVoxel(voxelPosition, VoxelType.Stone);
                         else
-                            chunk.SetVoxel(voxelPosition, VoxelType.Grass);
+                            chunk.SetVoxel(voxelPosition, VoxelType.Dirt);
                     }
+                    else if (y == surfaceHeight)
+                        chunk.SetVoxel(new(x, y / voxelOffset, z), VoxelType.Grass);
             }
 
         RemoveUnexposedVoxels(chunk);
