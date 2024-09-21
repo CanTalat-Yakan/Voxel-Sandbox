@@ -32,18 +32,24 @@ public class NoiseSampler
     public void GenerateChunkContent(Chunk chunk)
     {
         Random random = new();
+                int voxelOffset = (int)Math.Pow(2, chunk.LevelOfDetail);
 
         for (int x = 1; x <= Generator.ChunkSizeXZ; x++)
             for (int z = 1; z <= Generator.ChunkSizeXZ; z++)
             {
-                int surfaceHeight = GetSurfaceHeight(x + chunk.WorldPosition.X * chunk.VoxelSize, z + chunk.WorldPosition.Z * chunk.VoxelSize);
-                int undergroundDetail = GetUndergroundDetail(x + chunk.WorldPosition.X * chunk.VoxelSize, z + chunk.WorldPosition.Z * chunk.VoxelSize);
+                int surfaceHeight = GetSurfaceHeight(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
+                int undergroundDetail = GetUndergroundDetail(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
                 int bedrockHeight = random.Next(5);
-                int voxelOffset = (int)Math.Pow(2, chunk.LevelOfDetail);
 
-                for (int y = 1 + voxelOffset; y < Generator.ChunkSizeY / voxelOffset; y += voxelOffset)
-                    // Only generate solid voxels below the surface
-                    if (y < surfaceHeight)
+                for (int y = voxelOffset; y < Generator.ChunkSizeY; y += voxelOffset)
+                    if (chunk.LevelOfDetail > 0)
+                    {
+                        if (y <= surfaceHeight + voxelOffset && y >= surfaceHeight - voxelOffset)
+                            chunk.SetVoxel(new(x, y / voxelOffset, z), VoxelType.Grass);
+
+                        continue;
+                    }
+                    else if (y < surfaceHeight)
                     {
                         Vector3Byte voxelPosition = new(x, y / voxelOffset, z);
 
@@ -89,8 +95,9 @@ public class NoiseSampler
         // Check if the voxel is exposed (has at least one neighbor that is empty)
         foreach (var voxel in chunk.VoxelData)
         {
+            bool renderBorders = chunk.LevelOfDetail == 0;
             bool IsVoxelExposed = false;
-            bool IsEdgeCaseExposed = IterateAdjacentVoxels(continueOnOutsideBounds: false, voxel.Key,
+            bool IsEdgeCaseExposed = IterateAdjacentVoxels(continueOnOutsideBounds: renderBorders, voxel.Key,
                 (Vector3Byte adjacentLocalPosition) =>
                 {
                     // If the adjacent voxel is empty, the current voxel is exposed
