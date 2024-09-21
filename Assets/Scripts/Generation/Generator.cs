@@ -52,15 +52,20 @@ public class Generator
 
     private void CalculateChunks(Vector3Int worldPosition)
     {
-        int nativeRadius = 4;
+        int nativeRadius = 8;
         int combinedLODRadius = nativeRadius * LODCount;
 
         Func<int, int> currentLOD = i => i / nativeRadius;
+        Func<int, int> multiplyerIfLOD0 = i => currentLOD(i) == 0 ? 1 : 0;
+        Func<int, int> multiplyerIfLOD1Plus = i => 1 - multiplyerIfLOD0(i);
+
         Func<int, int> chunkSize = i => (int)Math.Pow(2, currentLOD(i)) * ChunkSizeXZ;
         Func<int, int> previousChunkSize = i => chunkSize(Math.Max(0, currentLOD(i) - 1));
-        Func<int, int> chunkOffset = i => Math.Min(1, currentLOD(i)) * (currentLOD(i) * chunkSize(i) + chunkSize(i));
+
+        Func<int, int> chunkOffset = i => (multiplyerIfLOD1Plus(i) + 1) * Math.Min(1, currentLOD(i)) * (currentLOD(i) * chunkSize(i) + chunkSize(i));
         Func<int, int> originOffset = i => currentLOD(i) * nativeRadius * chunkSize(i) - chunkOffset(i);
         Func<int, int> lodOffset = i => previousChunkSize(i) * (int)Math.Pow(2, currentLOD(i));
+
         Func<int, int> currentLODStartLengthXZ = i => currentLOD(i) == 1 ? nativeRadius + 1 : nativeRadius + 1 + (int)Math.Pow(2, Math.Max(1, currentLOD(i) - 1)) + nativeRadius / 2 / currentLOD(i);
         Func<int, int> chunkCountXZ = i => currentLOD(i) == 0 ? i : i % nativeRadius + (currentLODStartLengthXZ(i) - 1) / 2;
 
