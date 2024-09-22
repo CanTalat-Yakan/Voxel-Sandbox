@@ -8,7 +8,9 @@ public class Generator
 
     public const int ChunkSizeXZ = 32;
     public const int ChunkSizeY = 384;
+
     public static readonly int LODCount = 3;
+    public static readonly int NativeRadius = 8;
 
     public Queue<Chunk> ChunksToGenerate = new();
     public Queue<Chunk> ChunksToBuild = new();
@@ -52,10 +54,9 @@ public class Generator
 
     private void CalculateChunks(Vector3Int worldPosition)
     {
-        int nativeRadius = 8;
-        int combinedLODRadius = nativeRadius * LODCount;
+        int combinedLODRadius = NativeRadius * LODCount;
 
-        Func<int, int> currentLOD = i => i / nativeRadius;
+        Func<int, int> currentLOD = i => i / NativeRadius;
         Func<int, int> multiplyerIfLOD0 = i => currentLOD(i) == 0 ? 1 : 0;
         Func<int, int> multiplyerIfLOD1Plus = i => 1 - multiplyerIfLOD0(i);
 
@@ -63,11 +64,11 @@ public class Generator
         Func<int, int> previousChunkSize = i => chunkSize(Math.Max(0, currentLOD(i) - 1));
 
         Func<int, int> chunkOffset = i => (multiplyerIfLOD1Plus(i) + 1) * Math.Min(1, currentLOD(i)) * (currentLOD(i) * chunkSize(i) + chunkSize(i));
-        Func<int, int> originOffset = i => currentLOD(i) * nativeRadius * chunkSize(i) - chunkOffset(i);
+        Func<int, int> originOffset = i => currentLOD(i) * NativeRadius * chunkSize(i) - chunkOffset(i);
         Func<int, int> lodOffset = i => previousChunkSize(i) * (int)Math.Pow(2, currentLOD(i));
 
-        Func<int, int> currentLODStartLengthXZ = i => currentLOD(i) == 1 ? nativeRadius + 1 : nativeRadius + 1 + (int)Math.Pow(2, Math.Max(1, currentLOD(i) - 1)) + nativeRadius / 2 / currentLOD(i);
-        Func<int, int> chunkCountXZ = i => currentLOD(i) == 0 ? i : i % nativeRadius + (currentLODStartLengthXZ(i) - 1) / 2;
+        Func<int, int> currentLODStartLengthXZ = i => currentLOD(i) == 1 ? NativeRadius + 1 : NativeRadius + 1 + (int)Math.Pow(2, Math.Max(1, currentLOD(i) - 1)) + NativeRadius / 2 / currentLOD(i);
+        Func<int, int> chunkCountXZ = i => currentLOD(i) == 0 ? i : i % NativeRadius + (currentLODStartLengthXZ(i) - 1) / 2;
 
         // Calculate the center chunk position for the player
         Vector3Int centerChunkPosition = new(

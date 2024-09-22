@@ -35,34 +35,42 @@ public class TextureAtlas()
 
 public struct Vector3Byte
 {
-    private byte _byte1; // X (6 bits) + lower Y bits (2 bits)
+    private byte _byte1; // X (7 bits) + lower Y bit (1 bit)
     private byte _byte2; // Middle Y bits (8 bits)
-    private byte _byte3; // Z (6 bits) + upper Y bits (1 bit) + 1 unused bit
+    private byte _byte3; // Z (7 bits) + upper Y bit (1 bit)
 
-    public int X => _byte1 & 0b00111111; // Bits 0–5
-    public int Y => ((_byte1 >> 6) & 0b00000011)       // Bits 6–7 of byte1 (Y bits 0–1)
-                  | ((_byte2 & 0b11111111) << 2)       // Bits 0–7 of byte2 shifted to Y bits 2–9
-                  | ((_byte3 >> 6) & 0b00000001) << 10;     // Bit 6 of byte3 (Y bit 10)
-    public int Z => _byte3 & 0b00111111; // Bits 0–5
+    // Properties to extract X, Y, Z from the bytes
+    public int X => _byte1 & 0b01111111; // Bits 0–6 (7 bits)
+
+    public int Y =>
+          ((_byte1 >> 7) & 0b00000001)        // Bit 7 of byte1 (Y bit 0)
+        | ((_byte2 & 0b11111111) << 1)        // Bits 0–7 of byte2 (Y bits 1–8)
+        | ((_byte3 >> 7) & 0b00000001) << 9;  // Bit 7 of byte3 (Y bit 9)
+
+    public int Z => _byte3 & 0b01111111; // Bits 0–6 (7 bits)
 
     public Vector3Byte(int x, int y, int z)
     {
-        if (x < 0 || x >= 64 || y < 0 || y >= 512 || z < 0 || z >= 64)
-            throw new ArgumentOutOfRangeException();
+        if (x < 0 || x >= 128)
+            throw new ArgumentOutOfRangeException(nameof(x), "X must be between 0 and 127.");
+        if (y < 0 || y >= 1024)
+            throw new ArgumentOutOfRangeException(nameof(y), "Y must be between 0 and 1023.");
+        if (z < 0 || z >= 128)
+            throw new ArgumentOutOfRangeException(nameof(z), "Z must be between 0 and 127.");
 
-        _byte1 = (byte)((x & 0b00111111) | ((y & 0b00000011) << 6)); // X and lower Y bits
-        _byte2 = (byte)((y >> 2) & 0b11111111);                      // Middle Y bits
-        _byte3 = (byte)((z & 0b00111111) | ((y >> 10) << 6));        // Z and upper Y bit
+        _byte1 = (byte)((x & 0b01111111) | ((y & 0b000000001) << 7)); // X and Y bit 0
+        _byte2 = (byte)((y >> 1) & 0b11111111);                      // Y bits 1–8
+        _byte3 = (byte)((z & 0b01111111) | ((y >> 9) & 0b00000001) << 7); // Z and Y bit 9
     }
+
+    public override string ToString() =>
+        $"({X}, {Y}, {Z})";
 
     public Vector3 ToVector3() =>
         new Vector3(X, Y, Z);
 
     public Vector3Int ToVector3Int() =>
         new(X, Y, Z);
-
-    public override string ToString() =>
-        $"({X}, {Y}, {Z})";
 
     public override bool Equals(object obj)
     {
@@ -141,14 +149,14 @@ public struct Vector3Int
         Z = z;
     }
 
+    public override string ToString() =>
+        $"({X}, {Y}, {Z})";
+
     public Vector3 ToVector3() =>
         new(X, Y, Z);
 
     public Vector3Byte ToVector3Byte() =>
         new(X, Y, Z);
-
-    public override string ToString() =>
-        $"({X}, {Y}, {Z})";
 
     public override bool Equals(object obj)
     {

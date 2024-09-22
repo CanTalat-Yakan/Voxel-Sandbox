@@ -14,6 +14,13 @@ public class NoiseSampler
         Frequency = 0.01f,      // Lower frequency for broader features
         Scale = 7.5f,           // Adjust scale to manage the level of detail
     };
+    private Billow _mountainNoise = new()
+    {
+        Primitive2D = s_perlinPrimitive,
+        OctaveCount = 6,        // Fewer octaves for a smoother look
+        Frequency = 0.0002f,      // Lower frequency for broader features
+        Scale = 200,           // Adjust scale to manage the level of detail
+    };
     private Billow _undergroundNoise = new()
     {
         Primitive2D = s_perlinPrimitive,
@@ -24,7 +31,7 @@ public class NoiseSampler
     public Billow _caveNoise = new()
     {
         Primitive3D = s_perlinPrimitive,
-        OctaveCount = 6,
+        OctaveCount = 5,
         Frequency = 0.005f,
         Scale = 0.5f
     };
@@ -32,19 +39,24 @@ public class NoiseSampler
     public void GenerateChunkContent(Chunk chunk)
     {
         Random random = new();
-                int voxelOffset = (int)Math.Pow(2, chunk.LevelOfDetail);
+        int voxelOffset = chunk.VoxelSize;
+        int chunkSizeXZMultiplyer = chunk.LevelOfDetail == 0 ? 1 : 2;
 
-        for (int x = 1; x <= Generator.ChunkSizeXZ; x++)
-            for (int z = 1; z <= Generator.ChunkSizeXZ; z++)
+        for (int x = 1; x <= Generator.ChunkSizeXZ * chunkSizeXZMultiplyer; x++)
+            for (int z = 1; z <= Generator.ChunkSizeXZ * chunkSizeXZMultiplyer; z++)
             {
                 int surfaceHeight = GetSurfaceHeight(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
+                int mountainHeight = GetMountainHeight(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
                 int undergroundDetail = GetUndergroundDetail(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
                 int bedrockHeight = random.Next(5);
+
+                if (mountainHeight > 0)
+                    surfaceHeight += mountainHeight;
 
                 for (int y = voxelOffset; y < Generator.ChunkSizeY; y += voxelOffset)
                     if (chunk.LevelOfDetail > 0)
                     {
-                        if (y <= surfaceHeight + voxelOffset && y >= surfaceHeight - voxelOffset)
+                        if (y <= surfaceHeight + voxelOffset && y >= surfaceHeight)
                             chunk.SetVoxel(new(x, y / voxelOffset, z), VoxelType.Grass);
 
                         continue;
@@ -82,6 +94,9 @@ public class NoiseSampler
     private int GetSurfaceHeight(int x, int z) =>
         (int)_surfaceNoise.GetValue(x, z) + 100;
 
+    private int GetMountainHeight(int x, int z) =>
+        (int)_mountainNoise.GetValue(x, z);
+
     private int GetUndergroundDetail(int x, int z) =>
         (int)_undergroundNoise.GetValue(x, z) + 10;
 
@@ -91,11 +106,11 @@ public class NoiseSampler
     private void RemoveUnexposedVoxels(Chunk chunk)
     {
         Dictionary<Vector3Byte, VoxelType> exposedVoxels = new();
+        bool renderBorders = chunk.LevelOfDetail == 0;
 
         // Check if the voxel is exposed (has at least one neighbor that is empty)
         foreach (var voxel in chunk.VoxelData)
         {
-            bool renderBorders = chunk.LevelOfDetail == 0;
             bool IsVoxelExposed = false;
             bool IsEdgeCaseExposed = IterateAdjacentVoxels(continueOnOutsideBounds: renderBorders, voxel.Key,
                 (Vector3Byte adjacentLocalPosition) =>
@@ -132,8 +147,9 @@ public class NoiseSampler
         {
             Vector3Byte adjacentVoxel = (direction + localPosition).ToVector3Byte();
 
-            if (!Chunk.IsWithinBounds(adjacentVoxel))
-                if (continueOnOutsideBounds) continue;
+            if (continueOnOutsideBounds)
+                if (!Chunk.IsWithinBounds(adjacentVoxel))
+                    continue;
 
             action.Invoke(new(adjacentVoxel.X, adjacentVoxel.Y, adjacentVoxel.Z));
         }

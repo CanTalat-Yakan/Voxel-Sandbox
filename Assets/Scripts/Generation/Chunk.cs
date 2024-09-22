@@ -11,7 +11,7 @@ public class Chunk
     public Vector3Int WorldPosition { get; private set; }
     public int LevelOfDetail { get; private set; }
 
-    public int VoxelSize => (int)Math.Pow(2, LevelOfDetail);
+    public int VoxelSize => (int)Math.Pow(2, Math.Max(0, LevelOfDetail - 1));
 
     public Chunk(Vector3Int worldPosition, int levelOfDetail)
     {
