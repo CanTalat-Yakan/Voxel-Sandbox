@@ -2,6 +2,8 @@
 
 namespace VoxelSandbox;
 
+public record VoxelVertex(Vector3 position, Vector2 uv);
+
 public enum VoxelType : byte
 {
     None,

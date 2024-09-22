@@ -1,3 +1,4 @@
+
 struct VSInput
 {
     float3 pos : POSITION;
@@ -46,4 +47,19 @@ struct PSInputUI
 cbuffer VertexBuffer : register(b0)
 {
     float4x4 ProjectionMatrix;
+};
+
+struct VSInputMin
+{
+    float3 pos : POSITION;
+    float2 uv : TEXCOORD0;
+};
+
+struct PSInputMin
+{
+    float4 pos : SV_POSITION;
+    float3 worldpos : POSITION;
+    float3 camerapos : POSITION1;
+    float3 lookat : POSITION2;
+    float2 uv : TEXCOORD0;
 };

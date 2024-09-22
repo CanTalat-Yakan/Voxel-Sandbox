@@ -20,13 +20,13 @@ cbuffer Properties : register(b10)
 Texture2D texture0 : register(t0);
 sampler sampler0 : register(s3);
 
-PSInput VS(VSInput input)
+PSInputMin VS(VSInputMin input)
 {
-    PSInput output;
+    PSInputMin output;
 
     output.pos = mul(float4(input.pos, 1), mul(World, ViewProjection));
-    output.normal = mul(float4(input.normal, 0), World);
-    output.tangent = mul(float4(input.tangent, 0), World);
+    //output.normal = mul(float4(input.normal, 0), World);
+    //output.tangent = mul(float4(input.tangent, 0), World);
     output.worldpos = mul(float4(input.pos, 1), World);
     output.camerapos = Camera;
     output.lookat = ViewDirection;
@@ -35,13 +35,13 @@ PSInput VS(VSInput input)
     return output;
 }
 
-float4 PS(PSInput input) : SV_TARGET
+float4 PS(PSInputMin input) : SV_TARGET
 {
     // Sample the base color texture
     float4 baseColor = texture0.Sample(sampler0, input.uv);
 
     // Normalize the normal vector
-    float3 normal = normalize(input.normal);
+    float3 normal = float3(0,1,0); // normalize(input.normal);
 
     // Define light direction (from above)
     float3 lightDirection = normalize(float3(0.0f, -1.0f, 0.0f));
