@@ -2,7 +2,14 @@
 
 namespace VoxelSandbox;
 
-public record VoxelVertex(Vector3 position, Vector2 uv);
+public struct Properties
+{
+    public Vector3[] Normal;
+    public Vector3[] Tangent;
+    public Vector2[] TextureCoordinate;
+}
+
+public record VoxelVertex(Vector3 position, Vector3 data);
 
 public enum VoxelType : byte
 {
@@ -33,6 +40,20 @@ public class TextureAtlas()
     public static Vector2 GetTextureCoordinate(int index) =>
         new(AtlasTileSize * (index % RowsColumns),
             AtlasTileSize * (index / RowsColumns));
+}
+
+public struct PackData(byte normalIndex, byte lightValue, byte uvIndex)
+{
+    public float Encode()
+    {
+        // Combine bytes into a 32-bit integer
+        uint packed = ((uint)uvIndex << 16) | ((uint)lightValue << 8) | normalIndex;
+
+        // Convert the integer bits to a float
+        float packedFloat = BitConverter.ToSingle(BitConverter.GetBytes(packed), 0);
+
+        return packedFloat;
+    }
 }
 
 public struct Vector3Byte

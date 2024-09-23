@@ -10,7 +10,7 @@ public static class ExtensionMethods
         new((int)value.X, (int)value.Y, (int)value.Z);
 
     public static List<float> ToFloats(this List<VoxelVertex> vertices) =>
-        vertices.SelectMany((VoxelVertex vertex) => vertex.position.ToFloats().Concat(vertex.uv.ToFloats())).ToList();
+        vertices.SelectMany((VoxelVertex vertex) => vertex.position.ToFloats().Concat(vertex.data.ToFloats())).ToList();
 
     private static IEnumerable<float> ToFloats(this Vector3 vector)
     {

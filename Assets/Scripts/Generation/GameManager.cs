@@ -36,6 +36,7 @@ public class GameManager : Component
     public override void OnStart()
     {
         Generator.Initialize(new Vector3Int(0, 0, 0));
+        //MeshBuilder.Initialize();
 
         // Create a new thread to run the chunk processing
         Thread ChunkGenerationThread = new(() =>

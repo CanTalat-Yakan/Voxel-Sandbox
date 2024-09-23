@@ -52,7 +52,7 @@ cbuffer VertexBuffer : register(b0)
 struct VSInputMin
 {
     float3 pos : POSITION;
-    float2 uv : TEXCOORD0;
+    float3 data : NORMAL;
 };
 
 struct PSInputMin
@@ -61,5 +61,25 @@ struct PSInputMin
     float3 worldpos : POSITION;
     float3 camerapos : POSITION1;
     float3 lookat : POSITION2;
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
     float2 uv : TEXCOORD0;
 };
+
+uint DecodeNormalIndex(float packedFloat)
+{
+    uint packed = asuint(packedFloat);
+    return (packed & 0xFF); // Extract bits 0-7
+}
+
+uint DecodeLightValue(float packedFloat)
+{
+    uint packed = asuint(packedFloat);
+    return (packed >> 8) & 0xFF; // Extract bits 8-15
+}
+
+uint DecodeUVIndex(float packedFloat)
+{
+    uint packed = asuint(packedFloat);
+    return (packed >> 16) & 0xFF; // Extract bits 16-23
+}

@@ -15,13 +15,13 @@ public class Generator
     public Queue<Chunk> ChunksToGenerate = new();
     public Queue<Chunk> ChunksToBuild = new();
 
-    public void Initialize(Vector3Int playerPosition)
+    public void Initialize(Vector3Int originPosition)
     {
         // Initialize generatedChunks dictionary for all LOD levels
         for (int i = 0; i < LODCount; i++)
             GeneratedChunks[i] = new();
 
-        UpdateChunks(playerPosition);
+        UpdateChunks(originPosition);
     }
 
     public static void GetChunkFromPosition(Vector3Int worldPosition, out Chunk chunk, out Vector3Byte localVoxelPosition)

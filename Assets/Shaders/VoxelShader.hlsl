@@ -1,20 +1,10 @@
 ﻿#include "Include\Common.hlsli"
 
-cbuffer Properties : register(b10)
+cbuffer Properties : register(b2)
 {
-    // Color
-    float4 Color;
-    // Header("This is a Header!")
-    float Float;
-    int Int;
-    // Slider(1, 10)
-    float Slider;
-    // Space
-    float2 Float2;
-    float3 Float3;
-    float4 Float4;
-    // Space
-    bool Bool;
+    //float3 Normal[6];
+    //float3 Tangent[6];
+    //float2 TextureCoordinate[4];
 };
 
 Texture2D texture0 : register(t0);
@@ -25,12 +15,45 @@ PSInputMin VS(VSInputMin input)
     PSInputMin output;
 
     output.pos = mul(float4(input.pos, 1), mul(World, ViewProjection));
-    //output.normal = mul(float4(input.normal, 0), World);
-    //output.tangent = mul(float4(input.tangent, 0), World);
     output.worldpos = mul(float4(input.pos, 1), World);
+
     output.camerapos = Camera;
     output.lookat = ViewDirection;
-    output.uv = input.uv;
+    
+    // Decode the packed float
+    uint normalIndex = DecodeNormalIndex(input.data.x);
+    uint lightValue = DecodeLightValue(input.data.x);
+    uint uvIndex = DecodeUVIndex(input.data.x);
+    
+    float3 normal[6] =
+    {
+        float3(0, 1, 0),
+        float3(0, -1, 0),
+        float3(1, 0, 0),
+        float3(-1, 0, 0),
+        float3(0, 0, 1),
+        float3(0, 0, -1),
+    };
+    float3 tangent[6] =
+    {
+        float3(1, 0, 0),
+        float3(-1, 0, 0),
+        float3(0, 0, 1),
+        float3(0, 0, -1),
+        float3(0, 1, 0),
+        float3(0, -1, 0),
+    };
+    float2 uv[4] =
+    {
+        float2(1, 1),
+        float2(1, 0),
+        float2(0, 0),
+        float2(0, 1),
+    };
+    
+    output.normal = normal[normalIndex];
+    output.tangent = tangent[normalIndex];
+    output.uv = uv[uvIndex];
 
     return output;
 }
@@ -41,7 +64,7 @@ float4 PS(PSInputMin input) : SV_TARGET
     float4 baseColor = texture0.Sample(sampler0, input.uv);
 
     // Normalize the normal vector
-    float3 normal = float3(0,1,0); // normalize(input.normal);
+    float3 normal = normalize(input.normal);
 
     // Define light direction (from above)
     float3 lightDirection = normalize(float3(0.0f, -1.0f, 0.0f));
@@ -66,6 +89,7 @@ float4 PS(PSInputMin input) : SV_TARGET
     // Return the final color with the original alpha
     return float4(finalColor, baseColor.a);
 }
+
 //float4 PS(PSInput input) : SV_TARGET
 //{
 //    // Sample the base color texture
