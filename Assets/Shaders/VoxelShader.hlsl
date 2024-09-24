@@ -2,29 +2,6 @@
 
 cbuffer Properties : register(b2)
 {
-    //float3 Normal[6];
-    //float3 Tangent[6];
-    //float2 TextureCoordinate[4];
-};
-
-Texture2D texture0 : register(t0);
-sampler sampler0 : register(s3);
-
-PSInputMin VS(VSInputMin input)
-{
-    PSInputMin output;
-
-    output.pos = mul(float4(input.pos, 1), mul(World, ViewProjection));
-    output.worldpos = mul(float4(input.pos, 1), World);
-
-    output.camerapos = Camera;
-    output.lookat = ViewDirection;
-    
-    // Decode the packed float
-    uint normalIndex = DecodeNormalIndex(input.data.x);
-    uint lightValue = DecodeLightValue(input.data.x);
-    uint uvIndex = DecodeUVIndex(input.data.x);
-    
     float3 normal[6] =
     {
         float3(0, 1, 0),
@@ -50,6 +27,29 @@ PSInputMin VS(VSInputMin input)
         float2(0, 0),
         float2(0, 1),
     };
+};
+
+Texture2D texture0 : register(t0);
+sampler sampler0 : register(s3);
+
+PSInputMin VS(VSInputMin input)
+{
+    PSInputMin output;
+
+    float3 pos = UnpackFloatToVector3(input.data.x);
+    
+    output.pos = mul(float4(pos, 1), mul(World, ViewProjection));
+    output.worldpos = mul(float4(pos, 1), World);
+
+    output.camerapos = Camera;
+    output.lookat = ViewDirection;
+    
+    int4 attributes = UnpackFloatToBytes(input.data.y);
+
+    int uvIndex = attributes.x;
+    int textureIndex = attributes.y;
+    int normalIndex = attributes.z;
+    int lightValue = attributes.w;
     
     output.normal = normal[normalIndex];
     output.tangent = tangent[normalIndex];

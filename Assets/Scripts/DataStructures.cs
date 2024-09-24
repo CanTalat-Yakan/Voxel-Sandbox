@@ -2,15 +2,6 @@
 
 namespace VoxelSandbox;
 
-public struct Properties
-{
-    public Vector3[] Normal;
-    public Vector3[] Tangent;
-    public Vector2[] TextureCoordinate;
-}
-
-public record VoxelVertex(Vector3 position, Vector3 data);
-
 public enum VoxelType : byte
 {
     None,
@@ -42,17 +33,40 @@ public class TextureAtlas()
             AtlasTileSize * (index / RowsColumns));
 }
 
-public struct PackData(byte normalIndex, byte lightValue, byte uvIndex)
+public static class Vector3Packer
 {
-    public float Encode()
+    // Pack a Vector3 with X and Z (8 bits each) and Y (16 bits) into a float
+    public static float PackVector3ToFloat(byte x, ushort y, byte z)
     {
-        // Combine bytes into a 32-bit integer
-        uint packed = ((uint)uvIndex << 16) | ((uint)lightValue << 8) | normalIndex;
+        // Combine X (8 bits), Y (16 bits), and Z (8 bits) into a 32-bit integer
+        uint packed = ((uint)x << 24) | ((uint)y << 8) | z;
 
-        // Convert the integer bits to a float
-        float packedFloat = BitConverter.ToSingle(BitConverter.GetBytes(packed), 0);
+        // Convert the packed integer into a float
+        return BitConverter.ToSingle(BitConverter.GetBytes(packed), 0);
+    }
 
-        return packedFloat;
+    // Pack 4 bytes into a float
+    public static float PackBytesToFloat(byte b1, byte b2, byte b3, byte b4)
+    {
+        // Combine the 4 bytes into a 32-bit integer
+        uint packed = ((uint)b1 << 24) | ((uint)b2 << 16) | ((uint)b3 << 8) | b4;
+
+        // Convert the packed integer into a float
+        return BitConverter.ToSingle(BitConverter.GetBytes(packed), 0);
+    }
+
+    // Unpack 4 bytes from a float
+    public static (byte, byte, byte, byte) UnpackFloatToBytes(float packedFloat)
+    {
+        uint packed = BitConverter.ToUInt32(BitConverter.GetBytes(packedFloat), 0);
+
+        // Extract the bytes
+        byte b1 = (byte)((packed >> 24) & 0xFF);
+        byte b2 = (byte)((packed >> 16) & 0xFF);
+        byte b3 = (byte)((packed >> 8) & 0xFF);
+        byte b4 = (byte)(packed & 0xFF);
+
+        return (b1, b2, b3, b4);
     }
 }
 

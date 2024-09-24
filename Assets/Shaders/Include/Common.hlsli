@@ -52,7 +52,7 @@ cbuffer VertexBuffer : register(b0)
 struct VSInputMin
 {
     float3 pos : POSITION;
-    float3 data : NORMAL;
+    float2 data : TEXCOORD0;
 };
 
 struct PSInputMin
@@ -66,20 +66,33 @@ struct PSInputMin
     float2 uv : TEXCOORD0;
 };
 
-uint DecodeNormalIndex(float packedFloat)
+// Unpack a float into a float3 (X, Y, Z) where X and Z get 8 bits, Y gets 16 bits
+float3 UnpackFloatToVector3(float packedFloat)
 {
     uint packed = asuint(packedFloat);
-    return (packed & 0xFF); // Extract bits 0-7
+
+    // Extract the 8 bits for X
+    float X = (packed >> 24) & 0xFF;
+
+    // Extract the 16 bits for Y
+    float Y = (packed >> 8) & 0xFFFF;
+
+    // Extract the 8 bits for Z
+    float Z = packed & 0xFF;
+
+    return float3(X, Y, Z);
 }
 
-uint DecodeLightValue(float packedFloat)
+// Unpack a float into 4 bytes
+int4 UnpackFloatToBytes(float packedFloat)
 {
     uint packed = asuint(packedFloat);
-    return (packed >> 8) & 0xFF; // Extract bits 8-15
-}
 
-uint DecodeUVIndex(float packedFloat)
-{
-    uint packed = asuint(packedFloat);
-    return (packed >> 16) & 0xFF; // Extract bits 16-23
+    // Extract the bytes
+    uint b1 = (packed >> 24) & 0xFF;
+    uint b2 = (packed >> 16) & 0xFF;
+    uint b3 = (packed >> 8) & 0xFF;
+    uint b4 = packed & 0xFF;
+
+    return int4(b1, b2, b3, b4);
 }
