@@ -2,19 +2,31 @@
 
 cbuffer Properties : register(b10)
 {
-    // Color
-    float4 Color;
-    // Header("This is a Header!")
-    float Float;
-    int Int;
-    // Slider(1, 10)
-    float Slider;
-    // Space
-    float2 Float2;
-    float3 Float3;
-    float4 Float4;
-    // Space
-    bool Bool;
+    //float3 normal[6] =
+    //{
+    //    float3(0, 1, 0),
+    //    float3(0, -1, 0),
+    //    float3(1, 0, 0),
+    //    float3(-1, 0, 0),
+    //    float3(0, 0, 1),
+    //    float3(0, 0, -1),
+    //};
+    //float3 tangent[6] =
+    //{
+    //    float3(1, 0, 0),
+    //    float3(-1, 0, 0),
+    //    float3(0, 0, 1),
+    //    float3(0, 0, -1),
+    //    float3(0, 1, 0),
+    //    float3(0, -1, 0),
+    //};
+    //float2 uv[4] =
+    //{
+    //    float2(1, 1),
+    //    float2(1, 0),
+    //    float2(0, 0),
+    //    float2(0, 1),
+    //};
 };
 
 Texture2D texture0 : register(t0);
@@ -24,15 +36,46 @@ PSInputMin VS(VSInputMin input)
 {
     PSInputMin output;
 
-    output.pos = mul(float4(input.pos, 1), mul(World, ViewProjection));
-    //output.normal = mul(float4(input.normal, 0), World);
-    //output.tangent = mul(float4(input.tangent, 0), World);
-    output.worldpos = mul(float4(input.pos, 1), World);
+    float3 pos = UnpackFloatToVector3(input.data.x);
+    
+    output.pos = mul(float4(pos, 1), mul(World, ViewProjection));
+    output.worldpos = mul(float4(pos, 1), World);
+
     output.camerapos = Camera;
     output.lookat = ViewDirection;
-    output.uv = input.uv;
+    
+    int4 attributes = UnpackFloatToBytes(input.data.y);
+
+    int uvIndex = attributes.x;
+    //int textureIndex = attributes.y;
+    //int normalIndex = attributes.z;
+    //int lightValue = attributes.w;
+    
+    //output.normal = normal[normalIndex];
+    //output.tangent = tangent[normalIndex];
+    
+    float2 uv[4] =
+    {
+        float2(1, 1),
+        float2(1, 0),
+        float2(0, 0),
+        float2(0, 1),
+    };
+    output.uv = uv[uvIndex];
 
     return output;
+    
+    //PSInputMin output;
+
+    //output.pos = mul(float4(input.pos, 1), mul(World, ViewProjection));
+    ////output.normal = mul(float4(input.normal, 0), World);
+    ////output.tangent = mul(float4(input.tangent, 0), World);
+    //output.worldpos = mul(float4(input.pos, 1), World);
+    //output.camerapos = Camera;
+    //output.lookat = ViewDirection;
+    //output.uv = input.uv;
+
+    //return output;
 }
 
 float4 PS(PSInputMin input) : SV_TARGET
