@@ -2,31 +2,7 @@
 
 cbuffer Properties : register(b10)
 {
-    //float3 normal[6] =
-    //{
-    //    float3(0, 1, 0),
-    //    float3(0, -1, 0),
-    //    float3(1, 0, 0),
-    //    float3(-1, 0, 0),
-    //    float3(0, 0, 1),
-    //    float3(0, 0, -1),
-    //};
-    //float3 tangent[6] =
-    //{
-    //    float3(1, 0, 0),
-    //    float3(-1, 0, 0),
-    //    float3(0, 0, 1),
-    //    float3(0, 0, -1),
-    //    float3(0, 1, 0),
-    //    float3(0, -1, 0),
-    //};
-    //float2 uv[4] =
-    //{
-    //    float2(1, 1),
-    //    float2(1, 0),
-    //    float2(0, 0),
-    //    float2(0, 1),
-    //};
+
 };
 
 Texture2D texture0 : register(t0);
@@ -34,6 +10,32 @@ sampler sampler0 : register(s3);
 
 PSInputMin VS(VSInputMin input)
 {
+    float3 normal[6] =
+    {
+        float3(0, 1, 0),
+        float3(0, -1, 0),
+        float3(1, 0, 0),
+        float3(-1, 0, 0),
+        float3(0, 0, 1),
+        float3(0, 0, -1),
+    };
+    float3 tangent[6] =
+    {
+        float3(1, 0, 0),
+        float3(-1, 0, 0),
+        float3(0, 0, 1),
+        float3(0, 0, -1),
+        float3(0, 1, 0),
+        float3(0, -1, 0),
+    };
+    float2 uv[4] =
+    {
+        float2(1, 1),
+        float2(1, 0),
+        float2(0, 0),
+        float2(0, 1),
+    };
+
     PSInputMin output;
 
     float3 pos = UnpackFloatToVector3(input.data.x);
@@ -46,22 +48,15 @@ PSInputMin VS(VSInputMin input)
     
     int4 attributes = UnpackFloatToBytes(input.data.y);
 
-    int uvIndex = attributes.x;
-    //int textureIndex = attributes.y;
-    //int normalIndex = attributes.z;
-    //int lightValue = attributes.w;
+    int textureCoordinateIndex = attributes.x;
+    int textureIndex = attributes.y;
+    int normalIndex = attributes.z;
+    int lightValue = attributes.w;
     
-    //output.normal = normal[normalIndex];
-    //output.tangent = tangent[normalIndex];
+    output.normal = normal[normalIndex];
+    output.tangent = tangent[normalIndex];
     
-    float2 uv[4] =
-    {
-        float2(1, 1),
-        float2(1, 0),
-        float2(0, 0),
-        float2(0, 1),
-    };
-    output.uv = uv[uvIndex];
+    output.uv = uv[textureCoordinateIndex] * GetAtlasTileSize() + GetTextureCoordinate(textureIndex);
 
     return output;
     

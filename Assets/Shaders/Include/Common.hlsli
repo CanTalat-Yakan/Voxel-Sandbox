@@ -95,3 +95,16 @@ int4 UnpackFloatToBytes(float packedFloat)
 
     return int4(b1, b2, b3, b4);
 }
+
+float GetAtlasTileSize(int rowsColumns = 4)
+{
+    return 1.0f / rowsColumns;
+}
+
+float2 GetTextureCoordinate(int index, int resolution = 2048, int rowsColumns = 4)
+{
+    float atlasTileSize = GetAtlasTileSize();
+
+    return float2(atlasTileSize * (index % rowsColumns),
+                  atlasTileSize * (index / rowsColumns));
+}
