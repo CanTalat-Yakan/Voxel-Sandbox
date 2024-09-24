@@ -12,14 +12,14 @@ public class MeshBuilder
         List<int> indices = new();
         List<float> vertices = new();
         List<Vector3> positions = new();
+        byte voxelTypeMax = (byte)VoxelType.Air;
 
         // Iterate through each voxel in the chunk
         foreach (var voxel in chunk.VoxelData)
         {
-            if (chunk.GetVoxel(voxel.Key, out var voxelType))
-                if ((voxelType is not VoxelType.None) && (voxelType is not VoxelType.Air))
-                    // Add faces for each visible side of the voxel
-                    AddVoxelFaces(chunk, voxel.Key, voxel.Value, vertices, indices);
+            if ((byte)voxel.Value > 0 && (byte)voxel.Value < voxelTypeMax)
+                // Add faces for each visible side of the voxel
+                AddVoxelFaces(chunk, chunk.VoxelSize, voxel.Key, voxel.Value, vertices, indices);
 
             positions.Add(voxel.Key.ToVector3() * chunk.VoxelSize);
         }
@@ -34,7 +34,7 @@ public class MeshBuilder
         chunk.Mesh.SetMaterialPipeline("VoxelShader");
     }
 
-    private void AddVoxelFaces(Chunk chunk, Vector3Byte voxelPosition, VoxelType voxelType, List<float> vertices, List<int> indices)
+    private void AddVoxelFaces(Chunk chunk, int voxelSize, Vector3Byte voxelPosition, VoxelType voxelType, List<float> vertices, List<int> indices)
     {
         // Check each face direction for visibility
         for (int i = 0; i < Vector3Int.Directions.Length; i++)
@@ -46,14 +46,14 @@ public class MeshBuilder
 
             //Check if the adjacent voxel is an empty voxel
             if (!Chunk.IsWithinBounds(adjacentVoxelPosition))
-                AddFace(voxelPosition, voxelType, normal, tangent, vertices, indices);
+                AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
             else if (chunk.GetVoxel(adjacentVoxelPosition, out var adjacentVoxel))
                 if (adjacentVoxel is VoxelType.Air)
-                    AddFace(voxelPosition, voxelType, normal, tangent, vertices, indices);
+                    AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
         }
     }
 
-    private void AddFace(Vector3Byte voxelPosition, VoxelType voxelType, Vector3Int normal, Vector3Int tangent, List<float> vertices, List<int> indices)
+    private void AddFace(int voxelSize, Vector3Byte voxelPosition, VoxelType voxelType, Vector3Int normal, Vector3Int tangent, List<float> vertices, List<int> indices)
     {
         var faceVertices = new Vector3[4];
 
@@ -148,19 +148,6 @@ public class MeshBuilder
         vertices.AddRange([faceVertices[1].ToFloat(), Vector3Packer.PackBytesToFloat(1, textureIndex, normalIndex, lightIndex)]);
         vertices.AddRange([faceVertices[2].ToFloat(), Vector3Packer.PackBytesToFloat(2, textureIndex, normalIndex, lightIndex)]);
         vertices.AddRange([faceVertices[3].ToFloat(), Vector3Packer.PackBytesToFloat(3, textureIndex, normalIndex, lightIndex)]);
-
-        //vertices.Add(new VoxelVertex(faceVertices[0], new(new PackData(normalIndex, lightIndex, 0).Encode(), 0, 0)));
-        //vertices.Add(new VoxelVertex(faceVertices[1], new(new PackData(normalIndex, lightIndex, 1).Encode(), 0, 0)));
-        //vertices.Add(new VoxelVertex(faceVertices[2], new(new PackData(normalIndex, lightIndex, 2).Encode(), 0, 0)));
-        //vertices.Add(new VoxelVertex(faceVertices[3], new(new PackData(normalIndex, lightIndex, 3).Encode(), 0, 0)));
-        //vertices.Add(new VoxelVertex(faceVertices[0], Vector2.One * atlasTileSize + atlasUV));
-        //vertices.Add(new VoxelVertex(faceVertices[1], Vector2.UnitX * atlasTileSize + atlasUV));
-        //vertices.Add(new VoxelVertex(faceVertices[2], Vector2.Zero * atlasTileSize + atlasUV));
-        //vertices.Add(new VoxelVertex(faceVertices[3], Vector2.UnitY * atlasTileSize + atlasUV));
-        //vertices.Add(new Vertex(faceVertices[0], normal.ToVector3(), tangent.ToVector3(), Vector2.One * atlasTileSize + atlasUV));
-        //vertices.Add(new Vertex(faceVertices[1], normal.ToVector3(), tangent.ToVector3(), Vector2.UnitX * atlasTileSize + atlasUV));
-        //vertices.Add(new Vertex(faceVertices[2], normal.ToVector3(), tangent.ToVector3(), Vector2.Zero * atlasTileSize + atlasUV));
-        //vertices.Add(new Vertex(faceVertices[3], normal.ToVector3(), tangent.ToVector3(), Vector2.UnitY * atlasTileSize + atlasUV));
 
         // Add indices
         int startIndex = vertices.Count;

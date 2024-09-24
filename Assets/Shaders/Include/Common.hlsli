@@ -51,7 +51,6 @@ cbuffer VertexBuffer : register(b0)
 
 struct VSInputMin
 {
-    float3 pos : POSITION;
     float2 data : TEXCOORD0;
 };
 
@@ -95,4 +94,17 @@ int4 UnpackFloatToBytes(float packedFloat)
     uint b4 = packed & 0xFF;
 
     return int4(b1, b2, b3, b4);
+}
+
+float GetAtlasTileSize(int rowsColumns = 4)
+{
+    return 1.0f / rowsColumns;
+}
+
+float2 GetTextureCoordinate(int index, int resolution = 2048, int rowsColumns = 4)
+{
+    float atlasTileSize = GetAtlasTileSize();
+
+    return float2(atlasTileSize * (index % rowsColumns),
+                  atlasTileSize * (index / rowsColumns));
 }

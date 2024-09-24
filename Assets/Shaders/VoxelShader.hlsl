@@ -1,6 +1,14 @@
 ﻿#include "Include\Common.hlsli"
 
-cbuffer Properties : register(b2)
+cbuffer Properties : register(b10)
+{
+
+};
+
+Texture2D texture0 : register(t0);
+sampler sampler0 : register(s3);
+
+PSInputMin VS(VSInputMin input)
 {
     float3 normal[6] =
     {
@@ -27,13 +35,7 @@ cbuffer Properties : register(b2)
         float2(0, 0),
         float2(0, 1),
     };
-};
 
-Texture2D texture0 : register(t0);
-sampler sampler0 : register(s3);
-
-PSInputMin VS(VSInputMin input)
-{
     PSInputMin output;
 
     float3 pos = UnpackFloatToVector3(input.data.x);
@@ -46,16 +48,29 @@ PSInputMin VS(VSInputMin input)
     
     int4 attributes = UnpackFloatToBytes(input.data.y);
 
-    int uvIndex = attributes.x;
+    int textureCoordinateIndex = attributes.x;
     int textureIndex = attributes.y;
     int normalIndex = attributes.z;
     int lightValue = attributes.w;
     
     output.normal = normal[normalIndex];
     output.tangent = tangent[normalIndex];
-    output.uv = uv[uvIndex];
+    
+    output.uv = uv[textureCoordinateIndex] * GetAtlasTileSize() + GetTextureCoordinate(textureIndex);
 
     return output;
+    
+    //PSInputMin output;
+
+    //output.pos = mul(float4(input.pos, 1), mul(World, ViewProjection));
+    ////output.normal = mul(float4(input.normal, 0), World);
+    ////output.tangent = mul(float4(input.tangent, 0), World);
+    //output.worldpos = mul(float4(input.pos, 1), World);
+    //output.camerapos = Camera;
+    //output.lookat = ViewDirection;
+    //output.uv = input.uv;
+
+    //return output;
 }
 
 float4 PS(PSInputMin input) : SV_TARGET
@@ -89,7 +104,6 @@ float4 PS(PSInputMin input) : SV_TARGET
     // Return the final color with the original alpha
     return float4(finalColor, baseColor.a);
 }
-
 //float4 PS(PSInput input) : SV_TARGET
 //{
 //    // Sample the base color texture
