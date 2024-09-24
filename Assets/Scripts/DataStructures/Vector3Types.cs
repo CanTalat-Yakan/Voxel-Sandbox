@@ -1,28 +1,13 @@
-﻿using System.Numerics;
-
-namespace VoxelSandbox;
-
-public enum VoxelType : byte
-{
-    None,
-    Air,
-    Stone,
-    Grass,
-    Grass_Top,
-    Dirt,
-    Sand,
-    Sandstone,
-    Sandstone_Top,
-    Sandstone_Bottom,
-    IronOre,
-    DiamondOre,
-    Log,
-    Log_Top,
-    Leaves,
-}
+﻿namespace VoxelSandbox;
 
 public static class Vector3Packer
 {
+    public static IEnumerable<float> Pack(Vector3Byte position, byte uv, byte tile, byte normal, byte light)
+    {
+        yield return position.ToFloat();
+        yield return PackBytesToFloat(uv, tile, normal, light);
+    }
+
     // Pack a Vector3 with X and Z (8 bits each) and Y (16 bits) into a float
     public static float PackVector3ToFloat(byte x, ushort y, byte z)
     {
@@ -77,8 +62,8 @@ public struct Vector3Byte
     public override string ToString() =>
         $"({X}, {Y}, {Z})";
 
-    public Vector3 ToVector3() =>
-        new Vector3(X, Y, Z);
+    public System.Numerics.Vector3 ToVector3() =>
+        new(X, Y, Z);
 
     public Vector3Int ToVector3Int() =>
         new(X, Y, Z);
@@ -104,7 +89,7 @@ public struct Vector3Byte
         }
     }
 
-    public static Vector3Byte operator -(Vector3Byte a, Vector3 b) =>
+    public static Vector3Byte operator -(Vector3Byte a, System.Numerics.Vector3 b) =>
         new(a.X - (int)b.X, a.Y - (int)b.Y, a.Z - (int)b.Z);
 
     public static Vector3Byte operator +(Vector3Byte a, Vector3Int b) =>
@@ -163,7 +148,7 @@ public struct Vector3Int
     public override string ToString() =>
         $"({X}, {Y}, {Z})";
 
-    public Vector3 ToVector3() =>
+    public System.Numerics.Vector3 ToVector3() =>
         new(X, Y, Z);
 
     public Vector3Byte ToVector3Byte() =>

@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-
 using Engine.ECS;
 
 namespace VoxelSandbox;
@@ -28,7 +27,7 @@ public class RayCaster : Component
 
     public void SetCube(Entity cube) =>
         _cube = cube;
-    
+
     public void SetCamera(Entity camera) =>
         _camera = camera;
 

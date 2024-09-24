@@ -123,10 +123,10 @@ public class MeshBuilder
         textureIndex--;
 
         // Add vertices
-        vertices.AddRange([faceVertices[0].ToFloat(), Vector3Packer.PackBytesToFloat(0, textureIndex, normalIndex, lightIndex)]);
-        vertices.AddRange([faceVertices[1].ToFloat(), Vector3Packer.PackBytesToFloat(1, textureIndex, normalIndex, lightIndex)]);
-        vertices.AddRange([faceVertices[2].ToFloat(), Vector3Packer.PackBytesToFloat(2, textureIndex, normalIndex, lightIndex)]);
-        vertices.AddRange([faceVertices[3].ToFloat(), Vector3Packer.PackBytesToFloat(3, textureIndex, normalIndex, lightIndex)]);
+        vertices.AddRange(Vector3Packer.Pack(faceVertices[0], 0, textureIndex, normalIndex, lightIndex));
+        vertices.AddRange(Vector3Packer.Pack(faceVertices[1], 1, textureIndex, normalIndex, lightIndex));
+        vertices.AddRange(Vector3Packer.Pack(faceVertices[2], 2, textureIndex, normalIndex, lightIndex));
+        vertices.AddRange(Vector3Packer.Pack(faceVertices[3], 3, textureIndex, normalIndex, lightIndex));
 
         // Add indices
         int startIndex = vertices.Count;
