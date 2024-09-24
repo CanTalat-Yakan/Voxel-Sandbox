@@ -9,7 +9,7 @@ public static class ExtensionMethods
     public static Vector3Byte ToVector3Byte(this Vector3 value) =>
         new((int)value.X, (int)value.Y, (int)value.Z);
 
-    public static float ToFloat(this Vector3 vector) =>
+    public static float ToFloat(this Vector3Byte vector) =>
         Vector3Packer.PackVector3ToFloat((byte)vector.X, (ushort)vector.Y, (byte)vector.Z);
 
     private static IEnumerable<float> ToFloats(this Vector3 vector)

@@ -54,20 +54,6 @@ public static class Vector3Packer
         // Convert the packed integer into a float
         return BitConverter.ToSingle(BitConverter.GetBytes(packed), 0);
     }
-
-    // Unpack 4 bytes from a float
-    public static (byte, byte, byte, byte) UnpackFloatToBytes(float packedFloat)
-    {
-        uint packed = BitConverter.ToUInt32(BitConverter.GetBytes(packedFloat), 0);
-
-        // Extract the bytes
-        byte b1 = (byte)((packed >> 24) & 0xFF);
-        byte b2 = (byte)((packed >> 16) & 0xFF);
-        byte b3 = (byte)((packed >> 8) & 0xFF);
-        byte b4 = (byte)(packed & 0xFF);
-
-        return (b1, b2, b3, b4);
-    }
 }
 
 public struct Vector3Byte

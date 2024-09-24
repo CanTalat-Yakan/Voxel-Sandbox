@@ -19,7 +19,7 @@ public class MeshBuilder
         {
             if ((byte)voxel.Value > 0 && (byte)voxel.Value < voxelTypeMax)
                 // Add faces for each visible side of the voxel
-                AddVoxelFaces(chunk, chunk.VoxelSize, voxel.Key, voxel.Value, vertices, indices);
+                AddVoxelFaces(chunk, voxel, vertices, indices);
 
             positions.Add(voxel.Key.ToVector3() * chunk.VoxelSize);
         }
@@ -34,7 +34,7 @@ public class MeshBuilder
         chunk.Mesh.SetMaterialPipeline("VoxelShader");
     }
 
-    private void AddVoxelFaces(Chunk chunk, int voxelSize, Vector3Byte voxelPosition, VoxelType voxelType, List<float> vertices, List<int> indices)
+    private void AddVoxelFaces(Chunk chunk, KeyValuePair<Vector3Byte, VoxelType> voxel, List<float> vertices, List<int> indices)
     {
         // Check each face direction for visibility
         for (int i = 0; i < Vector3Int.Directions.Length; i++)
@@ -42,26 +42,26 @@ public class MeshBuilder
             Vector3Int normal = Vector3Int.Directions[i];
             Vector3Int tangent = Vector3Int.OrthogonalDirections[i];
 
-            Vector3Byte adjacentVoxelPosition = voxelPosition + normal;
+            Vector3Byte adjacentVoxelPosition = voxel.Key + normal;
 
             //Check if the adjacent voxel is an empty voxel
             if (!Chunk.IsWithinBounds(adjacentVoxelPosition))
-                AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
+                AddFace(voxel, normal, tangent, vertices, indices);
             else if (chunk.GetVoxel(adjacentVoxelPosition, out var adjacentVoxel))
                 if (adjacentVoxel is VoxelType.Air)
-                    AddFace(voxelSize, voxelPosition, voxelType, normal, tangent, vertices, indices);
+                    AddFace(voxel, normal, tangent, vertices, indices);
         }
     }
 
-    private void AddFace(int voxelSize, Vector3Byte voxelPosition, VoxelType voxelType, Vector3Int normal, Vector3Int tangent, List<float> vertices, List<int> indices)
+    private void AddFace(KeyValuePair<Vector3Byte, VoxelType> voxel, Vector3Int normal, Vector3Int tangent, List<float> vertices, List<int> indices)
     {
-        var faceVertices = new Vector3[4];
+        var faceVertices = new Vector3Byte[4];
 
-        string enumName = voxelType.ToString();
-
-        byte textureIndex = (byte)voxelType;
+        byte textureIndex = (byte)voxel.Value;
         byte normalIndex = 0;
         byte lightIndex = 0;
+
+        string enumName = voxel.Value.ToString();
 
         // Compute the vertices of the face based on normal direction
         if (normal == Vector3Int.Top)
@@ -73,10 +73,10 @@ public class MeshBuilder
 
             faceVertices =
             [
-                new Vector3(voxelPosition.X,         voxelPosition.Y + 1,     voxelPosition.Z    ),
-                new Vector3(voxelPosition.X,         voxelPosition.Y + 1,     voxelPosition.Z + 1),
-                new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z + 1),
-                new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z    ),
+                new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z    ),
+                new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z + 1),
+                new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z + 1),
+                new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z    ),
             ];
         }
         else if (normal == Vector3Int.Bottom)
@@ -88,10 +88,10 @@ public class MeshBuilder
 
             faceVertices =
             [
-                new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z    ),
-                new Vector3(voxelPosition.X + 1,     voxelPosition.Y,         voxelPosition.Z    ),
-                new Vector3(voxelPosition.X + 1,     voxelPosition.Y,         voxelPosition.Z + 1),
-                new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z + 1),
+                new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z    ),
+                new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z    ),
+                new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z + 1),
+                new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z + 1),
             ];
         }
         else if (normal == Vector3Int.Right)
@@ -100,10 +100,10 @@ public class MeshBuilder
 
             faceVertices =
             [
-                new Vector3(voxelPosition.X + 1,     voxelPosition.Y,         voxelPosition.Z    ),
-                new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z    ),
-                new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z + 1),
-                new Vector3(voxelPosition.X + 1,     voxelPosition.Y,         voxelPosition.Z + 1),
+                new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z    ),
+                new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z    ),
+                new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z + 1),
+                new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z + 1),
             ];
         }
         else if (normal == Vector3Int.Left)
@@ -112,10 +112,10 @@ public class MeshBuilder
 
             faceVertices =
             [
-                new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z + 1),
-                new Vector3(voxelPosition.X,         voxelPosition.Y + 1,     voxelPosition.Z + 1),
-                new Vector3(voxelPosition.X,         voxelPosition.Y + 1,     voxelPosition.Z    ),
-                new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z    ),
+                new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z + 1),
+                new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z + 1),
+                new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z    ),
+                new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z    ),
             ];
         }
         else if (normal == Vector3Int.Front)
@@ -124,10 +124,10 @@ public class MeshBuilder
 
             faceVertices =
             [
-                new Vector3(voxelPosition.X + 1,     voxelPosition.Y,         voxelPosition.Z + 1),
-                new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z + 1),
-                new Vector3(voxelPosition.X,         voxelPosition.Y + 1,     voxelPosition.Z + 1),
-                new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z + 1),
+                new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z + 1),
+                new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z + 1),
+                new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z + 1),
+                new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z + 1),
             ];
         }
         else if (normal == Vector3Int.Back)
@@ -136,10 +136,10 @@ public class MeshBuilder
 
             faceVertices =
             [
-                new Vector3(voxelPosition.X,         voxelPosition.Y,         voxelPosition.Z    ),
-                new Vector3(voxelPosition.X,         voxelPosition.Y + 1,     voxelPosition.Z    ),
-                new Vector3(voxelPosition.X + 1,     voxelPosition.Y + 1,     voxelPosition.Z    ),
-                new Vector3(voxelPosition.X + 1,     voxelPosition.Y,         voxelPosition.Z    ),
+                new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z),
+                new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z),
+                new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z),
+                new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z),
             ];
         }
 

@@ -101,10 +101,53 @@ float GetAtlasTileSize(int rowsColumns = 4)
     return 1.0f / rowsColumns;
 }
 
-float2 GetTextureCoordinate(int index, int resolution = 2048, int rowsColumns = 4)
+float2 GetAtlasTileCoordinate(int index, int resolution = 2048, int rowsColumns = 4)
 {
     float atlasTileSize = GetAtlasTileSize();
 
     return float2(atlasTileSize * (index % rowsColumns),
                   atlasTileSize * (index / rowsColumns));
+}
+
+float3 GetNormal(int index)
+{
+    float3 normal[6] =
+    {
+        float3(0, 1, 0),
+        float3(0, -1, 0),
+        float3(1, 0, 0),
+        float3(-1, 0, 0),
+        float3(0, 0, 1),
+        float3(0, 0, -1),
+    };
+
+    return normal[index];
+}
+
+float3 GetTangent(int index)
+{
+    float3 tangent[6] =
+    {
+        float3(1, 0, 0),
+        float3(-1, 0, 0),
+        float3(0, 0, 1),
+        float3(0, 0, -1),
+        float3(0, 1, 0),
+        float3(0, -1, 0),
+    };
+    
+    return tangent[index];
+}
+
+float2 GetUV(int index)
+{
+    float2 uv[4] =
+    {
+        float2(1, 1),
+        float2(1, 0),
+        float2(0, 0),
+        float2(0, 1)
+    };
+
+    return uv[index];
 }
