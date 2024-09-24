@@ -47,7 +47,7 @@ float4 PS(PSInputMin input) : SV_TARGET
 
     // Calculate the dot product between normal and light direction
     float NdotL = saturate(dot(normal, -lightDirection));
-
+        
     // Toon shading: quantize the lighting to create discrete steps
     const int toonLevels = 3; // Number of shading levels
     float quantized = floor(NdotL * toonLevels) / (toonLevels - 1);

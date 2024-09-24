@@ -12,17 +12,15 @@ public class MeshBuilder
         List<int> indices = new();
         List<float> vertices = new();
         List<Vector3> positions = new();
-        byte voxelTypeMax = (byte)VoxelType.Air;
+
+        byte none = (byte)VoxelType.None;
+        byte air = (byte)VoxelType.Air;
 
         // Iterate through each voxel in the chunk
         foreach (var voxel in chunk.VoxelData)
-        {
-            if ((byte)voxel.Value > 0 && (byte)voxel.Value < voxelTypeMax)
+            if ((byte)voxel.Value > none && (byte)voxel.Value < air)
                 // Add faces for each visible side of the voxel
-                AddVoxelFaces(chunk, voxel, vertices, indices);
-
-            positions.Add(voxel.Key.ToVector3() * chunk.VoxelSize);
-        }
+                AddVoxelFaces(chunk, voxel, vertices, indices, positions);
 
         var entity = GameManager.Instance.Entity.Manager.CreateEntity();
         entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
@@ -34,7 +32,7 @@ public class MeshBuilder
         chunk.Mesh.SetMaterialPipeline("VoxelShader");
     }
 
-    private void AddVoxelFaces(Chunk chunk, KeyValuePair<Vector3Byte, VoxelType> voxel, List<float> vertices, List<int> indices)
+    private void AddVoxelFaces(Chunk chunk, KeyValuePair<Vector3Byte, VoxelType> voxel, List<float> vertices, List<int> indices, List<Vector3> positions)
     {
         // Check each face direction for visibility
         for (int i = 0; i < Vector3Int.Directions.Length; i++)
@@ -51,6 +49,8 @@ public class MeshBuilder
                 if (adjacentVoxel is VoxelType.Air)
                     AddFace(voxel, normal, tangent, vertices, indices);
         }
+
+        positions.Add(voxel.Key.ToVector3() * chunk.VoxelSize);
     }
 
     private void AddFace(KeyValuePair<Vector3Byte, VoxelType> voxel, Vector3Int normal, Vector3Int tangent, List<float> vertices, List<int> indices)

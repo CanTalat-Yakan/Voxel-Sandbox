@@ -46,12 +46,12 @@ public class NoiseSampler
             for (int z = 1; z <= Generator.ChunkSizeXZ * chunkSizeXZMultiplyer; z++)
             {
                 int surfaceHeight = GetSurfaceHeight(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
-                //int mountainHeight = GetMountainHeight(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
+                int mountainHeight = GetMountainHeight(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
                 int undergroundDetail = GetUndergroundDetail(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
                 int bedrockHeight = random.Next(5);
 
-                //if (mountainHeight > 0)
-                //    surfaceHeight += mountainHeight;
+                if (mountainHeight > 0)
+                    surfaceHeight += mountainHeight;
 
                 for (int y = voxelOffset; y < Generator.ChunkSizeY; y += voxelOffset)
                     if (chunk.LevelOfDetail > 0)
