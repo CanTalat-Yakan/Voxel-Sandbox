@@ -61,9 +61,16 @@ public class MeshBuilder
 
         string enumName = voxel.Value.ToString();
 
+        if (normalIndex == 0)
+            if (Enum.IsDefined(typeof(VoxelType), enumName + "_Top"))
+                textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Top");
+
+        if (normalIndex == 1)
+            if (Enum.IsDefined(typeof(VoxelType), enumName + "_Bottom"))
+                textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Bottom");
+
         // Compute the vertices of the face based on normal direction
         if (normal == Vector3Int.Top)
-        {
             faceVertices =
             [
                 new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z    ),
@@ -71,12 +78,7 @@ public class MeshBuilder
                 new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z + 1),
                 new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z    ),
             ];
-
-            if (Enum.IsDefined(typeof(VoxelType), enumName + "_Top"))
-                textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Top");
-        }
         else if (normal == Vector3Int.Bottom)
-        {
             faceVertices =
             [
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z    ),
@@ -84,10 +86,6 @@ public class MeshBuilder
                 new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z + 1),
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z + 1),
             ];
-
-            if (Enum.IsDefined(typeof(VoxelType), enumName + "_Bottom"))
-                textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Bottom");
-        }
         else if (normal == Vector3Int.Right)
             faceVertices =
             [
