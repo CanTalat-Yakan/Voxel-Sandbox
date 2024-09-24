@@ -79,7 +79,7 @@ float4 PS(PSInputMin input) : SV_TARGET
     float4 baseColor = texture0.Sample(sampler0, input.uv);
 
     // Normalize the normal vector
-    float3 normal = float3(0,1,0); // normalize(input.normal);
+    float3 normal = normalize(input.normal);
 
     // Define light direction (from above)
     float3 lightDirection = normalize(float3(0.0f, -1.0f, 0.0f));

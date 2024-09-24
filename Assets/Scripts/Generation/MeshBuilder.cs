@@ -12,20 +12,21 @@ public class MeshBuilder
         List<int> indices = new();
         List<float> vertices = new();
         List<Vector3> positions = new();
+        byte voxelTypeMax = (byte)VoxelType.Air;
 
         // Iterate through each voxel in the chunk
         foreach (var voxel in chunk.VoxelData)
         {
-            if (chunk.GetVoxel(voxel.Key, out var voxelType))
-                if ((voxelType is not VoxelType.None) && (voxelType is not VoxelType.Air))
-                    // Add faces for each visible side of the voxel
-                    AddVoxelFaces(chunk, chunk.VoxelSize, voxel.Key, voxel.Value, vertices, indices);
+            if ((byte)voxel.Value > 0 && (byte)voxel.Value < voxelTypeMax)
+                // Add faces for each visible side of the voxel
+                AddVoxelFaces(chunk, chunk.VoxelSize, voxel.Key, voxel.Value, vertices, indices);
 
             positions.Add(voxel.Key.ToVector3() * chunk.VoxelSize);
         }
 
         var entity = GameManager.Instance.Entity.Manager.CreateEntity();
         entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
+        entity.Transform.LocalScale *= chunk.VoxelSize;
 
         chunk.Mesh = entity.AddComponent<Mesh>();
         chunk.Mesh.SetMeshData(Kernel.Instance.Context.CreateMeshData(indices, vertices, positions, inputLayoutElements: "t"));
