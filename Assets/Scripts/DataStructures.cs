@@ -5,6 +5,7 @@ namespace VoxelSandbox;
 public enum VoxelType : byte
 {
     None,
+    Air,
     Stone,
     Grass,
     Grass_Top,
@@ -18,19 +19,6 @@ public enum VoxelType : byte
     Log,
     Log_Top,
     Leaves,
-    Air,
-}
-
-public class TextureAtlas()
-{
-    public static int Resolution = 2048;
-    public static int RowsColumns = 4;
-
-    public static float AtlasTileSize = 1.0f / RowsColumns;
-
-    public static Vector2 GetTextureCoordinate(int index) =>
-        new(AtlasTileSize * (index % RowsColumns),
-            AtlasTileSize * (index / RowsColumns));
 }
 
 public static class Vector3Packer

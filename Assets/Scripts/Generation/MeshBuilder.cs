@@ -13,12 +13,10 @@ public class MeshBuilder
         List<float> vertices = new();
         List<Vector3> positions = new();
 
-        byte none = (byte)VoxelType.None;
         byte air = (byte)VoxelType.Air;
 
-        // Iterate through each voxel in the chunk
         foreach (var voxel in chunk.VoxelData)
-            if ((byte)voxel.Value > none && (byte)voxel.Value < air)
+            if ((byte)voxel.Value > air)
                 // Add faces for each visible side of the voxel
                 AddVoxelFaces(chunk, voxel, vertices, indices, positions);
 
@@ -58,7 +56,7 @@ public class MeshBuilder
         var faceVertices = new Vector3Byte[4];
 
         byte textureIndex = (byte)voxel.Value;
-        byte normalIndex = 0;
+        byte normalIndex = (byte)Array.IndexOf(Vector3Int.Directions, normal); ;
         byte lightIndex = 0;
 
         string enumName = voxel.Value.ToString();
@@ -66,11 +64,6 @@ public class MeshBuilder
         // Compute the vertices of the face based on normal direction
         if (normal == Vector3Int.Top)
         {
-            if (Enum.IsDefined(typeof(VoxelType), enumName + "_Top"))
-                textureIndex = (byte)(VoxelType)Enum.Parse(typeof(VoxelType), enumName + "_Top");
-
-            normalIndex = 0;
-
             faceVertices =
             [
                 new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z    ),
@@ -78,14 +71,12 @@ public class MeshBuilder
                 new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z + 1),
                 new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z    ),
             ];
+
+            if (Enum.IsDefined(typeof(VoxelType), enumName + "_Top"))
+                textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Top");
         }
         else if (normal == Vector3Int.Bottom)
         {
-            if (Enum.IsDefined(typeof(VoxelType), enumName + "_Bottom"))
-                textureIndex = (byte)(VoxelType)Enum.Parse(typeof(VoxelType), enumName + "_Bottom");
-
-            normalIndex = 1;
-
             faceVertices =
             [
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z    ),
@@ -93,11 +84,11 @@ public class MeshBuilder
                 new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z + 1),
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z + 1),
             ];
+
+            if (Enum.IsDefined(typeof(VoxelType), enumName + "_Bottom"))
+                textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Bottom");
         }
         else if (normal == Vector3Int.Right)
-        {
-            normalIndex = 2;
-
             faceVertices =
             [
                 new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z    ),
@@ -105,11 +96,7 @@ public class MeshBuilder
                 new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z + 1),
                 new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z + 1),
             ];
-        }
         else if (normal == Vector3Int.Left)
-        {
-            normalIndex = 3;
-
             faceVertices =
             [
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z + 1),
@@ -117,11 +104,7 @@ public class MeshBuilder
                 new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z    ),
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z    ),
             ];
-        }
         else if (normal == Vector3Int.Front)
-        {
-            normalIndex = 4;
-
             faceVertices =
             [
                 new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z + 1),
@@ -129,11 +112,7 @@ public class MeshBuilder
                 new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z + 1),
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z + 1),
             ];
-        }
         else if (normal == Vector3Int.Back)
-        {
-            normalIndex = 5;
-
             faceVertices =
             [
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z),
@@ -141,7 +120,9 @@ public class MeshBuilder
                 new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z),
                 new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z),
             ];
-        }
+
+        // offset index for the air value;
+        textureIndex--;
 
         // Add vertices
         vertices.AddRange([faceVertices[0].ToFloat(), Vector3Packer.PackBytesToFloat(0, textureIndex, normalIndex, lightIndex)]);
