@@ -21,16 +21,24 @@ public class MeshBuilder
         int maxVertexFloats = maxVertices * FloatsPerVertex;
 
         // Preallocate arrays
-        var indices = new int[maxIndices];
-        var vertices = new float[maxVertexFloats];
+        var indices = new int[maxIndices / 4];
+        var vertices = new float[maxVertexFloats / 4];
 
         int vertexFloatCount = 0;
         int indexCount = 0;
 
         foreach (var voxel in chunk.VoxelData)
             if ((byte)voxel.Value > 0)
+            {
+                if (vertexFloatCount + MaxFacesPerVoxel * VerticesPerFace * 2 >= vertices.Length)
+                    Array.Resize(ref vertices, vertices.Length + vertices.Length / 10);
+
+                if (indexCount + MaxFacesPerVoxel * IndicesPerFace * 2 >= indices.Length)
+                    Array.Resize(ref indices, indices.Length + indices.Length / 10);
+
                 // Add faces for each visible side of the voxel
                 AddVoxelFaces(chunk, voxel, vertices, ref vertexFloatCount, indices, ref indexCount);
+            }
 
         var entity = GameManager.Instance.Entity.Manager.CreateEntity();
         entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
