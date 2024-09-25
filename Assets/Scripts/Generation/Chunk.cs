@@ -7,7 +7,7 @@ public class Chunk
     public Mesh Mesh;
 
     public Dictionary<Vector3Byte, VoxelType> VoxelData = new();
-    public Dictionary<Vector2Byte, NoiseData> NoiseData = new();
+    public Dictionary<int, NoiseData> NoiseData = new();
 
     public Vector3Int WorldPosition { get; private set; }
     public int LevelOfDetail { get; private set; }
@@ -36,8 +36,14 @@ public class Chunk
     public bool SetVoxel(Vector3Byte localPosition, VoxelType voxelType) =>
         VoxelData.TryAdd(localPosition, voxelType);
     
-    public bool SetNoiseData(Vector2Byte noisePosition, NoiseData noiseData) =>
-        NoiseData.TryAdd(noisePosition, noiseData);
+    public bool TryGetNoiseData(int x, int z, out NoiseData noiseData) =>
+        NoiseData.TryGetValue(x * Generator.ChunkSizeXZ + z, out noiseData);
+    
+    public NoiseData GetNoiseData(int x, int z) =>
+        NoiseData[x * Generator.ChunkSizeXZ + z];
+    
+    public bool SetNoiseData(int x, int z, NoiseData noiseData) =>
+        NoiseData.TryAdd(x * Generator.ChunkSizeXZ + z, noiseData);
 
     public Vector3Int GetChunkSize() =>
         new Vector3Int(

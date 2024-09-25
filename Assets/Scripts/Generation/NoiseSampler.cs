@@ -19,9 +19,9 @@ public sealed partial class NoiseSampler
     private Billow _mountainNoise = new()
     {
         Primitive2D = s_perlinPrimitive,
-        OctaveCount = 3,        // Fewer octaves for a smoother look
-        Frequency = 0.0002f,      // Lower frequency for broader features
-        Scale = 200,           // Adjust scale to manage the level of detail
+        OctaveCount = 3,
+        Frequency = 0.0002f,
+        Scale = 200,
     };
     private Billow _undergroundNoise = new()
     {
@@ -95,7 +95,7 @@ public sealed partial class NoiseSampler
     {
         sample = null;
 
-        var noiseData = SampleNoise(chunk, voxelPosition.ToVector2Byte());
+        var noiseData = SampleNoise(chunk, ref voxelPosition);
         int surfaceHeight = noiseData.SurfaceHeight;
         int mountainHeight = noiseData.MountainHeight;
         int undergroundDetail = noiseData.UndergroundDetail;
@@ -140,10 +140,10 @@ public sealed partial class NoiseSampler
         return sample is not null;
     }
 
-    private NoiseData SampleNoise(Chunk chunk, Vector2Byte noisePosition)
+    private NoiseData SampleNoise(Chunk chunk, ref Vector3Byte noisePosition)
     {
-        if (chunk.NoiseData.ContainsKey(noisePosition))
-            return chunk.NoiseData[noisePosition];
+        if (chunk.TryGetNoiseData(noisePosition.X, noisePosition.Z, out var noiseData))
+            return noiseData;
 
         int nx = chunk.WorldPosition.X + noisePosition.X * chunk.VoxelSize;
         int nz = chunk.WorldPosition.Z + noisePosition.Z * chunk.VoxelSize;
@@ -155,9 +155,9 @@ public sealed partial class NoiseSampler
 
         surfaceHeight += (mountainHeight + 1) / 2;
 
-        NoiseData noiseData = new(surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight);
+        noiseData = new(surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight);
 
-        chunk.SetNoiseData(noisePosition, noiseData);
+        chunk.SetNoiseData(noisePosition.X, noisePosition.Z, noiseData);
 
         return noiseData;
     }

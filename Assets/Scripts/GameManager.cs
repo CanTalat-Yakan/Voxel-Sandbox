@@ -25,12 +25,12 @@ public class GameManager : Component
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlasBig2.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
-        //var controller = Entity.Manager.CreateCamera(name: "Controller").Entity;
-        //controller.Transform.SetPosition(y: 152);
-        //controller.AddComponent<PlayerMovement>();
-        //controller.AddComponent<RayCaster>().SetCamera(controller);
-        //controller.GetComponent<Camera>()[0].FOV = 100;
-        //controller.GetComponent<Camera>()[0].Clipping.Y = 10000;
+        var controller = Entity.Manager.CreateCamera(name: "Controller").Entity;
+        controller.Transform.SetPosition(y: 200);
+        controller.AddComponent<PlayerMovement>();
+        controller.AddComponent<RayCaster>().SetCamera(controller);
+        controller.GetComponent<Camera>()[0].FOV = 100;
+        controller.GetComponent<Camera>()[0].Clipping.Y = 10000;
     }
 
     public override void OnStart()
