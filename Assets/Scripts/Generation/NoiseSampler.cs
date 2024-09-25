@@ -63,7 +63,7 @@ public sealed partial class NoiseSampler
 {
     private void AddVoxelIfExposed(Vector3Byte voxelPosition, Chunk chunk)
     {
-        CheckVoxel(out var voxel, ref voxelPosition, chunk);
+        SampleVoxel(out var voxel, ref voxelPosition, chunk);
 
         if (voxel is null)
             return;
@@ -72,7 +72,7 @@ public sealed partial class NoiseSampler
         {
             Vector3Byte adjacentVoxelPosition = (direction + voxelPosition).ToVector3Byte();
 
-            CheckVoxel(out var adjacentVoxel, ref adjacentVoxelPosition, chunk);
+            SampleVoxel(out var adjacentVoxel, ref adjacentVoxelPosition, chunk);
 
             // If the adjacent voxel was not found, the current iterated voxel is exposed
             if (adjacentVoxel is null)
@@ -81,14 +81,6 @@ public sealed partial class NoiseSampler
                 chunk.SetVoxel(voxelPosition, voxel.Value.Value); // the mesh
             }
         }
-    }
-
-    private void CheckVoxel(out KeyValuePair<Vector3Byte, VoxelType>? voxel, ref Vector3Byte voxelPosition, Chunk chunk)
-    {
-        voxel = null;
-
-        if (SampleVoxel(out var sample, ref voxelPosition, chunk))
-            voxel = sample.Value;
     }
 
     private bool SampleVoxel(out KeyValuePair<Vector3Byte, VoxelType>? sample, ref Vector3Byte voxelPosition, Chunk chunk)

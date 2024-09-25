@@ -14,8 +14,6 @@ public class Chunk
 
     public int VoxelSize => (int)Math.Pow(2, Math.Max(0, LevelOfDetail - 1));
 
-    public static int VoxelCapacity = Generator.ChunkSizeXZ * Generator.ChunkSizeXZ * Generator.ChunkSizeY;
-
     public Chunk(Vector3Int worldPosition, int levelOfDetail)
     {
         WorldPosition = worldPosition;
