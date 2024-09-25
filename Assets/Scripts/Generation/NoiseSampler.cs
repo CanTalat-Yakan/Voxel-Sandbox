@@ -45,17 +45,17 @@ public sealed partial class NoiseSampler
         Scale = 1
     };
 
-    private Dictionary<Vector3Byte, VoxelType> _cachedVoxelDictionary = new();
-
     public void GenerateChunkContent(Chunk chunk)
     {
+        Dictionary<Vector3Byte, VoxelType> cachedVoxelDictionary = new();
+
         int voxelSize = chunk.VoxelSize;
         int chunkSizeXZMultiplyer = chunk.LevelOfDetail == 0 ? 1 : 2;
 
         for (int x = 1; x <= Generator.ChunkSizeXZ * chunkSizeXZMultiplyer; x++)
             for (int z = 1; z <= Generator.ChunkSizeXZ * chunkSizeXZMultiplyer; z++)
                 for (int y = voxelSize; y < Generator.ChunkSizeY; y += voxelSize)
-                    AddVoxelIfExposed(chunk, new(x, y, z));
+                    AddVoxelIfExposed(new(x, y, z), chunk, cachedVoxelDictionary);
 
         GameManager.Instance.Generator.ChunksToBuild.Enqueue(chunk);
     }
@@ -63,9 +63,9 @@ public sealed partial class NoiseSampler
 
 public sealed partial class NoiseSampler
 {
-    private void AddVoxelIfExposed(Chunk chunk, Vector3Byte voxelPosition)
+    private void AddVoxelIfExposed(Vector3Byte voxelPosition, Chunk chunk, Dictionary<Vector3Byte, VoxelType> cachedVoxelDictionary)
     {
-        CheckVoxel(out var voxel, ref voxelPosition, chunk);
+        CheckVoxel(out var voxel, ref voxelPosition, chunk, cachedVoxelDictionary);
 
         if (voxel is null)
             return;
@@ -74,10 +74,10 @@ public sealed partial class NoiseSampler
         {
             Vector3Byte adjacentVoxelPosition = (direction + voxelPosition).ToVector3Byte();
 
-                if (!Chunk.IsWithinBounds(adjacentVoxelPosition))
-                    continue;
+            if (!Chunk.IsWithinBounds(adjacentVoxelPosition))
+                continue;
 
-            CheckVoxel(out var adjacentVoxel, ref adjacentVoxelPosition, chunk);
+            CheckVoxel(out var adjacentVoxel, ref adjacentVoxelPosition, chunk, cachedVoxelDictionary);
 
             // If the adjacent voxel was not found, the current iterated voxel is exposed
             if (adjacentVoxel is null)
@@ -88,15 +88,15 @@ public sealed partial class NoiseSampler
         }
     }
 
-    private void CheckVoxel(out KeyValuePair<Vector3Byte, VoxelType>? voxel, ref Vector3Byte voxelPosition, Chunk chunk)
+    private void CheckVoxel(out KeyValuePair<Vector3Byte, VoxelType>? voxel, ref Vector3Byte voxelPosition, Chunk chunk, Dictionary<Vector3Byte, VoxelType> cachedVoxelDictionary)
     {
         voxel = null;
 
-        if (_cachedVoxelDictionary.ContainsKey(voxelPosition))
-            voxel = new(voxelPosition, _cachedVoxelDictionary[voxelPosition]);
+        if (cachedVoxelDictionary.ContainsKey(voxelPosition))
+            voxel = new(voxelPosition, cachedVoxelDictionary[voxelPosition]);
         else if (SampleVoxel(out var sample, ref voxelPosition, chunk))
         {
-            _cachedVoxelDictionary.Add(voxelPosition, sample.Value.Value);
+            cachedVoxelDictionary.Add(voxelPosition, sample.Value.Value);
 
             voxel = sample.Value;
         }
@@ -130,13 +130,15 @@ public sealed partial class NoiseSampler
                 sample = new(voxelPosition, y - 1 < bedrockHeight ? VoxelType.DiamondOre : VoxelType.Stone);
             else if (y + undergroundDetail < surfaceHeight)
             {
-                int nx = x + chunk.WorldPosition.X * chunk.VoxelSize;
-                int nz = z + chunk.WorldPosition.Z * chunk.VoxelSize;
+                int nx = chunk.WorldPosition.X + x * chunk.VoxelSize;
+                int nz = chunk.WorldPosition.Z + z * chunk.VoxelSize;
 
                 double caveValue = GetCaveNoise(nx, y * 2, nz);
 
-                if (caveValue > 0.25 && caveValue < 0.6)
-                    sample = new(voxelPosition, VoxelType.Stone);
+                if (caveValue < 0.25 || caveValue > 0.6)
+                    return sample is not null;
+
+                sample = new(voxelPosition, VoxelType.Stone);
             }
             else if (y + undergroundDetail - 5 < surfaceHeight)
                 sample = new(voxelPosition, VoxelType.Stone);
@@ -154,8 +156,8 @@ public sealed partial class NoiseSampler
         if (chunk.NoiseData.ContainsKey(noisePosition))
             return chunk.NoiseData[noisePosition];
 
-        int nx = noisePosition.X + chunk.WorldPosition.X * chunk.VoxelSize;
-        int nz = noisePosition.Z + chunk.WorldPosition.Z * chunk.VoxelSize;
+        int nx = chunk.WorldPosition.X + noisePosition.X * chunk.VoxelSize;
+        int nz = chunk.WorldPosition.Z + noisePosition.Z * chunk.VoxelSize;
 
         int surfaceHeight = GetSurfaceHeight(nx, nz);
         int mountainHeight = GetMountainHeight(nx, nz);
