@@ -26,10 +26,16 @@ public class Chunk
 
     public bool HasVoxel(Vector3Byte localPosition) =>
         VoxelData.ContainsKey(localPosition);
-    
+
     public bool GetVoxel(Vector3Byte localPosition, out VoxelType voxelType) =>
         VoxelData.TryGetValue(localPosition, out voxelType);
 
     public void SetVoxel(Vector3Byte localPosition, VoxelType voxelType) =>
         VoxelData.Add(localPosition, voxelType);
+
+    public Vector3Int GetChunkSize() =>
+        new Vector3Int(
+            Generator.ChunkSizeXZ * VoxelSize,
+            Generator.ChunkSizeY,
+            Generator.ChunkSizeXZ * VoxelSize);
 }

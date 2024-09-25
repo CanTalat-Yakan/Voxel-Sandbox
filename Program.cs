@@ -1,4 +1,4 @@
-﻿sealed class RunProgram
+﻿sealed class Program
 {
     [STAThread]
     private static void Main() =>

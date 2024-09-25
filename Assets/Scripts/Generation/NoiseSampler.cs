@@ -17,7 +17,7 @@ public class NoiseSampler
     private Billow _mountainNoise = new()
     {
         Primitive2D = s_perlinPrimitive,
-        OctaveCount = 6,        // Fewer octaves for a smoother look
+        OctaveCount = 3,        // Fewer octaves for a smoother look
         Frequency = 0.0002f,      // Lower frequency for broader features
         Scale = 200,           // Adjust scale to manage the level of detail
     };
@@ -50,8 +50,7 @@ public class NoiseSampler
                 int undergroundDetail = GetUndergroundDetail(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
                 int bedrockHeight = random.Next(5);
 
-                if (mountainHeight > 0)
-                    surfaceHeight += mountainHeight;
+                surfaceHeight += (mountainHeight + 1) / 2;
 
                 for (int y = voxelOffset; y < Generator.ChunkSizeY; y += voxelOffset)
                     if (chunk.LevelOfDetail > 0)

@@ -115,10 +115,10 @@ float3 GetNormal(int index)
     {
         float3(0, 1, 0),
         float3(0, -1, 0),
-        float3(1, 0, 0),
-        float3(-1, 0, 0),
         float3(0, 0, 1),
         float3(0, 0, -1),
+        float3(1, 0, 0),
+        float3(-1, 0, 0),
     };
 
     return normal[index];
@@ -128,10 +128,10 @@ float3 GetTangent(int index)
 {
     float3 tangent[6] =
     {
-        float3(1, 0, 0),
-        float3(-1, 0, 0),
         float3(0, 0, 1),
         float3(0, 0, -1),
+        float3(0, 1, 0),
+        float3(0, -1, 0),
         float3(0, 1, 0),
         float3(0, -1, 0),
     };

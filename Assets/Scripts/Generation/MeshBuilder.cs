@@ -1,7 +1,7 @@
 using System.Numerics;
 
-using Engine;
 using Engine.Components;
+using Engine.DataStructures;
 
 namespace VoxelSandbox;
 
@@ -11,52 +11,46 @@ public class MeshBuilder
     {
         List<int> indices = new();
         List<float> vertices = new();
-        List<Vector3> positions = new();
+        List<Vector3> positions = [Vector3.Zero, chunk.GetChunkSize().ToVector3()];
 
         byte air = (byte)VoxelType.Air;
 
         foreach (var voxel in chunk.VoxelData)
             if ((byte)voxel.Value > air)
                 // Add faces for each visible side of the voxel
-                AddVoxelFaces(chunk, voxel, vertices, indices, positions);
+                AddVoxelFaces(chunk, voxel, vertices, indices);
 
         var entity = GameManager.Instance.Entity.Manager.CreateEntity();
         entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
         entity.Transform.LocalScale *= chunk.VoxelSize;
 
         chunk.Mesh = entity.AddComponent<Mesh>();
-        chunk.Mesh.SetMeshData(Kernel.Instance.Context.CreateMeshData(indices, vertices, positions, inputLayoutElements: "t"));
+        chunk.Mesh.SetMeshData(indices, vertices, positions, null, new InputLayoutDescriptionHelper().AddUV());
         chunk.Mesh.SetMaterialTextures([new("TextureAtlasBig2.png", 0)]);
         chunk.Mesh.SetMaterialPipeline("VoxelShader");
     }
 
-    private void AddVoxelFaces(Chunk chunk, KeyValuePair<Vector3Byte, VoxelType> voxel, List<float> vertices, List<int> indices, List<Vector3> positions)
+    private void AddVoxelFaces(Chunk chunk, KeyValuePair<Vector3Byte, VoxelType> voxel, List<float> vertices, List<int> indices)
     {
         // Check each face direction for visibility
-        for (int i = 0; i < Vector3Int.Directions.Length; i++)
+        for (byte normalIndex = 0; normalIndex < Vector3Int.Directions.Length; normalIndex++)
         {
-            Vector3Int normal = Vector3Int.Directions[i];
-            Vector3Int tangent = Vector3Int.OrthogonalDirections[i];
-
-            Vector3Byte adjacentVoxelPosition = voxel.Key + normal;
+            Vector3Byte adjacentVoxelPosition = voxel.Key + Vector3Int.Directions[normalIndex];
 
             //Check if the adjacent voxel is an empty voxel
             if (!Chunk.IsWithinBounds(adjacentVoxelPosition))
-                AddFace(voxel, normal, tangent, vertices, indices);
+                AddFace(voxel, normalIndex, vertices, indices);
             else if (chunk.GetVoxel(adjacentVoxelPosition, out var adjacentVoxel))
                 if (adjacentVoxel is VoxelType.Air)
-                    AddFace(voxel, normal, tangent, vertices, indices);
+                    AddFace(voxel, normalIndex, vertices, indices);
         }
-
-        positions.Add(voxel.Key.ToVector3() * chunk.VoxelSize);
     }
 
-    private void AddFace(KeyValuePair<Vector3Byte, VoxelType> voxel, Vector3Int normal, Vector3Int tangent, List<float> vertices, List<int> indices)
+    private void AddFace(KeyValuePair<Vector3Byte, VoxelType> voxel, byte normalIndex, List<float> vertices, List<int> indices)
     {
-        var faceVertices = new Vector3Byte[4];
+        Vector3Byte[] faceVertices = null;
 
         byte textureIndex = (byte)voxel.Value;
-        byte normalIndex = (byte)Array.IndexOf(Vector3Int.Directions, normal); ;
         byte lightIndex = 0;
 
         string enumName = voxel.Value.ToString();
@@ -69,8 +63,7 @@ public class MeshBuilder
             if (Enum.IsDefined(typeof(VoxelType), enumName + "_Bottom"))
                 textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Bottom");
 
-        // Compute the vertices of the face based on normal direction
-        if (normal == Vector3Int.Top)
+        if (normalIndex == 0) // Top
             faceVertices =
             [
                 new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z    ),
@@ -78,7 +71,7 @@ public class MeshBuilder
                 new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z + 1),
                 new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z    ),
             ];
-        else if (normal == Vector3Int.Bottom)
+        else if (normalIndex == 1) // Bottom
             faceVertices =
             [
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z    ),
@@ -86,7 +79,7 @@ public class MeshBuilder
                 new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z + 1),
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z + 1),
             ];
-        else if (normal == Vector3Int.Right)
+        else if (normalIndex == 2) // Right
             faceVertices =
             [
                 new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z    ),
@@ -94,15 +87,15 @@ public class MeshBuilder
                 new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z + 1),
                 new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z + 1),
             ];
-        else if (normal == Vector3Int.Left)
-            faceVertices =
+        else if (normalIndex == 3) // Left
+                    faceVertices =
             [
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z + 1),
                 new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z + 1),
                 new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z    ),
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z    ),
             ];
-        else if (normal == Vector3Int.Front)
+        else if (normalIndex == 4) // Front
             faceVertices =
             [
                 new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z + 1),
@@ -110,7 +103,7 @@ public class MeshBuilder
                 new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z + 1),
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z + 1),
             ];
-        else if (normal == Vector3Int.Back)
+        else if (normalIndex == 5) // Back
             faceVertices =
             [
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z),
@@ -123,10 +116,10 @@ public class MeshBuilder
         textureIndex--;
 
         // Add vertices
-        vertices.AddRange(Vector3Packer.Pack(faceVertices[0], 0, textureIndex, normalIndex, lightIndex));
-        vertices.AddRange(Vector3Packer.Pack(faceVertices[1], 1, textureIndex, normalIndex, lightIndex));
-        vertices.AddRange(Vector3Packer.Pack(faceVertices[2], 2, textureIndex, normalIndex, lightIndex));
-        vertices.AddRange(Vector3Packer.Pack(faceVertices[3], 3, textureIndex, normalIndex, lightIndex));
+        vertices.AddRange(VoxelData.Pack(faceVertices[0], 0, textureIndex, normalIndex, lightIndex));
+        vertices.AddRange(VoxelData.Pack(faceVertices[1], 1, textureIndex, normalIndex, lightIndex));
+        vertices.AddRange(VoxelData.Pack(faceVertices[2], 2, textureIndex, normalIndex, lightIndex));
+        vertices.AddRange(VoxelData.Pack(faceVertices[3], 3, textureIndex, normalIndex, lightIndex));
 
         // Add indices
         int startIndex = vertices.Count;
