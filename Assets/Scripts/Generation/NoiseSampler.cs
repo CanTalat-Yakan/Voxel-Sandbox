@@ -47,15 +47,13 @@ public sealed partial class NoiseSampler
 
     public void GenerateChunkContent(Chunk chunk)
     {
-        Dictionary<Vector3Byte, VoxelType> cachedVoxelDictionary = new();
-
         int voxelSize = chunk.VoxelSize;
         int chunkSizeXZMultiplyer = chunk.LevelOfDetail == 0 ? 1 : 2;
 
         for (int x = 1; x <= Generator.ChunkSizeXZ * chunkSizeXZMultiplyer; x++)
             for (int z = 1; z <= Generator.ChunkSizeXZ * chunkSizeXZMultiplyer; z++)
                 for (int y = voxelSize; y < Generator.ChunkSizeY; y += voxelSize)
-                    AddVoxelIfExposed(new(x, y, z), chunk, cachedVoxelDictionary);
+                    AddVoxelIfExposed(new(x, y, z), chunk);
 
         GameManager.Instance.Generator.ChunksToBuild.Enqueue(chunk);
     }
@@ -63,9 +61,9 @@ public sealed partial class NoiseSampler
 
 public sealed partial class NoiseSampler
 {
-    private void AddVoxelIfExposed(Vector3Byte voxelPosition, Chunk chunk, Dictionary<Vector3Byte, VoxelType> cachedVoxelDictionary)
+    private void AddVoxelIfExposed(Vector3Byte voxelPosition, Chunk chunk)
     {
-        CheckVoxel(out var voxel, ref voxelPosition, chunk, cachedVoxelDictionary);
+        CheckVoxel(out var voxel, ref voxelPosition, chunk);
 
         if (voxel is null)
             return;
@@ -74,10 +72,7 @@ public sealed partial class NoiseSampler
         {
             Vector3Byte adjacentVoxelPosition = (direction + voxelPosition).ToVector3Byte();
 
-            if (!Chunk.IsWithinBounds(adjacentVoxelPosition))
-                continue;
-
-            CheckVoxel(out var adjacentVoxel, ref adjacentVoxelPosition, chunk, cachedVoxelDictionary);
+            CheckVoxel(out var adjacentVoxel, ref adjacentVoxelPosition, chunk);
 
             // If the adjacent voxel was not found, the current iterated voxel is exposed
             if (adjacentVoxel is null)
@@ -88,18 +83,12 @@ public sealed partial class NoiseSampler
         }
     }
 
-    private void CheckVoxel(out KeyValuePair<Vector3Byte, VoxelType>? voxel, ref Vector3Byte voxelPosition, Chunk chunk, Dictionary<Vector3Byte, VoxelType> cachedVoxelDictionary)
+    private void CheckVoxel(out KeyValuePair<Vector3Byte, VoxelType>? voxel, ref Vector3Byte voxelPosition, Chunk chunk)
     {
         voxel = null;
 
-        if (cachedVoxelDictionary.ContainsKey(voxelPosition))
-            voxel = new(voxelPosition, cachedVoxelDictionary[voxelPosition]);
-        else if (SampleVoxel(out var sample, ref voxelPosition, chunk))
-        {
-            cachedVoxelDictionary.Add(voxelPosition, sample.Value.Value);
-
+        if (SampleVoxel(out var sample, ref voxelPosition, chunk))
             voxel = sample.Value;
-        }
     }
 
     private bool SampleVoxel(out KeyValuePair<Vector3Byte, VoxelType>? sample, ref Vector3Byte voxelPosition, Chunk chunk)
