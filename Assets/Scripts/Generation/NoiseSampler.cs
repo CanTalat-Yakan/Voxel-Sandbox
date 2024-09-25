@@ -65,7 +65,7 @@ public sealed partial class NoiseSampler
 {
     private void AddVoxelIfExposed(Chunk chunk, Vector3Byte voxelPosition)
     {
-        CheckVoxel(out var voxel, ref voxelPosition, chunk, SampleNoise(chunk, voxelPosition.ToVector2Byte()));
+        CheckVoxel(out var voxel, ref voxelPosition, chunk);
 
         if (voxel is null)
             return;
@@ -77,7 +77,7 @@ public sealed partial class NoiseSampler
                 if (!Chunk.IsWithinBounds(adjacentVoxelPosition))
                     continue;
 
-            CheckVoxel(out var adjacentVoxel, ref adjacentVoxelPosition, chunk, SampleNoise(chunk, adjacentVoxelPosition.ToVector2Byte()));
+            CheckVoxel(out var adjacentVoxel, ref adjacentVoxelPosition, chunk);
 
             // If the adjacent voxel was not found, the current iterated voxel is exposed
             if (adjacentVoxel is null)
@@ -88,13 +88,13 @@ public sealed partial class NoiseSampler
         }
     }
 
-    private void CheckVoxel(out KeyValuePair<Vector3Byte, VoxelType>? voxel, ref Vector3Byte voxelPosition, Chunk chunk, NoiseData noiseData)
+    private void CheckVoxel(out KeyValuePair<Vector3Byte, VoxelType>? voxel, ref Vector3Byte voxelPosition, Chunk chunk)
     {
         voxel = null;
 
         if (_cachedVoxelDictionary.ContainsKey(voxelPosition))
             voxel = new(voxelPosition, _cachedVoxelDictionary[voxelPosition]);
-        else if (SampleVoxel(out var sample, ref voxelPosition, chunk, noiseData))
+        else if (SampleVoxel(out var sample, ref voxelPosition, chunk))
         {
             _cachedVoxelDictionary.Add(voxelPosition, sample.Value.Value);
 
@@ -102,10 +102,11 @@ public sealed partial class NoiseSampler
         }
     }
 
-    private bool SampleVoxel(out KeyValuePair<Vector3Byte, VoxelType>? sample, ref Vector3Byte voxelPosition, Chunk chunk, NoiseData noiseData)
+    private bool SampleVoxel(out KeyValuePair<Vector3Byte, VoxelType>? sample, ref Vector3Byte voxelPosition, Chunk chunk)
     {
         sample = null;
 
+        var noiseData = SampleNoise(chunk, voxelPosition.ToVector2Byte());
         int surfaceHeight = noiseData.SurfaceHeight;
         int mountainHeight = noiseData.MountainHeight;
         int undergroundDetail = noiseData.UndergroundDetail;
