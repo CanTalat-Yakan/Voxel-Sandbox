@@ -38,7 +38,6 @@ public struct Vector2Byte
         !(a == b);
 }
 
-}
 public struct Vector3Byte
 {
     public byte Byte1; // X (7 bits) + lower Y bit (1 bit)
