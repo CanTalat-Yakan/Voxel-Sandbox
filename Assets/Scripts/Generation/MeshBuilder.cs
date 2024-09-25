@@ -5,7 +5,7 @@ using Engine.DataStructures;
 
 namespace VoxelSandbox;
 
-public class MeshBuilder
+public sealed class MeshBuilder
 {
     public void GenerateMesh(Chunk chunk)
     {

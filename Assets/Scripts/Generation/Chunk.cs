@@ -2,7 +2,7 @@
 
 namespace VoxelSandbox;
 
-public class Chunk
+public sealed class Chunk
 {
     public Mesh Mesh;
 

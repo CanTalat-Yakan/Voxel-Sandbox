@@ -6,7 +6,7 @@ using Engine.Utilities;
 
 namespace VoxelSandbox;
 
-public class GameManager : Component
+public sealed class GameManager : Component
 {
     public static GameManager Instance { get; private set; }
 

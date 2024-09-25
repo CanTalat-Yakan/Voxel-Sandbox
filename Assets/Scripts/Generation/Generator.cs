@@ -1,6 +1,6 @@
 ﻿namespace VoxelSandbox;
 
-public class Generator
+public sealed class Generator
 {
     // Sparse storage for chunks
     // Dictionary to store generated chunks by LOD level
