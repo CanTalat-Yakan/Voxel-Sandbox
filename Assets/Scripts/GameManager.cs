@@ -18,19 +18,19 @@ public class GameManager : Component
     {
         Instance = this;
 
-        foreach (var entity in Entity.Manager.Entities.Values)
-            if (entity.Data.Tag != "DefaultSky")
-                Entity.Manager.DestroyEntity(entity);
+        //foreach (var entity in Entity.Manager.Entities.Values)
+        //    if (entity.Data.Tag != "DefaultSky")
+        //        Entity.Manager.DestroyEntity(entity);
 
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlasBig2.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
-        var controller = Entity.Manager.CreateCamera(name: "Controller").Entity;
-        controller.Transform.SetPosition(y: 152);
-        controller.AddComponent<PlayerMovement>();
-        controller.AddComponent<RayCaster>().SetCamera(controller);
-        controller.GetComponent<Camera>()[0].FOV = 100;
-        controller.GetComponent<Camera>()[0].Clipping.Y = 10000;
+        //var controller = Entity.Manager.CreateCamera(name: "Controller").Entity;
+        //controller.Transform.SetPosition(y: 152);
+        //controller.AddComponent<PlayerMovement>();
+        //controller.AddComponent<RayCaster>().SetCamera(controller);
+        //controller.GetComponent<Camera>()[0].FOV = 100;
+        //controller.GetComponent<Camera>()[0].Clipping.Y = 10000;
     }
 
     public override void OnStart()
