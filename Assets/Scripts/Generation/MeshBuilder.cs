@@ -11,7 +11,7 @@ public class MeshBuilder
     {
         List<int> indices = new();
         List<VoxelVertex> vertices = new();
-        List<Vector3> positions = [Vector3.Zero, chunk.GetChunkSize().ToVector3()];
+        Vector3[] positions = [Vector3.Zero, chunk.GetChunkSize().ToVector3()];
 
         byte air = (byte)VoxelType.Air;
 
@@ -25,7 +25,7 @@ public class MeshBuilder
         entity.Transform.LocalScale *= chunk.VoxelSize;
 
         chunk.Mesh = entity.AddComponent<Mesh>();
-        chunk.Mesh.SetMeshData(indices, ToFloats(vertices).ToList(), positions, null, new InputLayoutDescriptionHelper().AddUV());
+        chunk.Mesh.SetMeshData(indices.ToArray(), ToFloats(vertices).ToArray(), positions, null, new InputLayoutHelper().AddUV());
         chunk.Mesh.SetMaterialTextures([new("TextureAtlasBig2.png", 0)]);
         chunk.Mesh.SetMaterialPipeline("VoxelShader");
     }
@@ -34,8 +34,8 @@ public class MeshBuilder
     {
         foreach (var voxelVertex in voxelVertices)
         {
-            yield return voxelVertex.Data.X;
-            yield return voxelVertex.Data.Y;
+            yield return voxelVertex.Position;
+            yield return voxelVertex.Data;
         }
     }
 
@@ -88,23 +88,7 @@ public class MeshBuilder
                 new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z + 1),
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z + 1),
             ];
-        else if (normalIndex == 2) // Right
-            faceVertices =
-            [
-                new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z    ),
-                new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z    ),
-                new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z + 1),
-                new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z + 1),
-            ];
-        else if (normalIndex == 3) // Left
-                    faceVertices =
-            [
-                new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z + 1),
-                new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z + 1),
-                new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z    ),
-                new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z    ),
-            ];
-        else if (normalIndex == 4) // Front
+        else if (normalIndex == 2) // Front
             faceVertices =
             [
                 new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z + 1),
@@ -112,7 +96,7 @@ public class MeshBuilder
                 new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z + 1),
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z + 1),
             ];
-        else if (normalIndex == 5) // Back
+        else if (normalIndex == 3) // Back
             faceVertices =
             [
                 new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z),
@@ -120,15 +104,31 @@ public class MeshBuilder
                 new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z),
                 new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z),
             ];
+        else if (normalIndex == 4) // Right
+            faceVertices =
+            [
+                new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z    ),
+                new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z    ),
+                new(voxel.Key.X + 1,     voxel.Key.Y + 1,     voxel.Key.Z + 1),
+                new(voxel.Key.X + 1,     voxel.Key.Y,         voxel.Key.Z + 1),
+            ];
+        else if (normalIndex == 5) // Left
+                    faceVertices =
+            [
+                new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z + 1),
+                new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z + 1),
+                new(voxel.Key.X,         voxel.Key.Y + 1,     voxel.Key.Z    ),
+                new(voxel.Key.X,         voxel.Key.Y,         voxel.Key.Z    ),
+            ];
 
         // offset index for the air value;
         textureIndex--;
 
         // Add vertices
-        vertices.Add(new VoxelVertex(new(VoxelData.PackVector3ToFloat((byte)faceVertices[0].X, (ushort)faceVertices[0].Y, (byte)faceVertices[0].Z), VoxelData.PackBytesToFloat(0, textureIndex, normalIndex, lightIndex))));
-        vertices.Add(new VoxelVertex(new(VoxelData.PackVector3ToFloat((byte)faceVertices[1].X, (ushort)faceVertices[1].Y, (byte)faceVertices[1].Z), VoxelData.PackBytesToFloat(1, textureIndex, normalIndex, lightIndex))));
-        vertices.Add(new VoxelVertex(new(VoxelData.PackVector3ToFloat((byte)faceVertices[2].X, (ushort)faceVertices[2].Y, (byte)faceVertices[2].Z), VoxelData.PackBytesToFloat(2, textureIndex, normalIndex, lightIndex))));
-        vertices.Add(new VoxelVertex(new(VoxelData.PackVector3ToFloat((byte)faceVertices[3].X, (ushort)faceVertices[3].Y, (byte)faceVertices[3].Z), VoxelData.PackBytesToFloat(3, textureIndex, normalIndex, lightIndex))));
+        vertices.Add(new VoxelVertex(VoxelData.PackVector3ToFloat(faceVertices[0]), VoxelData.PackBytesToFloat(0, textureIndex, normalIndex, lightIndex)));
+        vertices.Add(new VoxelVertex(VoxelData.PackVector3ToFloat(faceVertices[1]), VoxelData.PackBytesToFloat(1, textureIndex, normalIndex, lightIndex)));
+        vertices.Add(new VoxelVertex(VoxelData.PackVector3ToFloat(faceVertices[2]), VoxelData.PackBytesToFloat(2, textureIndex, normalIndex, lightIndex)));
+        vertices.Add(new VoxelVertex(VoxelData.PackVector3ToFloat(faceVertices[3]), VoxelData.PackBytesToFloat(3, textureIndex, normalIndex, lightIndex)));
 
         // Add indices
         int startIndex = vertices.Count;

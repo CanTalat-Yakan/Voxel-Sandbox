@@ -1,6 +1,6 @@
 ﻿namespace VoxelSandbox;
 
-public record VoxelVertex(System.Numerics.Vector2 Data);
+public record VoxelVertex(float Position, float Data);
 
 public enum VoxelType : byte
 {
@@ -25,15 +25,15 @@ public static class VoxelData
 {
     public static IEnumerable<float> Pack(Vector3Byte position, byte uv, byte tile, byte normal, byte light)
     {
-        yield return PackVector3ToFloat((byte)position.X, (ushort)position.Y, (byte)position.Z);
+        yield return PackVector3ToFloat(position);
         yield return PackBytesToFloat(uv, tile, normal, light);
     }
 
-    // Pack a Vector3 with X and Z (8 bits each) and Y (16 bits) into a float
-    public static float PackVector3ToFloat(byte x, ushort y, byte z)
+    // Pack a Vector3Byte with X and Z (8 bits each) and Y (16 bits) into a float
+    public static float PackVector3ToFloat(Vector3Byte position)
     {
         // Combine X (8 bits), Y (16 bits), and Z (8 bits) into a 32-bit integer
-        uint packed = ((uint)x << 24) | ((uint)y << 8) | z;
+        uint packed = ((uint)position.X << 24) | ((uint)position.Y << 8) | (byte)position.Z;
 
         // Convert the packed integer into a float
         return BitConverter.ToSingle(BitConverter.GetBytes(packed), 0);
