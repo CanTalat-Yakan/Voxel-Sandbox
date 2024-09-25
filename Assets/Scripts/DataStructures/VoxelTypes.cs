@@ -5,7 +5,6 @@ public record VoxelVertex(float Position, float Data);
 public enum VoxelType : byte
 {
     None,
-    Air,
     Stone,
     Grass,
     Grass_Top,
@@ -23,14 +22,14 @@ public enum VoxelType : byte
 
 public static class VoxelData
 {
-    public static IEnumerable<float> Pack(Vector3Byte position, byte uv, byte tile, byte normal, byte light)
+    public static IEnumerable<float> Pack(Vector3Int position, byte uv, byte tile, byte normal, byte light)
     {
         yield return PackVector3ToFloat(position);
         yield return PackBytesToFloat(uv, tile, normal, light);
     }
 
     // Pack a Vector3Byte with X and Z (8 bits each) and Y (16 bits) into a float
-    public static float PackVector3ToFloat(Vector3Byte position)
+    public static float PackVector3ToFloat(Vector3Int position)
     {
         // Combine X (8 bits), Y (16 bits), and Z (8 bits) into a 32-bit integer
         uint packed = ((uint)position.X << 24) | ((uint)position.Y << 8) | (byte)position.Z;

@@ -131,7 +131,7 @@ public class NoiseSampler
                 {
                     if (!exposedVoxels.ContainsKey(adjacentLocalPosition))
                         if (!chunk.VoxelData.ContainsKey(adjacentLocalPosition))
-                            exposedVoxels.Add(adjacentLocalPosition, VoxelType.Air); // Air for outside the mesh
+                            exposedVoxels.Add(adjacentLocalPosition, VoxelType.None); // None for outside the mesh
                 });
 
         chunk.VoxelData.Clear();

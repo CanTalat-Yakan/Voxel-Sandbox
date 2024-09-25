@@ -109,6 +109,13 @@ public struct Vector3Int
         Z = z;
     }
 
+    public void Set(int x, int y, int z)
+    {
+        X = x;
+        Y = y;
+        Z = z;
+    }
+
     public override string ToString() =>
         $"({X}, {Y}, {Z})";
 

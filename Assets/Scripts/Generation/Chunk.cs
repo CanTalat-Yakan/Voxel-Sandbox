@@ -13,6 +13,8 @@ public class Chunk
 
     public int VoxelSize => (int)Math.Pow(2, Math.Max(0, LevelOfDetail - 1));
 
+    public int ExposedFaces = 0;
+
     public Chunk(Vector3Int worldPosition, int levelOfDetail)
     {
         WorldPosition = worldPosition;
