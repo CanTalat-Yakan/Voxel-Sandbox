@@ -1,5 +1,44 @@
 ﻿namespace VoxelSandbox;
 
+public struct Vector2Byte
+{
+    public byte X;
+    public byte Z;
+
+    public Vector2Byte(int x, int z)
+    {
+        X = (byte)x;
+        Z = (byte)z;
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Vector2Byte other)
+            return X == other.X && Z == other.Z;
+
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            int hash = 17;
+            hash = hash * 31 + X.GetHashCode();
+            hash = hash * 31 + Z.GetHashCode();
+            return hash;
+        }
+    }
+
+
+    public static bool operator ==(Vector2Byte a, Vector2Byte b) =>
+        a.X == b.X && a.Z == b.Z;
+
+    public static bool operator !=(Vector2Byte a, Vector2Byte b) =>
+        !(a == b);
+}
+
+}
 public struct Vector3Byte
 {
     public byte Byte1; // X (7 bits) + lower Y bit (1 bit)

@@ -3,9 +3,10 @@ using LibNoise.Primitive;
 
 namespace VoxelSandbox;
 
-public class NoiseSampler
+public record NoiseData(int SurfaceHeight, int MountainHeight, int UndergroundDetail, int BedrockHeight);
+
+public sealed partial class NoiseSampler
 {
-    private Random _random = new();
     private static SimplexPerlin s_perlinPrimitive = new() { Seed = 1234 };
 
     private Billow _surfaceNoise = new()
@@ -36,6 +37,13 @@ public class NoiseSampler
         Frequency = 0.005f,
         Scale = 0.5f
     };
+    public Billow _bedrockNoise = new()
+    {
+        Primitive1D = s_perlinPrimitive,
+        OctaveCount = 2,
+        Frequency = 0.5f,
+        Scale = 1
+    };
 
     private Dictionary<Vector3Byte, VoxelType> _cachedVoxelDictionary = new();
 
@@ -47,54 +55,87 @@ public class NoiseSampler
         for (int x = 1; x <= Generator.ChunkSizeXZ * chunkSizeXZMultiplyer; x++)
             for (int z = 1; z <= Generator.ChunkSizeXZ * chunkSizeXZMultiplyer; z++)
             {
-                int surfaceHeight = GetSurfaceHeight(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
-                int mountainHeight = GetMountainHeight(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
-                int undergroundDetail = GetUndergroundDetail(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
-                int bedrockHeight = _random.Next(5);
+                Vector2Byte noisePosition = new(x, z);
+                if (!chunk.NoiseData.ContainsKey(noisePosition))
+                {
+                    int nx = chunk.WorldPosition.X + x * chunk.VoxelSize;
+                    int nz = chunk.WorldPosition.Z + z * chunk.VoxelSize;
 
-                surfaceHeight += (mountainHeight + 1) / 2;
+                    int surfaceHeight = GetSurfaceHeight(nx, nz);
+                    int mountainHeight = GetMountainHeight(nx, nz);
+                    int undergroundDetail = GetUndergroundDetail(nx, nz);
+                    int bedrockHeight = GetBedrockNoise(nx, nz);
+
+                    surfaceHeight += (mountainHeight + 1) / 2;
+
+                    chunk.SetNoiseData(noisePosition, new(surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight));
+                }
 
                 for (int y = voxelSize; y < Generator.ChunkSizeY; y += voxelSize)
-                    if (!_cachedVoxelDictionary.ContainsKey(new(x, y, z)))
-                        AddVoxelIfExposed(x, y, z, surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight, voxelSize, chunk);
+                    AddVoxelIfExposed(new(x, y, z), chunk, chunk.NoiseData[noisePosition]);
             }
-
-        RemoveUnexposedVoxels(chunk);
 
         GameManager.Instance.Generator.ChunksToBuild.Enqueue(chunk);
     }
+}
 
-    private void AddVoxelIfExposed(int x, int y, int z, int surfaceHeight, int mountainHeight, int undergroundDetail, int bedrockHeight, int voxelSize, Chunk chunk)
+public sealed partial class NoiseSampler
+{
+    private int GetSurfaceHeight(int x, int z) =>
+        (int)_surfaceNoise.GetValue(x, z) + 100;
+
+    private int GetMountainHeight(int x, int z) =>
+        (int)_mountainNoise.GetValue(x, z);
+
+    private int GetUndergroundDetail(int x, int z) =>
+        (int)_undergroundNoise.GetValue(x, z) + 10;
+
+    private double GetCaveNoise(int x, int y, int z) =>
+        _caveNoise.GetValue(x, y, z);
+
+    private int GetBedrockNoise(int x, int z) =>
+        (int)_bedrockNoise.GetValue(x + z, x - z) % 5;
+}
+
+public sealed partial class NoiseSampler
+{
+    private void AddVoxelIfExposed(Vector3Byte voxelPosition, Chunk chunk, NoiseData noiseData)
     {
-        if (!SampleVoxel(out var sample, x, y, z, surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight, voxelSize, chunk))
-            return;
+        CheckVoxel(out var voxel, ref voxelPosition, chunk, noiseData);
 
-        var voxel = sample.Value;
-        _cachedVoxelDictionary.Add(voxel.Key, voxel.Value);
-
-        IterateAdjacentVoxels(continueOnOutsideBounds: true, voxel.Key,
+        IterateAdjacentVoxels(continueOnOutsideBounds: true, voxelPosition,
             (Vector3Byte adjacentLocalPosition) =>
             {
-                if (!_cachedVoxelDictionary.ContainsKey(adjacentLocalPosition))
-                    if (!SampleVoxel(out var sample, adjacentLocalPosition, surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight, voxelSize, chunk))
-                    {
-                        // Air Voxel        | adjacentLocalPosition
-                        // Exposed Voxel    | voxel.Key
+                CheckVoxel(out var adjacentVoxel, ref adjacentLocalPosition, chunk, noiseData);
 
-                        if (!_cachedVoxelDictionary.ContainsKey(voxel.Key))
-                            _cachedVoxelDictionary.Add(voxel.Key, voxel.Value);
-                    }
-                    else if (!_cachedVoxelDictionary.ContainsKey(voxel.Key))
-                        _cachedVoxelDictionary.Add(voxel.Key, voxel.Value);
+                // If the adjacent voxel was not found, the current iterated voxel is exposed
+                if (adjacentVoxel is null)
+                    chunk.SetVoxel(voxel.Value.Key, voxel.Value.Value);
             });
     }
 
-    private bool SampleVoxel(out KeyValuePair<Vector3Byte, VoxelType>? sample, int x, int y, int z, int surfaceHeight, int mountainHeight, int undergroundDetail, int bedrockHeight, int voxelSize, Chunk chunk) =>
-        SampleVoxel(out sample, new(x, y, z), surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight, voxelSize, chunk);
+    private void CheckVoxel(out KeyValuePair<Vector3Byte, VoxelType>? voxel, ref Vector3Byte voxelPosition, Chunk chunk, NoiseData noiseData)
+    {
+        voxel = null;
 
-    private bool SampleVoxel(out KeyValuePair<Vector3Byte, VoxelType>? sample, Vector3Byte voxelPosition, int surfaceHeight, int mountainHeight, int undergroundDetail, int bedrockHeight, int voxelSize, Chunk chunk)
+        if (_cachedVoxelDictionary.ContainsKey(voxelPosition))
+            voxel = new(voxelPosition, _cachedVoxelDictionary[voxelPosition]);
+        else if (SampleVoxel(out var sample, ref voxelPosition, chunk, noiseData))
+        {
+            _cachedVoxelDictionary.Add(voxelPosition, sample.Value.Value);
+
+            voxel = sample.Value;
+        }
+    }
+
+    private bool SampleVoxel(out KeyValuePair<Vector3Byte, VoxelType>? sample, ref Vector3Byte voxelPosition, Chunk chunk, NoiseData noiseData)
     {
         sample = null;
+
+        int surfaceHeight = noiseData.SurfaceHeight;
+        int mountainHeight = noiseData.MountainHeight;
+        int undergroundDetail = noiseData.UndergroundDetail;
+        int bedrockHeight = noiseData.BedrockHeight;
 
         int x = voxelPosition.X;
         int y = voxelPosition.Y;
@@ -102,12 +143,12 @@ public class NoiseSampler
 
         if (chunk.LevelOfDetail > 0)
         {
-            if (y <= surfaceHeight + voxelSize && y >= surfaceHeight)
+            if (y <= surfaceHeight + chunk.VoxelSize && y >= surfaceHeight)
                 sample = new(voxelPosition, VoxelType.Grass);
         }
         else if (y < surfaceHeight)
         {
-            voxelPosition = new(x, y / voxelSize, z);
+            voxelPosition = new(x, y / chunk.VoxelSize, z);
 
             // Check cave noise to determine if this voxel should be empty (cave)
             if (y < undergroundDetail)
@@ -128,54 +169,6 @@ public class NoiseSampler
             sample = new(voxelPosition, VoxelType.Grass);
 
         return sample is not null;
-    }
-
-    private int GetSurfaceHeight(int x, int z) =>
-        (int)_surfaceNoise.GetValue(x, z) + 100;
-
-    private int GetMountainHeight(int x, int z) =>
-        (int)_mountainNoise.GetValue(x, z);
-
-    private int GetUndergroundDetail(int x, int z) =>
-        (int)_undergroundNoise.GetValue(x, z) + 10;
-
-    private double GetCaveNoise(int x, int y, int z) =>
-        _caveNoise.GetValue(x, y, z);
-
-    private void RemoveUnexposedVoxels(Chunk chunk)
-    {
-        Dictionary<Vector3Byte, VoxelType> exposedVoxels = new();
-        bool renderBorders = chunk.LevelOfDetail == 0;
-
-        // Check if the voxel is exposed (has at least one neighbor that is empty)
-        foreach (var voxel in chunk.VoxelData)
-        {
-            bool IsVoxelExposed = false;
-            bool IsEdgeCaseExposed = IterateAdjacentVoxels(continueOnOutsideBounds: renderBorders, voxel.Key,
-                (Vector3Byte adjacentLocalPosition) =>
-                {
-                    // If the adjacent voxel is empty, the current voxel is exposed
-                    if (!chunk.HasVoxel(adjacentLocalPosition))
-                        if (!IsVoxelExposed)
-                            IsVoxelExposed = true;
-                });
-
-            if (IsEdgeCaseExposed || IsVoxelExposed)
-                exposedVoxels.Add(voxel.Key, voxel.Value);
-        }
-
-        // Add further voxel information for mesh building
-        foreach (var voxel in exposedVoxels.Keys.ToArray())
-            IterateAdjacentVoxels(continueOnOutsideBounds: true, voxel,
-                (Vector3Byte adjacentLocalPosition) =>
-                {
-                    if (!exposedVoxels.ContainsKey(adjacentLocalPosition))
-                        if (!chunk.VoxelData.ContainsKey(adjacentLocalPosition))
-                            exposedVoxels.Add(adjacentLocalPosition, VoxelType.None); // None for outside the mesh
-                });
-
-        chunk.VoxelData.Clear();
-        chunk.VoxelData = exposedVoxels;
     }
 
     private bool IterateAdjacentVoxels(bool continueOnOutsideBounds, Vector3Byte localPosition, Action<Vector3Byte> action)

@@ -1,7 +1,5 @@
 ﻿namespace VoxelSandbox;
 
-public record VoxelVertex(float Position, float Data);
-
 public enum VoxelType : byte
 {
     None,
