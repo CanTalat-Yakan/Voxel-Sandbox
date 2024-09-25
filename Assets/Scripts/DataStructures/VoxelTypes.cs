@@ -1,5 +1,7 @@
 ﻿namespace VoxelSandbox;
 
+public record VoxelVertex(System.Numerics.Vector2 Data);
+
 public enum VoxelType : byte
 {
     None,

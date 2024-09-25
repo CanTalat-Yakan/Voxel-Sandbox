@@ -10,7 +10,7 @@ public class MeshBuilder
     public void GenerateMesh(Chunk chunk)
     {
         List<int> indices = new();
-        List<float> vertices = new();
+        List<VoxelVertex> vertices = new();
         List<Vector3> positions = [Vector3.Zero, chunk.GetChunkSize().ToVector3()];
 
         byte air = (byte)VoxelType.Air;
@@ -25,12 +25,21 @@ public class MeshBuilder
         entity.Transform.LocalScale *= chunk.VoxelSize;
 
         chunk.Mesh = entity.AddComponent<Mesh>();
-        chunk.Mesh.SetMeshData(indices, vertices, positions, null, new InputLayoutDescriptionHelper().AddUV());
+        chunk.Mesh.SetMeshData(indices, ToFloats(vertices).ToList(), positions, null, new InputLayoutDescriptionHelper().AddUV());
         chunk.Mesh.SetMaterialTextures([new("TextureAtlasBig2.png", 0)]);
         chunk.Mesh.SetMaterialPipeline("VoxelShader");
     }
 
-    private void AddVoxelFaces(Chunk chunk, KeyValuePair<Vector3Byte, VoxelType> voxel, List<float> vertices, List<int> indices)
+    private IEnumerable<float> ToFloats(List<VoxelVertex> voxelVertices)
+    {
+        foreach (var voxelVertex in voxelVertices)
+        {
+            yield return voxelVertex.Data.X;
+            yield return voxelVertex.Data.Y;
+        }
+    }
+
+    private void AddVoxelFaces(Chunk chunk, KeyValuePair<Vector3Byte, VoxelType> voxel, List<VoxelVertex> vertices, List<int> indices)
     {
         // Check each face direction for visibility
         for (byte normalIndex = 0; normalIndex < Vector3Int.Directions.Length; normalIndex++)
@@ -46,7 +55,7 @@ public class MeshBuilder
         }
     }
 
-    private void AddFace(KeyValuePair<Vector3Byte, VoxelType> voxel, byte normalIndex, List<float> vertices, List<int> indices)
+    private void AddFace(KeyValuePair<Vector3Byte, VoxelType> voxel, byte normalIndex, List<VoxelVertex> vertices, List<int> indices)
     {
         Vector3Byte[] faceVertices = null;
 
@@ -116,10 +125,10 @@ public class MeshBuilder
         textureIndex--;
 
         // Add vertices
-        vertices.AddRange(VoxelData.Pack(faceVertices[0], 0, textureIndex, normalIndex, lightIndex));
-        vertices.AddRange(VoxelData.Pack(faceVertices[1], 1, textureIndex, normalIndex, lightIndex));
-        vertices.AddRange(VoxelData.Pack(faceVertices[2], 2, textureIndex, normalIndex, lightIndex));
-        vertices.AddRange(VoxelData.Pack(faceVertices[3], 3, textureIndex, normalIndex, lightIndex));
+        vertices.Add(new VoxelVertex(new(VoxelData.PackVector3ToFloat((byte)faceVertices[0].X, (ushort)faceVertices[0].Y, (byte)faceVertices[0].Z), VoxelData.PackBytesToFloat(0, textureIndex, normalIndex, lightIndex))));
+        vertices.Add(new VoxelVertex(new(VoxelData.PackVector3ToFloat((byte)faceVertices[1].X, (ushort)faceVertices[1].Y, (byte)faceVertices[1].Z), VoxelData.PackBytesToFloat(1, textureIndex, normalIndex, lightIndex))));
+        vertices.Add(new VoxelVertex(new(VoxelData.PackVector3ToFloat((byte)faceVertices[2].X, (ushort)faceVertices[2].Y, (byte)faceVertices[2].Z), VoxelData.PackBytesToFloat(2, textureIndex, normalIndex, lightIndex))));
+        vertices.Add(new VoxelVertex(new(VoxelData.PackVector3ToFloat((byte)faceVertices[3].X, (ushort)faceVertices[3].Y, (byte)faceVertices[3].Z), VoxelData.PackBytesToFloat(3, textureIndex, normalIndex, lightIndex))));
 
         // Add indices
         int startIndex = vertices.Count;
