@@ -7,9 +7,9 @@ cbuffer Properties : register(b10)
 Texture2D texture0 : register(t0);
 sampler sampler0 : register(s3);
 
-PSInputMin VS(VSInputMin input)
+PSInputVoxel VS(VSInputVoxel input)
 {
-    PSInputMin output;
+    PSInputVoxel output;
 
     output.camerapos = Camera;
     output.lookat = ViewDirection;
@@ -34,7 +34,7 @@ PSInputMin VS(VSInputMin input)
     return output;
 }
 
-float4 PS(PSInputMin input) : SV_TARGET
+float4 PS(PSInputVoxel input) : SV_TARGET
 {
     // Sample the base color texture
     float4 baseColor = texture0.Sample(sampler0, input.uv);
