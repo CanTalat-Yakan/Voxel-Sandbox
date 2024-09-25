@@ -39,8 +39,8 @@ public sealed partial class NoiseSampler
     };
     public Billow _bedrockNoise = new()
     {
-        Primitive1D = s_perlinPrimitive,
-        OctaveCount = 2,
+        Primitive2D = s_perlinPrimitive,
+        OctaveCount = 1,
         Frequency = 0.5f,
         Scale = 1
     };
@@ -54,26 +54,8 @@ public sealed partial class NoiseSampler
 
         for (int x = 1; x <= Generator.ChunkSizeXZ * chunkSizeXZMultiplyer; x++)
             for (int z = 1; z <= Generator.ChunkSizeXZ * chunkSizeXZMultiplyer; z++)
-            {
-                Vector2Byte noisePosition = new(x, z);
-                if (!chunk.NoiseData.ContainsKey(noisePosition))
-                {
-                    int nx = chunk.WorldPosition.X + x * chunk.VoxelSize;
-                    int nz = chunk.WorldPosition.Z + z * chunk.VoxelSize;
-
-                    int surfaceHeight = GetSurfaceHeight(nx, nz);
-                    int mountainHeight = GetMountainHeight(nx, nz);
-                    int undergroundDetail = GetUndergroundDetail(nx, nz);
-                    int bedrockHeight = GetBedrockNoise(nx, nz);
-
-                    surfaceHeight += (mountainHeight + 1) / 2;
-
-                    chunk.SetNoiseData(noisePosition, new(surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight));
-                }
-
                 for (int y = voxelSize; y < Generator.ChunkSizeY; y += voxelSize)
-                    AddVoxelIfExposed(new(x, y, z), chunk, chunk.NoiseData[noisePosition]);
-            }
+                    AddVoxelIfExposed(chunk, new(x, y, z));
 
         GameManager.Instance.Generator.ChunksToBuild.Enqueue(chunk);
     }
@@ -81,37 +63,29 @@ public sealed partial class NoiseSampler
 
 public sealed partial class NoiseSampler
 {
-    private int GetSurfaceHeight(int x, int z) =>
-        (int)_surfaceNoise.GetValue(x, z) + 100;
-
-    private int GetMountainHeight(int x, int z) =>
-        (int)_mountainNoise.GetValue(x, z);
-
-    private int GetUndergroundDetail(int x, int z) =>
-        (int)_undergroundNoise.GetValue(x, z) + 10;
-
-    private double GetCaveNoise(int x, int y, int z) =>
-        _caveNoise.GetValue(x, y, z);
-
-    private int GetBedrockNoise(int x, int z) =>
-        (int)_bedrockNoise.GetValue(x + z, x - z) % 5;
-}
-
-public sealed partial class NoiseSampler
-{
-    private void AddVoxelIfExposed(Vector3Byte voxelPosition, Chunk chunk, NoiseData noiseData)
+    private void AddVoxelIfExposed(Chunk chunk, Vector3Byte voxelPosition)
     {
-        CheckVoxel(out var voxel, ref voxelPosition, chunk, noiseData);
+        CheckVoxel(out var voxel, ref voxelPosition, chunk, SampleNoise(chunk, voxelPosition.ToVector2Byte()));
 
-        IterateAdjacentVoxels(continueOnOutsideBounds: true, voxelPosition,
-            (Vector3Byte adjacentLocalPosition) =>
+        if (voxel is null)
+            return;
+
+        foreach (var direction in Vector3Int.Directions)
+        {
+            Vector3Byte adjacentVoxelPosition = (direction + voxelPosition).ToVector3Byte();
+
+                if (!Chunk.IsWithinBounds(adjacentVoxelPosition))
+                    continue;
+
+            CheckVoxel(out var adjacentVoxel, ref adjacentVoxelPosition, chunk, SampleNoise(chunk, adjacentVoxelPosition.ToVector2Byte()));
+
+            // If the adjacent voxel was not found, the current iterated voxel is exposed
+            if (adjacentVoxel is null)
             {
-                CheckVoxel(out var adjacentVoxel, ref adjacentLocalPosition, chunk, noiseData);
-
-                // If the adjacent voxel was not found, the current iterated voxel is exposed
-                if (adjacentVoxel is null)
-                    chunk.SetVoxel(voxel.Value.Key, voxel.Value.Value);
-            });
+                chunk.SetVoxel(adjacentVoxelPosition, VoxelType.None); // air voxel outside the mesh
+                chunk.SetVoxel(voxelPosition, voxel.Value.Value); // the mesh
+            }
+        }
     }
 
     private void CheckVoxel(out KeyValuePair<Vector3Byte, VoxelType>? voxel, ref Vector3Byte voxelPosition, Chunk chunk, NoiseData noiseData)
@@ -155,7 +129,10 @@ public sealed partial class NoiseSampler
                 sample = new(voxelPosition, y - 1 < bedrockHeight ? VoxelType.DiamondOre : VoxelType.Stone);
             else if (y + undergroundDetail < surfaceHeight)
             {
-                double caveValue = GetCaveNoise(x + chunk.WorldPosition.X * chunk.VoxelSize, y * 2, z + chunk.WorldPosition.Z * chunk.VoxelSize);
+                int nx = x + chunk.WorldPosition.X * chunk.VoxelSize;
+                int nz = z + chunk.WorldPosition.Z * chunk.VoxelSize;
+
+                double caveValue = GetCaveNoise(nx, y * 2, nz);
 
                 if (caveValue > 0.25 && caveValue < 0.6)
                     sample = new(voxelPosition, VoxelType.Stone);
@@ -171,19 +148,43 @@ public sealed partial class NoiseSampler
         return sample is not null;
     }
 
-    private bool IterateAdjacentVoxels(bool continueOnOutsideBounds, Vector3Byte localPosition, Action<Vector3Byte> action)
+    private NoiseData SampleNoise(Chunk chunk, Vector2Byte noisePosition)
     {
-        foreach (var direction in Vector3Int.Directions)
-        {
-            Vector3Byte adjacentVoxel = (direction + localPosition).ToVector3Byte();
+        if (chunk.NoiseData.ContainsKey(noisePosition))
+            return chunk.NoiseData[noisePosition];
 
-            if (continueOnOutsideBounds)
-                if (!Chunk.IsWithinBounds(adjacentVoxel))
-                    continue;
+        int nx = noisePosition.X + chunk.WorldPosition.X * chunk.VoxelSize;
+        int nz = noisePosition.Z + chunk.WorldPosition.Z * chunk.VoxelSize;
 
-            action.Invoke(new(adjacentVoxel.X, adjacentVoxel.Y, adjacentVoxel.Z));
-        }
+        int surfaceHeight = GetSurfaceHeight(nx, nz);
+        int mountainHeight = GetMountainHeight(nx, nz);
+        int undergroundDetail = GetUndergroundDetail(nx, nz);
+        int bedrockHeight = GetBedrockNoise(nx, nz);
 
-        return false;
+        surfaceHeight += (mountainHeight + 1) / 2;
+
+        NoiseData noiseData = new(surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight);
+
+        chunk.SetNoiseData(noisePosition, noiseData);
+
+        return noiseData;
     }
+}
+
+public sealed partial class NoiseSampler
+{
+    private int GetSurfaceHeight(int x, int z) =>
+        (int)_surfaceNoise.GetValue(x, z) + 100;
+
+    private int GetMountainHeight(int x, int z) =>
+        (int)_mountainNoise.GetValue(x, z);
+
+    private int GetUndergroundDetail(int x, int z) =>
+        (int)_undergroundNoise.GetValue(x, z) + 10;
+
+    private double GetCaveNoise(int x, int y, int z) =>
+        _caveNoise.GetValue(x, y, z);
+
+    private int GetBedrockNoise(int x, int z) =>
+        (int)_bedrockNoise.GetValue(x + z, x - z) % 5;
 }

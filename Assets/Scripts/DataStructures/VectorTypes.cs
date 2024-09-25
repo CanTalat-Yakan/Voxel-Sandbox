@@ -76,6 +76,9 @@ public struct Vector3Byte
 
     public Vector3Int ToVector3Int() =>
         new(X, Y, Z);
+    
+    public Vector2Byte ToVector2Byte() =>
+        new(X, Z);
 
     public override bool Equals(object obj)
     {
