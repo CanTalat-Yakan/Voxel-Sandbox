@@ -5,6 +5,7 @@ namespace VoxelSandbox;
 
 public class NoiseSampler
 {
+    private Random _random = new();
     private static SimplexPerlin s_perlinPrimitive = new() { Seed = 1234 };
 
     private Billow _surfaceNoise = new()
@@ -36,10 +37,11 @@ public class NoiseSampler
         Scale = 0.5f
     };
 
+    private Dictionary<Vector3Byte, VoxelType> _cachedVoxelDictionary = new();
+
     public void GenerateChunkContent(Chunk chunk)
     {
-        Random random = new();
-        int voxelOffset = chunk.VoxelSize;
+        int voxelSize = chunk.VoxelSize;
         int chunkSizeXZMultiplyer = chunk.LevelOfDetail == 0 ? 1 : 2;
 
         for (int x = 1; x <= Generator.ChunkSizeXZ * chunkSizeXZMultiplyer; x++)
@@ -48,46 +50,84 @@ public class NoiseSampler
                 int surfaceHeight = GetSurfaceHeight(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
                 int mountainHeight = GetMountainHeight(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
                 int undergroundDetail = GetUndergroundDetail(chunk.WorldPosition.X + x * chunk.VoxelSize, chunk.WorldPosition.Z + z * chunk.VoxelSize);
-                int bedrockHeight = random.Next(5);
+                int bedrockHeight = _random.Next(5);
 
                 surfaceHeight += (mountainHeight + 1) / 2;
 
-                for (int y = voxelOffset; y < Generator.ChunkSizeY; y += voxelOffset)
-                    if (chunk.LevelOfDetail > 0)
-                    {
-                        if (y <= surfaceHeight + voxelOffset && y >= surfaceHeight)
-                            chunk.SetVoxel(new(x, y / voxelOffset, z), VoxelType.Grass);
-
-                        continue;
-                    }
-                    else if (y < surfaceHeight)
-                    {
-                        Vector3Byte voxelPosition = new(x, y / voxelOffset, z);
-
-                        // Check cave noise to determine if this voxel should be empty (cave)
-                        if (y < undergroundDetail)
-                            chunk.SetVoxel(voxelPosition, y - 1 < bedrockHeight ? VoxelType.DiamondOre : VoxelType.Stone);
-                        else if (y + undergroundDetail < surfaceHeight)
-                        {
-                            double caveValue = GetCaveNoise(x + chunk.WorldPosition.X * chunk.VoxelSize, y * 2, z + chunk.WorldPosition.Z * chunk.VoxelSize);
-
-                            if (caveValue < 0.25 || caveValue > 0.6)
-                                continue;
-
-                            chunk.SetVoxel(voxelPosition, VoxelType.Stone);
-                        }
-                        else if (y + undergroundDetail - 5 < surfaceHeight)
-                            chunk.SetVoxel(voxelPosition, VoxelType.Stone);
-                        else
-                            chunk.SetVoxel(voxelPosition, VoxelType.Dirt);
-                    }
-                    else if (y == surfaceHeight)
-                        chunk.SetVoxel(new(x, y / voxelOffset, z), VoxelType.Grass);
+                for (int y = voxelSize; y < Generator.ChunkSizeY; y += voxelSize)
+                    if (!_cachedVoxelDictionary.ContainsKey(new(x, y, z)))
+                        AddVoxelIfExposed(x, y, z, surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight, voxelSize, chunk);
             }
 
         RemoveUnexposedVoxels(chunk);
 
         GameManager.Instance.Generator.ChunksToBuild.Enqueue(chunk);
+    }
+
+    private void AddVoxelIfExposed(int x, int y, int z, int surfaceHeight, int mountainHeight, int undergroundDetail, int bedrockHeight, int voxelSize, Chunk chunk)
+    {
+        if (!SampleVoxel(out var sample, x, y, z, surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight, voxelSize, chunk))
+            return;
+
+        var voxel = sample.Value;
+        _cachedVoxelDictionary.Add(voxel.Key, voxel.Value);
+
+        IterateAdjacentVoxels(continueOnOutsideBounds: true, voxel.Key,
+            (Vector3Byte adjacentLocalPosition) =>
+            {
+                if (!_cachedVoxelDictionary.ContainsKey(adjacentLocalPosition))
+                    if (!SampleVoxel(out var sample, adjacentLocalPosition, surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight, voxelSize, chunk))
+                    {
+                        // Air Voxel        | adjacentLocalPosition
+                        // Exposed Voxel    | voxel.Key
+
+                        if (!_cachedVoxelDictionary.ContainsKey(voxel.Key))
+                            _cachedVoxelDictionary.Add(voxel.Key, voxel.Value);
+                    }
+                    else if (!_cachedVoxelDictionary.ContainsKey(voxel.Key))
+                        _cachedVoxelDictionary.Add(voxel.Key, voxel.Value);
+            });
+    }
+
+    private bool SampleVoxel(out KeyValuePair<Vector3Byte, VoxelType>? sample, int x, int y, int z, int surfaceHeight, int mountainHeight, int undergroundDetail, int bedrockHeight, int voxelSize, Chunk chunk) =>
+        SampleVoxel(out sample, new(x, y, z), surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight, voxelSize, chunk);
+
+    private bool SampleVoxel(out KeyValuePair<Vector3Byte, VoxelType>? sample, Vector3Byte voxelPosition, int surfaceHeight, int mountainHeight, int undergroundDetail, int bedrockHeight, int voxelSize, Chunk chunk)
+    {
+        sample = null;
+
+        int x = voxelPosition.X;
+        int y = voxelPosition.Y;
+        int z = voxelPosition.Z;
+
+        if (chunk.LevelOfDetail > 0)
+        {
+            if (y <= surfaceHeight + voxelSize && y >= surfaceHeight)
+                sample = new(voxelPosition, VoxelType.Grass);
+        }
+        else if (y < surfaceHeight)
+        {
+            voxelPosition = new(x, y / voxelSize, z);
+
+            // Check cave noise to determine if this voxel should be empty (cave)
+            if (y < undergroundDetail)
+                sample = new(voxelPosition, y - 1 < bedrockHeight ? VoxelType.DiamondOre : VoxelType.Stone);
+            else if (y + undergroundDetail < surfaceHeight)
+            {
+                double caveValue = GetCaveNoise(x + chunk.WorldPosition.X * chunk.VoxelSize, y * 2, z + chunk.WorldPosition.Z * chunk.VoxelSize);
+
+                if (caveValue > 0.25 && caveValue < 0.6)
+                    sample = new(voxelPosition, VoxelType.Stone);
+            }
+            else if (y + undergroundDetail - 5 < surfaceHeight)
+                sample = new(voxelPosition, VoxelType.Stone);
+            else
+                sample = new(voxelPosition, VoxelType.Dirt);
+        }
+        else if (y == surfaceHeight)
+            sample = new(voxelPosition, VoxelType.Grass);
+
+        return sample is not null;
     }
 
     private int GetSurfaceHeight(int x, int z) =>
