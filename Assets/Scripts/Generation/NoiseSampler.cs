@@ -54,7 +54,7 @@ public sealed partial class NoiseSampler
 
         for (int x = 1; x <= chunk.ChunkSizeXZ; x++)
             for (int z = 1; z <= chunk.ChunkSizeXZ; z++)
-                for (int y = voxelSize; y < chunk.ChunkSizeY; y += voxelSize)
+                for (int y = 1; y < chunk.ChunkSizeY; y ++)
                     AddVoxelIfExposed(new(x, y, z), chunk);
 
         GameManager.Instance.Generator.ChunksToBuild.Enqueue(chunk);
@@ -107,7 +107,7 @@ public sealed partial class NoiseSampler
         int bedrockHeight = noiseData.BedrockHeight;
 
         int x = voxelPosition.X;
-        int y = voxelPosition.Y;
+        int y = voxelPosition.Y * chunk.VoxelSize;
         int z = voxelPosition.Z;
 
         if (chunk.LevelOfDetail > 0)

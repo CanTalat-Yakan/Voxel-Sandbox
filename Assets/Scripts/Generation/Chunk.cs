@@ -17,16 +17,16 @@ public sealed class Chunk
     public int VoxelSize => _voxelSize ??= (int)Math.Pow(2, Math.Max(0, LevelOfDetail - 1));
     private int? _voxelSize = null;
 
-    public int MaxVoxelCapacity => SqrtPaddedChunkSizeXZ * ChunkSizeY + SqrtPaddedChunkSizeXZ;
+    public int MaxVoxelCapacity => SquaredPaddedChunkSizeXZ * ChunkSizeY + SquaredPaddedChunkSizeXZ;
 
     public int PaddedChunkSizeXZ => ChunkSizeXZ + 1;
-    public int SqrtPaddedChunkSizeXZ => _sqrtChunkSizeXZ ??= (int)Math.Pow(PaddedChunkSizeXZ, 2);
+    public int SquaredPaddedChunkSizeXZ => _sqrtChunkSizeXZ ??= (int)Math.Pow(PaddedChunkSizeXZ, 2);
     private int? _sqrtChunkSizeXZ = null;
-    
+
     public int ChunkSizeXZ => _chunkSizeXZ ??= Generator.ChunkSizeXZ * ChunkSizeXZMultiplier;
     private int? _chunkSizeXZ = null;
 
-    public int ChunkSizeY => _chunkSizeY ??= Generator.ChunkSizeY;
+    public int ChunkSizeY => _chunkSizeY ??= Generator.ChunkSizeY / VoxelSize;
     public int? _chunkSizeY = null;
 
     public int ChunkSizeXZMultiplier => _chunkSizeXZMultiplier ??= LevelOfDetail == 0 ? 1 : 2;
@@ -51,10 +51,10 @@ public sealed class Chunk
 
     public void SetExposedVoxel(Vector3Byte localPosition) =>
         ExposedVoxelData.Add(localPosition);
-    
+
     public VoxelType GetVoxelType(Vector3Byte localPosition) =>
         VoxelTypeData[ToIndex(localPosition)];
-    
+
     public void SetVoxelType(Vector3Byte localPosition, VoxelType voxelType) =>
         VoxelTypeData[ToIndex(localPosition)] = voxelType;
 
@@ -66,15 +66,15 @@ public sealed class Chunk
 
     public void SetSolidVoxel(Vector3Byte localPosition) =>
         SolidVoxelData[ToIndex(localPosition)] = true;
-    
+
     public bool TryGetNoiseData(int x, int z, out NoiseData noiseData) =>
         NoiseData.TryGetValue(ToIndex(x, z), out noiseData);
-    
+
     public bool SetNoiseData(int x, int z, NoiseData noiseData) =>
         NoiseData.TryAdd(x * ChunkSizeXZ + z, noiseData);
 
     public int ToIndex(Vector3Byte localPosition) =>
-        localPosition.X + (localPosition.Z * PaddedChunkSizeXZ) + (localPosition.Y * SqrtPaddedChunkSizeXZ);
+        localPosition.X + (localPosition.Z * PaddedChunkSizeXZ) + (localPosition.Y * SquaredPaddedChunkSizeXZ);
 
     public int ToIndex(int x, int z) =>
         x * ChunkSizeXZ + z;
