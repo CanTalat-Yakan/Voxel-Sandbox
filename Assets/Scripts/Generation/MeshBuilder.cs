@@ -37,7 +37,7 @@ public sealed class MeshBuilder
 
         chunk.Mesh = entity.AddComponent<Mesh>();
         chunk.Mesh.SetMeshData(indices, vertices, GetPositions(chunk), null, new InputLayoutHelper().AddUV());
-        chunk.Mesh.SetMaterialTextures([new("TextureAtlasBig2.png", 0)]);
+        chunk.Mesh.SetMaterialTextures([new("TextureAtlas.png", 0)]);
         chunk.Mesh.SetMaterialPipeline("VoxelShader");
     }
 

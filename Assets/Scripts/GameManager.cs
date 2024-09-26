@@ -18,14 +18,10 @@ public sealed class GameManager : Component
     {
         Instance = this;
 
-        //foreach (var entity in Entity.Manager.Entities.Values)
-        //    if (entity.Data.Tag != "DefaultSky")
-        //        Entity.Manager.DestroyEntity(entity);
-
-        ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlasBig2.png");
+        ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlas.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
-        if (true)
+        if (false)
         {
             var controller = Entity.Manager.CreateCamera(name: "Controller").Entity;
             controller.Transform.SetPosition(y: 200);
