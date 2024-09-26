@@ -48,11 +48,12 @@ public sealed partial class NoiseSampler
     public void GenerateChunkContent(Chunk chunk)
     {
         int voxelSize = chunk.VoxelSize;
-        int chunkSizeXZMultiplyer = chunk.LevelOfDetail == 0 ? 1 : 2;
 
-        for (int x = 1; x <= Generator.ChunkSizeXZ * chunkSizeXZMultiplyer; x++)
-            for (int z = 1; z <= Generator.ChunkSizeXZ * chunkSizeXZMultiplyer; z++)
-                for (int y = voxelSize; y < Generator.ChunkSizeY; y += voxelSize)
+        chunk.SolidVoxelData = new bool[chunk.MaxVoxelCapacity];
+
+        for (int x = 1; x <= chunk.ChunkSizeXZ; x++)
+            for (int z = 1; z <= chunk.ChunkSizeXZ; z++)
+                for (int y = voxelSize; y < chunk.ChunkSizeY; y += voxelSize)
                     AddVoxelIfExposed(new(x, y, z), chunk);
 
         GameManager.Instance.Generator.ChunksToBuild.Enqueue(chunk);
@@ -63,29 +64,35 @@ public sealed partial class NoiseSampler
 {
     private void AddVoxelIfExposed(Vector3Byte voxelPosition, Chunk chunk)
     {
-        SampleVoxel(out var voxel, ref voxelPosition, chunk);
+        if (SampleVoxel(out var voxela, ref voxelPosition, chunk))
+            chunk.SetExposedVoxel(voxelPosition, voxela);
+        return;
 
-        if (voxel is null)
+
+        if (!SampleVoxel(out var voxel, ref voxelPosition, chunk))
             return;
+
+        chunk.SetSolidVoxel(voxelPosition);
 
         foreach (var direction in Vector3Int.Directions)
         {
             Vector3Byte adjacentVoxelPosition = (direction + voxelPosition).ToVector3Byte();
 
-            SampleVoxel(out var adjacentVoxel, ref adjacentVoxelPosition, chunk);
-
             // If the adjacent voxel was not found, the current iterated voxel is exposed
-            if (adjacentVoxel is null)
+            if (chunk.IsVoxelEmpty(adjacentVoxelPosition) && !SampleVoxel(out var adjacentVoxel, ref adjacentVoxelPosition, chunk))
             {
-                chunk.SetAirVoxel(adjacentVoxelPosition);
-                chunk.SetExposedVoxel(voxelPosition, voxel.Value); 
+                chunk.SetExposedVoxel(voxelPosition, voxel);
+
+                return;
             }
+
+            chunk.SetSolidVoxel(adjacentVoxelPosition);
         }
     }
 
-    private bool SampleVoxel(out VoxelType? sample, ref Vector3Byte voxelPosition, Chunk chunk)
+    private bool SampleVoxel(out VoxelType sample, ref Vector3Byte voxelPosition, Chunk chunk)
     {
-        sample = null;
+        sample = VoxelType.None;
 
         var noiseData = SampleNoise(chunk, ref voxelPosition);
         int surfaceHeight = noiseData.SurfaceHeight;
@@ -116,10 +123,8 @@ public sealed partial class NoiseSampler
 
                 double caveValue = GetCaveNoise(nx, y * 2, nz);
 
-                if (caveValue < 0.25 || caveValue > 0.6)
-                    return sample is not null;
-
-                sample = VoxelType.Stone;
+                if (!(caveValue < 0.25 || caveValue > 0.6))
+                    sample = VoxelType.Stone;
             }
             else if (y + undergroundDetail - 5 < surfaceHeight)
                 sample = VoxelType.Stone;
@@ -129,7 +134,7 @@ public sealed partial class NoiseSampler
         else if (y == surfaceHeight)
             sample = VoxelType.Grass;
 
-        return sample is not null;
+        return sample is not VoxelType.None;
     }
 
     private NoiseData SampleNoise(Chunk chunk, ref Vector3Byte noisePosition)
