@@ -50,6 +50,7 @@ public sealed partial class NoiseSampler
         int voxelSize = chunk.VoxelSize;
 
         chunk.SolidVoxelData = new bool[chunk.MaxVoxelCapacity];
+        chunk.VoxelTypeData = new VoxelType[chunk.MaxVoxelCapacity];
 
         for (int x = 1; x <= chunk.ChunkSizeXZ; x++)
             for (int z = 1; z <= chunk.ChunkSizeXZ; z++)
@@ -72,22 +73,32 @@ public sealed partial class NoiseSampler
         foreach (var direction in Vector3Int.Directions)
         {
             Vector3Byte adjacentVoxelPosition = (direction + voxelPosition).ToVector3Byte();
+            VoxelType adjacentVoxelType = VoxelType.None;
 
             // If the adjacent voxel was not found, the current iterated voxel is exposed
-            if (chunk.IsVoxelEmpty(adjacentVoxelPosition) && !SampleVoxel(out var adjacentVoxel, ref adjacentVoxelPosition, chunk))
+            if (chunk.IsVoxelEmpty(adjacentVoxelPosition) && !SampleVoxel(out adjacentVoxelType, ref adjacentVoxelPosition, chunk))
             {
-                chunk.SetExposedVoxel(voxelPosition, voxel);
+                chunk.SetVoxelType(voxelPosition, voxel);
+
+                chunk.SetExposedVoxel(voxelPosition);
 
                 return;
             }
 
-            chunk.SetSolidVoxel(adjacentVoxelPosition);
+            if (adjacentVoxelType is not VoxelType.None)
+            {
+                chunk.SetVoxelType(adjacentVoxelPosition, adjacentVoxelType);
+                chunk.SetSolidVoxel(adjacentVoxelPosition);
+            }
         }
     }
 
     private bool SampleVoxel(out VoxelType sample, ref Vector3Byte voxelPosition, Chunk chunk)
     {
-        sample = VoxelType.None;
+        sample = chunk.GetVoxelType(voxelPosition);
+
+        if (sample is not VoxelType.None)
+            return true;
 
         var noiseData = SampleNoise(chunk, ref voxelPosition);
         int surfaceHeight = noiseData.SurfaceHeight;

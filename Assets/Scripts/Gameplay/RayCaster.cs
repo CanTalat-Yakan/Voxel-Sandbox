@@ -141,8 +141,8 @@ public class RayCaster : Component
         // Retrieve the voxel at the given position
         Generator.GetChunkFromPosition(voxelPosition, out var chunk, out var localVoxelPosition);
 
-        if (chunk != null && chunk.GetExposedVoxel(localVoxelPosition, out var voxelType))
-            return voxelType != VoxelType.None;
+        if (chunk is not null && chunk.IsVoxelSolid(localVoxelPosition))
+            return true;
 
         return false;
     }

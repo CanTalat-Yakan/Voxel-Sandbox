@@ -7,7 +7,8 @@ public sealed class Chunk
     public Mesh Mesh;
 
     public bool[] SolidVoxelData;
-    public Dictionary<Vector3Byte, VoxelType> ExposedVoxelData = new();
+    public VoxelType[] VoxelTypeData;
+    public List<Vector3Byte> ExposedVoxelData = new();
     public Dictionary<int, NoiseData> NoiseData = new();
 
     public Vector3Int WorldPosition { get; private set; }
@@ -48,14 +49,14 @@ public sealed class Chunk
      && localPosition.Y >= 1 && localPosition.Y <= ChunkSizeY
      && localPosition.Z >= 1 && localPosition.Z <= ChunkSizeXZ;
 
-    public bool HasExposedVoxel(Vector3Byte localPosition) =>
-        ExposedVoxelData.ContainsKey(localPosition);
-
-    public bool GetExposedVoxel(Vector3Byte localPosition, out VoxelType voxelType) =>
-        ExposedVoxelData.TryGetValue(localPosition, out voxelType);
-
-    public bool SetExposedVoxel(Vector3Byte localPosition, VoxelType voxelType) =>
-        ExposedVoxelData.TryAdd(localPosition, voxelType);
+    public void SetExposedVoxel(Vector3Byte localPosition) =>
+        ExposedVoxelData.Add(localPosition);
+    
+    public VoxelType GetVoxelType(Vector3Byte localPosition) =>
+        VoxelTypeData[ToIndex(localPosition)];
+    
+    public void SetVoxelType(Vector3Byte localPosition, VoxelType voxelType) =>
+        VoxelTypeData[ToIndex(localPosition)] = voxelType;
 
     public bool IsVoxelEmpty(Vector3Byte localPosition) =>
         !IsVoxelSolid(localPosition);
@@ -66,9 +67,6 @@ public sealed class Chunk
     public void SetSolidVoxel(Vector3Byte localPosition) =>
         SolidVoxelData[ToIndex(localPosition)] = true;
     
-    public void SetEmptyVoxel(Vector3Byte localPosition) =>
-        SolidVoxelData[ToIndex(localPosition)] = false;
-
     public bool TryGetNoiseData(int x, int z, out NoiseData noiseData) =>
         NoiseData.TryGetValue(ToIndex(x, z), out noiseData);
     
