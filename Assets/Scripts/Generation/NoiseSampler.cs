@@ -64,11 +64,6 @@ public sealed partial class NoiseSampler
 {
     private void AddVoxelIfExposed(Vector3Byte voxelPosition, Chunk chunk)
     {
-        if (SampleVoxel(out var voxela, ref voxelPosition, chunk))
-            chunk.SetExposedVoxel(voxelPosition, voxela);
-        return;
-
-
         if (!SampleVoxel(out var voxel, ref voxelPosition, chunk))
             return;
 
