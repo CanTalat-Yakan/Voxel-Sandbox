@@ -70,9 +70,6 @@ public sealed class Chunk
     public bool TryGetNoiseData(int x, int z, out NoiseData noiseData) =>
         NoiseData.TryGetValue(ToIndex(x, z), out noiseData);
     
-    public NoiseData GetNoiseData(int x, int z) =>
-        NoiseData[ToIndex(x, z)];
-    
     public bool SetNoiseData(int x, int z, NoiseData noiseData) =>
         NoiseData.TryAdd(x * ChunkSizeXZ + z, noiseData);
 

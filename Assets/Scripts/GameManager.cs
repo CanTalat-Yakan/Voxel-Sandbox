@@ -1,4 +1,6 @@
-﻿using Engine;
+﻿using System.Diagnostics;
+
+using Engine;
 using Engine.Components;
 using Engine.ECS;
 using Engine.Loader;
@@ -11,8 +13,6 @@ public sealed class GameManager : Component
     public static GameManager Instance { get; private set; }
 
     public Generator Generator = new();
-    public MeshBuilder MeshBuilder = new();
-    public NoiseSampler NoiseSampler = new();
 
     public override void OnAwake()
     {
@@ -40,31 +40,53 @@ public sealed class GameManager : Component
     {
         Generator.Initialize(new Vector3Int(0, 0, 0));
 
+        int chunkGenerationThreadCount = 2;
+        for (int i = 0; i < chunkGenerationThreadCount; i++)
+            ChunkGenerationThread();
+
+        MeshBuildingThread();
+    }
+
+    private void MeshBuildingThread()
+    {
+        MeshBuilder MeshBuilder = new();
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
+
+        Thread MeshBuildingThread = new(() =>
+        {
+            while (true)
+                if (Generator.ChunksToBuild.Any())
+                {
+                    stopwatch.Restart();
+                    MeshBuilder.GenerateMesh(Generator.ChunksToBuild.Dequeue());
+
+                    Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                }
+        });
+
+        MeshBuildingThread.Start();
+    }
+
+    private void ChunkGenerationThread()
+    {
+        NoiseSampler NoiseSampler = new();
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
+
         // Create a new thread to run the chunk processing
         Thread ChunkGenerationThread = new(() =>
         {
             while (true)
                 if (Generator.ChunksToGenerate.Any())
                 {
-                    Profiler.Start(out var stopwatch);
+                    stopwatch.Restart();
                     NoiseSampler.GenerateChunkContent(Generator.ChunksToGenerate.Dequeue());
+
                     Output.Log($"CB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
-                    Profiler.Stop(stopwatch, "Chunks Generation");
-                }
-        });
-        Thread MeshBuildingThread = new(() =>
-        {
-            while (true)
-                if (Generator.ChunksToBuild.Any())
-                {
-                    Profiler.Start(out var stopwatch);
-                    MeshBuilder.GenerateMesh(Generator.ChunksToBuild.Dequeue());
-                    Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
-                    Profiler.Stop(stopwatch, "Mesh Generation");
                 }
         });
 
         ChunkGenerationThread.Start();
-        MeshBuildingThread.Start();
     }
 }
