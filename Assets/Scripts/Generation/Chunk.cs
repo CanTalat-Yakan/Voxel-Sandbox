@@ -6,7 +6,9 @@ public sealed class Chunk
 {
     public Mesh Mesh;
 
-    public Dictionary<Vector3Byte, VoxelType> VoxelData = new();
+    public Dictionary<Vector3Byte, VoxelType> ExposedVoxelData = new();
+    public List<Vector3Byte> AirVoxelData = new();
+
     public Dictionary<int, NoiseData> NoiseData = new();
 
     public Vector3Int WorldPosition { get; private set; }
@@ -25,14 +27,20 @@ public sealed class Chunk
      && localPosition.Y >= 1 && localPosition.Y <= Generator.ChunkSizeY
      && localPosition.Z >= 1 && localPosition.Z <= Generator.ChunkSizeXZ;
 
-    public bool HasVoxel(Vector3Byte localPosition) =>
-        VoxelData.ContainsKey(localPosition);
+    public bool HasExposedVoxel(Vector3Byte localPosition) =>
+        ExposedVoxelData.ContainsKey(localPosition);
 
-    public bool GetVoxel(Vector3Byte localPosition, out VoxelType voxelType) =>
-        VoxelData.TryGetValue(localPosition, out voxelType);
+    public bool GetExposedVoxel(Vector3Byte localPosition, out VoxelType voxelType) =>
+        ExposedVoxelData.TryGetValue(localPosition, out voxelType);
 
-    public bool SetVoxel(Vector3Byte localPosition, VoxelType voxelType) =>
-        VoxelData.TryAdd(localPosition, voxelType);
+    public bool SetExposedVoxel(Vector3Byte localPosition, VoxelType voxelType) =>
+        ExposedVoxelData.TryAdd(localPosition, voxelType);
+
+    public bool HasAirVoxel(Vector3Byte localPosition) =>
+        AirVoxelData.Contains(localPosition);
+
+    public void SetAirVoxel(Vector3Byte localPosition) =>
+        AirVoxelData.Add(localPosition);
     
     public bool TryGetNoiseData(int x, int z, out NoiseData noiseData) =>
         NoiseData.TryGetValue(x * Generator.ChunkSizeXZ + z, out noiseData);

@@ -77,13 +77,13 @@ public sealed partial class NoiseSampler
             // If the adjacent voxel was not found, the current iterated voxel is exposed
             if (adjacentVoxel is null)
             {
-                chunk.SetVoxel(adjacentVoxelPosition, VoxelType.None); // air voxel outside the mesh
-                chunk.SetVoxel(voxelPosition, voxel.Value.Value); // the mesh
+                chunk.SetAirVoxel(adjacentVoxelPosition);
+                chunk.SetExposedVoxel(voxelPosition, voxel.Value); 
             }
         }
     }
 
-    private bool SampleVoxel(out KeyValuePair<Vector3Byte, VoxelType>? sample, ref Vector3Byte voxelPosition, Chunk chunk)
+    private bool SampleVoxel(out VoxelType? sample, ref Vector3Byte voxelPosition, Chunk chunk)
     {
         sample = null;
 
@@ -100,7 +100,7 @@ public sealed partial class NoiseSampler
         if (chunk.LevelOfDetail > 0)
         {
             if (y <= surfaceHeight + chunk.VoxelSize && y >= surfaceHeight)
-                sample = new(voxelPosition, VoxelType.Grass);
+                sample = VoxelType.Grass;
         }
         else if (y < surfaceHeight)
         {
@@ -108,7 +108,7 @@ public sealed partial class NoiseSampler
 
             // Check cave noise to determine if this voxel should be empty (cave)
             if (y < undergroundDetail)
-                sample = new(voxelPosition, y - 1 < bedrockHeight ? VoxelType.DiamondOre : VoxelType.Stone);
+                sample = y - 1 < bedrockHeight ? VoxelType.DiamondOre : VoxelType.Stone;
             else if (y + undergroundDetail < surfaceHeight)
             {
                 int nx = chunk.WorldPosition.X + x * chunk.VoxelSize;
@@ -119,15 +119,15 @@ public sealed partial class NoiseSampler
                 if (caveValue < 0.25 || caveValue > 0.6)
                     return sample is not null;
 
-                sample = new(voxelPosition, VoxelType.Stone);
+                sample = VoxelType.Stone;
             }
             else if (y + undergroundDetail - 5 < surfaceHeight)
-                sample = new(voxelPosition, VoxelType.Stone);
+                sample = VoxelType.Stone;
             else
-                sample = new(voxelPosition, VoxelType.Dirt);
+                sample = VoxelType.Dirt;
         }
         else if (y == surfaceHeight)
-            sample = new(voxelPosition, VoxelType.Grass);
+            sample = VoxelType.Grass;
 
         return sample is not null;
     }

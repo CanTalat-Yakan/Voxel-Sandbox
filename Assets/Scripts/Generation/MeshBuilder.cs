@@ -7,14 +7,14 @@ namespace VoxelSandbox;
 
 public sealed class MeshBuilder
 {
+    public const int MaxFacesPerVoxel = 6;
+    public const int VerticesPerFace = 4;
+    public const int IndicesPerFace = 6;
+    public const int FloatsPerVertex = 2; // Position and Data
+
     public void GenerateMesh(Chunk chunk)
     {
-        int maxVoxels = chunk.VoxelData.Count;
-
-        const int MaxFacesPerVoxel = 6;
-        const int VerticesPerFace = 4;
-        const int IndicesPerFace = 6;
-        const int FloatsPerVertex = 2; // Position and Data
+        int maxVoxels = chunk.ExposedVoxelData.Count;
 
         int maxVertices = maxVoxels * MaxFacesPerVoxel * VerticesPerFace;
         int maxIndices = maxVoxels * MaxFacesPerVoxel * IndicesPerFace;
@@ -27,18 +27,9 @@ public sealed class MeshBuilder
         int vertexFloatCount = 0;
         int indexCount = 0;
 
-        foreach (var voxel in chunk.VoxelData)
-            if ((byte)voxel.Value > 0)
-            {
-                if (vertexFloatCount + MaxFacesPerVoxel * VerticesPerFace * 2 >= vertices.Length)
-                    Array.Resize(ref vertices, vertices.Length + vertices.Length / 10);
-
-                if (indexCount + MaxFacesPerVoxel * IndicesPerFace * 2 >= indices.Length)
-                    Array.Resize(ref indices, indices.Length + indices.Length / 10);
-
-                // Add faces for each visible side of the voxel
-                AddVoxelFaces(chunk, voxel, vertices, ref vertexFloatCount, indices, ref indexCount);
-            }
+        foreach (var voxel in chunk.ExposedVoxelData)
+            // Add faces for each visible side of the voxel
+            AddVoxelFaces(chunk, voxel.Key, voxel.Value, ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
 
         var entity = GameManager.Instance.Entity.Manager.CreateEntity();
         entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
@@ -50,30 +41,33 @@ public sealed class MeshBuilder
         chunk.Mesh.SetMaterialPipeline("VoxelShader");
     }
 
-    private void AddVoxelFaces(Chunk chunk, KeyValuePair<Vector3Byte, VoxelType> voxel, float[] vertices, ref int vertexFloatCount, int[] indices, ref int indexCount)
+    private void AddVoxelFaces(Chunk chunk, Vector3Byte voxelPosition, VoxelType voxelType, ref float[] vertices, ref int vertexFloatCount, ref int[] indices, ref int indexCount)
     {
+        if (vertexFloatCount + MaxFacesPerVoxel * VerticesPerFace * 2 >= vertices.Length)
+            Array.Resize(ref vertices, vertices.Length + vertices.Length / 10);
+
+        if (indexCount + MaxFacesPerVoxel * IndicesPerFace * 2 >= indices.Length)
+            Array.Resize(ref indices, indices.Length + indices.Length / 10);
+
         var faceVertices = new Vector3Int[4];
 
         // Check each face direction for visibility
         for (byte normalIndex = 0; normalIndex < Vector3Int.Directions.Length; normalIndex++)
         {
-            Vector3Byte adjacentVoxelPosition = voxel.Key + Vector3Int.Directions[normalIndex];
+            Vector3Byte adjacentVoxelPosition = voxelPosition + Vector3Int.Directions[normalIndex];
 
             //Check if the adjacent voxel is an empty voxel
-            if (!Chunk.IsWithinBounds(adjacentVoxelPosition))
-                AddFace(voxel, normalIndex, vertices, ref vertexFloatCount, indices, ref indexCount, ref faceVertices);
-            else if (chunk.GetVoxel(adjacentVoxelPosition, out var adjacentVoxel))
-                if (adjacentVoxel is VoxelType.None)
-                    AddFace(voxel, normalIndex, vertices, ref vertexFloatCount, indices, ref indexCount, ref faceVertices);
+            if (!Chunk.IsWithinBounds(adjacentVoxelPosition) || chunk.HasAirVoxel(adjacentVoxelPosition))
+                AddFace(voxelPosition, voxelType, normalIndex, ref vertices, ref vertexFloatCount, ref indices, ref indexCount, ref faceVertices);
         }
     }
 
-    private void AddFace(KeyValuePair<Vector3Byte, VoxelType> voxel, byte normalIndex, float[] vertices, ref int vertexFloatCount, int[] indices, ref int indexCount, ref Vector3Int[] faceVertices)
+    private void AddFace(Vector3Byte voxelPosition, VoxelType voxelType, byte normalIndex, ref float[] vertices, ref int vertexFloatCount, ref int[] indices, ref int indexCount, ref Vector3Int[] faceVertices)
     {
-        byte textureIndex = (byte)voxel.Value;
+        byte textureIndex = (byte)voxelType;
         byte lightIndex = 0;
 
-        string enumName = voxel.Value.ToString();
+        string enumName = voxelType.ToString();
 
         if (normalIndex == 0 && Enum.IsDefined(typeof(VoxelType), enumName + "_Top"))
             textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Top");
@@ -82,9 +76,9 @@ public sealed class MeshBuilder
         else if (normalIndex == 2 && Enum.IsDefined(typeof(VoxelType), enumName + "_Front"))
             textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Front");
 
-        int x = voxel.Key.X;
-        int y = voxel.Key.Y;
-        int z = voxel.Key.Z;
+        int x = voxelPosition.X;
+        int y = voxelPosition.Y;
+        int z = voxelPosition.Z;
 
         // Define face vertices
         switch (normalIndex)
