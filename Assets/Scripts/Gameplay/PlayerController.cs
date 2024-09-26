@@ -222,7 +222,8 @@ public class PlayerMovement : Component
                     Vector3Int voxelPosition = new Vector3Int(x, y, z);
                     Generator.GetChunkFromPosition(voxelPosition, out var chunk, out var localVoxelPosition);
 
-                    if (chunk != null && chunk.IsVoxelSolid(localVoxelPosition))
+                    if (chunk is not null && chunk.SolidVoxelData is not null)
+                        if(chunk.IsVoxelSolid(localVoxelPosition))
                         // Collision detected
                         return true;
                 }

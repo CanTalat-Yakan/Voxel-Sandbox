@@ -25,7 +25,7 @@ public sealed class GameManager : Component
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlasBig2.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
-        if (false)
+        if (true)
         {
             var controller = Entity.Manager.CreateCamera(name: "Controller").Entity;
             controller.Transform.SetPosition(y: 200);
