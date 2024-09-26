@@ -17,11 +17,13 @@ public sealed class Chunk
     public int VoxelSize => _voxelSize ??= (int)Math.Pow(2, Math.Max(0, LevelOfDetail - 1));
     private int? _voxelSize = null;
 
-    public int MaxVoxelCapacity => SquaredPaddedChunkSizeXZ * ChunkSizeY + SquaredPaddedChunkSizeXZ;
+    public int MaxVoxelCapacity => PaddedChunkSizeXZSquared * ChunkSizeY + PaddedChunkSizeXZSquared;
 
-    public int PaddedChunkSizeXZ => ChunkSizeXZ + 1;
-    public int SquaredPaddedChunkSizeXZ => _squaredChunkSizeXZ ??= (int)Math.Pow(PaddedChunkSizeXZ, 2);
-    private int? _squaredChunkSizeXZ = null;
+    public int PaddedChunkSizeXZSquared => _paddedChunkSizeXZsquared ??= (int)Math.Pow(PaddedChunkSizeXZ, 2);
+    private int? _paddedChunkSizeXZsquared = null;
+
+    public int PaddedChunkSizeXZ => _paddedChunkSizeXZ ??= ChunkSizeXZ + 1;
+    public int? _paddedChunkSizeXZ = null;
 
     public int ChunkSizeXZ => _chunkSizeXZ ??= Generator.ChunkSizeXZ * ChunkSizeXZMultiplier;
     private int? _chunkSizeXZ = null;
@@ -74,7 +76,7 @@ public sealed class Chunk
         NoiseData.TryAdd(x * ChunkSizeXZ + z, noiseData);
 
     public int ToIndex(Vector3Byte localPosition) =>
-        localPosition.X + (localPosition.Z * PaddedChunkSizeXZ) + (localPosition.Y * SquaredPaddedChunkSizeXZ);
+        localPosition.X + (localPosition.Z * PaddedChunkSizeXZ) + (localPosition.Y * PaddedChunkSizeXZSquared);
 
     public int ToIndex(int x, int z) =>
         x * ChunkSizeXZ + z;
