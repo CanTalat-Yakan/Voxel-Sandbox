@@ -20,8 +20,8 @@ public sealed class Chunk
     public int MaxVoxelCapacity => SquaredPaddedChunkSizeXZ * ChunkSizeY + SquaredPaddedChunkSizeXZ;
 
     public int PaddedChunkSizeXZ => ChunkSizeXZ + 1;
-    public int SquaredPaddedChunkSizeXZ => _sqrtChunkSizeXZ ??= (int)Math.Pow(PaddedChunkSizeXZ, 2);
-    private int? _sqrtChunkSizeXZ = null;
+    public int SquaredPaddedChunkSizeXZ => _squaredChunkSizeXZ ??= (int)Math.Pow(PaddedChunkSizeXZ, 2);
+    private int? _squaredChunkSizeXZ = null;
 
     public int ChunkSizeXZ => _chunkSizeXZ ??= Generator.ChunkSizeXZ * ChunkSizeXZMultiplier;
     private int? _chunkSizeXZ = null;
