@@ -39,29 +39,10 @@ float4 PS(PSInputVoxel input) : SV_TARGET
     // Sample the base color texture
     float4 baseColor = texture0.Sample(sampler0, input.uv);
 
-    // Normalize the normal vector
-    float3 normal = normalize(input.normal);
-
-    // Define light direction (from above)
-    float3 lightDirection = normalize(float3(0.0f, -1.0f, 0.0f));
-
-    // Calculate the dot product between normal and light direction
-    float NdotL = saturate(dot(normal, -lightDirection));
-        
-    // Toon shading: quantize the lighting to create discrete steps
-    const int toonLevels = 3; // Number of shading levels
-    float quantized = floor(NdotL * toonLevels) / (toonLevels - 1);
-
-    // Ensure quantized value is within [0, 1]
-    quantized = saturate(quantized);
-
-    // Apply the quantized lighting to the base color
-    float3 finalColor = baseColor.rgb * quantized;
-
-    // Increase saturation by blending with the base color
-    float saturationAmount = 1.5f; // Adjust for more or less saturation
-    finalColor = lerp(finalColor, baseColor.rgb, (saturationAmount - 1.0f) / saturationAmount);
-
+    float3 finalColor = baseColor.rgb - max(0, dot(input.normal, float3(0.1, -0.5, 0.3)) * 0.25);
+    finalColor -= max(0, dot(input.normal, float3(-0.1, -0.5, -0.3)) * 0.1);
+    finalColor *= 0.88;
+    
     // Return the final color with the original alpha
     return float4(finalColor, baseColor.a);
 }
