@@ -79,7 +79,7 @@ public sealed class GameManager : Component
                     stopwatch.Restart();
                     NoiseSampler.GenerateChunkContent(Generator.ChunksToGenerate.Dequeue());
 
-                    Output.Log($"CB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                    Output.Log($"CG: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
                 }
         });
 
