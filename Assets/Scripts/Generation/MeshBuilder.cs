@@ -22,8 +22,8 @@ public sealed class MeshBuilder
         int maxVertexFloats = maxVertices * FloatsPerVertex;
 
         // Preallocate arrays
-        var vertices = new float[maxVertexFloats / 3];
-        var indices = new int[maxIndices / 3];
+        var vertices = new float[maxVertexFloats / 2];
+        var indices = new int[maxIndices / 2];
 
         int vertexFloatCount = 0;
         int indexCount = 0;
