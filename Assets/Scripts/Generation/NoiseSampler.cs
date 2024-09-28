@@ -30,12 +30,16 @@ public sealed partial class NoiseSampler
 
         Vector3Byte adjacentVoxelPosition = new();
 
+        int x = voxelPosition.X;
+        int y = voxelPosition.Y;
+        int z = voxelPosition.Z;
+
         foreach (var direction in Vector3Int.Directions)
         {
             adjacentVoxelPosition.Set(
-                (byte)(voxelPosition.X + direction.X),
-                (byte)(voxelPosition.Y + direction.Y),
-                (byte)(voxelPosition.Z + direction.Z));
+                (byte)(x + direction.X),
+                (byte)(y + direction.Y),
+                (byte)(z + direction.Z));
 
             VoxelType adjacentVoxelType = VoxelType.None;
 

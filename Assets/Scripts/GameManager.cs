@@ -32,7 +32,7 @@ public sealed class GameManager : Component
     {
         Generator.Initialize(new Vector3Int(0, 0, 0));
 
-        int chunkGenerationThreadCount = 4;
+        int chunkGenerationThreadCount = 2;
         for (int i = 0; i < chunkGenerationThreadCount; i++)
             ChunkGenerationThread();
 
@@ -59,7 +59,7 @@ public sealed class GameManager : Component
                     stopwatch.Restart();
                     MeshBuilder.GenerateMesh(Generator.ChunksToBuild.Dequeue(), this);
 
-                    Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                    //Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
                 }
         });
 
@@ -81,7 +81,7 @@ public sealed class GameManager : Component
                     stopwatch.Restart();
                     NoiseSampler.GenerateChunkContent(Generator.ChunksToGenerate.Dequeue(), this);
 
-                    Output.Log($"CG: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                    //Output.Log($"CG: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
                 }
         });
 

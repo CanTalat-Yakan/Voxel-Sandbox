@@ -2,6 +2,7 @@ using System.Numerics;
 
 using Engine.Components;
 using Engine.DataStructures;
+using Engine.Utilities;
 
 namespace VoxelSandbox;
 
@@ -21,8 +22,8 @@ public sealed class MeshBuilder
         int maxVertexFloats = maxVertices * FloatsPerVertex;
 
         // Preallocate arrays
-        var indices = new int[maxIndices];
-        var vertices = new float[maxVertexFloats];
+        var indices = new int[maxIndices / 5];
+        var vertices = new float[maxVertexFloats / 5];
 
         int vertexFloatCount = 0;
         int indexCount = 0;
@@ -44,10 +45,16 @@ public sealed class MeshBuilder
     private void AddVoxelFaces(Chunk chunk, Vector3Byte voxelPosition, VoxelType voxelType, ref float[] vertices, ref int vertexFloatCount, ref int[] indices, ref int indexCount)
     {
         if (vertexFloatCount + MaxFacesPerVoxel * VerticesPerFace * 2 >= vertices.Length)
+        {
+            Output.Log("Array Resized");
             Array.Resize(ref vertices, vertices.Length + vertices.Length / 10);
+        }
 
         if (indexCount + MaxFacesPerVoxel * IndicesPerFace * 2 >= indices.Length)
+        {
+            Output.Log("Array Resized");
             Array.Resize(ref indices, indices.Length + indices.Length / 10);
+        }
 
         Vector3Byte adjacentVoxelPosition = new();
 
