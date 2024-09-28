@@ -21,8 +21,8 @@ public sealed class MeshBuilder
         int maxVertexFloats = maxVertices * FloatsPerVertex;
 
         // Preallocate arrays
-        var indices = new int[maxIndices / 4];
-        var vertices = new float[maxVertexFloats / 4];
+        var indices = new int[maxIndices];
+        var vertices = new float[maxVertexFloats];
 
         int vertexFloatCount = 0;
         int indexCount = 0;
@@ -49,20 +49,23 @@ public sealed class MeshBuilder
         if (indexCount + MaxFacesPerVoxel * IndicesPerFace * 2 >= indices.Length)
             Array.Resize(ref indices, indices.Length + indices.Length / 10);
 
-        var faceVertices = new Vector3Int[4];
+        Vector3Byte adjacentVoxelPosition = new();
 
         // Check each face direction for visibility
         for (byte normalIndex = 0; normalIndex < Vector3Int.Directions.Length; normalIndex++)
         {
-            Vector3Byte adjacentVoxelPosition = voxelPosition + Vector3Int.Directions[normalIndex];
+            adjacentVoxelPosition.Set(
+                (byte)(voxelPosition.X + Vector3Int.Directions[normalIndex].X),
+                (byte)(voxelPosition.Y + Vector3Int.Directions[normalIndex].Y),
+                (byte)(voxelPosition.Z + Vector3Int.Directions[normalIndex].Z));
 
             // Check if the adjacent voxel is empty
             if (!chunk.IsWithinBounds(adjacentVoxelPosition) || chunk.IsVoxelEmpty(adjacentVoxelPosition))
-                AddFace(voxelPosition, voxelType, normalIndex, ref vertices, ref vertexFloatCount, ref indices, ref indexCount, ref faceVertices);
+                AddFace(voxelPosition, voxelType, normalIndex, ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
         }
     }
 
-    private void AddFace(Vector3Byte voxelPosition, VoxelType voxelType, byte normalIndex, ref float[] vertices, ref int vertexFloatCount, ref int[] indices, ref int indexCount, ref Vector3Int[] faceVertices)
+    private void AddFace(Vector3Byte voxelPosition, VoxelType voxelType, byte normalIndex, ref float[] vertices, ref int vertexFloatCount, ref int[] indices, ref int indexCount)
     {
         byte textureIndex = (byte)voxelType;
         byte lightIndex = 0;
@@ -81,48 +84,55 @@ public sealed class MeshBuilder
         int z = voxelPosition.Z;
 
         // Define face vertices
-        switch (normalIndex)
+        Vector3Byte[] faceVertices = normalIndex switch
         {
-            case 0: // Top
-                faceVertices[0].Set(x + 0, y + 1, z + 0);
-                faceVertices[1].Set(x + 0, y + 1, z + 1);
-                faceVertices[2].Set(x + 1, y + 1, z + 1);
-                faceVertices[3].Set(x + 1, y + 1, z + 0);
-                break;
-            case 1: // Bottom
-                faceVertices[0].Set(x + 0, y + 0, z + 0);
-                faceVertices[1].Set(x + 1, y + 0, z + 0);
-                faceVertices[2].Set(x + 1, y + 0, z + 1);
-                faceVertices[3].Set(x + 0, y + 0, z + 1);
-                break;
-            case 2: // Front
-                faceVertices[0].Set(x + 1, y + 0, z + 1);
-                faceVertices[1].Set(x + 1, y + 1, z + 1);
-                faceVertices[2].Set(x + 0, y + 1, z + 1);
-                faceVertices[3].Set(x + 0, y + 0, z + 1);
-                break;
-            case 3: // Back
-                faceVertices[0].Set(x + 0, y + 0, z + 0);
-                faceVertices[1].Set(x + 0, y + 1, z + 0);
-                faceVertices[2].Set(x + 1, y + 1, z + 0);
-                faceVertices[3].Set(x + 1, y + 0, z + 0);
-                break;
-            case 4: // Right
-                faceVertices[0].Set(x + 1, y + 0, z + 0);
-                faceVertices[1].Set(x + 1, y + 1, z + 0);
-                faceVertices[2].Set(x + 1, y + 1, z + 1);
-                faceVertices[3].Set(x + 1, y + 0, z + 1);
-                break;
-            case 5: // Left
-                faceVertices[0].Set(x + 0, y + 0, z + 1);
-                faceVertices[1].Set(x + 0, y + 1, z + 1);
-                faceVertices[2].Set(x + 0, y + 1, z + 0);
-                faceVertices[3].Set(x + 0, y + 0, z + 0);
-                break;
-        }
+            0 => // Top
+            [
+                new(x    , y + 1, z    ),
+                new(x    , y + 1, z + 1),
+                new(x + 1, y + 1, z + 1),
+                new(x + 1, y + 1, z    ),
+            ],
+            1 => // Bottom
+            [
+                new(x    , y    , z    ),
+                new(x + 1, y    , z    ),
+                new(x + 1, y    , z + 1),
+                new(x    , y    , z + 1),
+            ],
+            2 => // Front
+            [
+                new(x + 1, y    , z + 1),
+                new(x + 1, y + 1, z + 1),
+                new(x    , y + 1, z + 1),
+                new(x    , y    , z + 1),
+            ],
+            3 => // Back
+            [
+                new(x    , y    , z    ),
+                new(x    , y + 1, z    ),
+                new(x + 1, y + 1, z    ),
+                new(x + 1, y    , z    ),
+            ],
+            4 => // Right
+            [
+                new(x + 1, y    , z    ),
+                new(x + 1, y + 1, z    ),
+                new(x + 1, y + 1, z + 1),
+                new(x + 1, y    , z + 1),
+            ],
+            5 => // Left
+            [
+                new(x    , y    , z + 1),
+                new(x    , y + 1, z + 1),
+                new(x    , y + 1, z    ),
+                new(x    , y    , z    ),
+            ],
+            _ => null
+        };
 
-        // Add vertices without 'new' keyword
-        for (byte i = 0; i < 4; i++)
+        // Add Vertices
+        for (byte i = 0; i < VerticesPerFace; i++)
         {
             vertices[vertexFloatCount++] = VoxelData.PackVector3ToFloat(faceVertices[i]);
             vertices[vertexFloatCount++] = VoxelData.PackBytesToFloat(i, textureIndex, normalIndex, lightIndex);
