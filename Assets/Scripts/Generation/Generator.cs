@@ -17,13 +17,17 @@ public sealed class Generator
     public ConcurrentQueue<Chunk> ChunksToGenerate = new();
     public ConcurrentQueue<Chunk> ChunksToBuild = new();
 
-    public void Initialize(Vector3Int originPosition)
+    public GameManager GameManager;
+
+    public void Initialize(GameManager gameManager)
     {
+        GameManager = gameManager;
+
         // Initialize generatedChunks dictionary for all LOD levels
         for (int i = 0; i < LODCount; i++)
             GeneratedChunks[i] = new();
 
-        UpdateChunks(originPosition);
+        UpdateChunks(new Vector3Int(0, 0, 0));
     }
 
     public static void GetChunkFromPosition(Vector3Int worldPosition, out Chunk chunk, out Vector3Byte localVoxelPosition)
@@ -52,6 +56,8 @@ public sealed class Generator
         ChunksToBuild.Clear();
 
         CalculateChunks(newPlayerPosition);
+
+        GameManager.ChunkGenerationThread();
     }
 
     private void CalculateChunks(Vector3Int worldPosition)

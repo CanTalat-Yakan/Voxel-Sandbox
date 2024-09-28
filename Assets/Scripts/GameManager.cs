@@ -31,19 +31,16 @@ public sealed class GameManager : Component
 
     private static ParallelOptions _options = new() { MaxDegreeOfParallelism = Environment.ProcessorCount - 2 };
 
-    public override void OnStart()
-    {
-        Generator.Initialize(new Vector3Int(0, 0, 0));
+    public override void OnStart() =>
+        Generator.Initialize(this);
 
-        ChunkGenerationThread();
+    public override void OnUpdate() =>
         MeshBuildingThread();
-    }
 
-    private void ChunkGenerationThread()
+    public void ChunkGenerationThread()
     {
-        NoiseSampler NoiseSampler = new();
+        NoiseSampler noiseSampler = new();
         Stopwatch stopwatch = new();
-        stopwatch.Start();
 
         Thread ChunkGenerationThread = new(() =>
         {
@@ -51,7 +48,7 @@ public sealed class GameManager : Component
             {
                 stopwatch.Restart();
 
-                NoiseSampler.GenerateChunkContent(chunk, this);
+                noiseSampler.GenerateChunkContent(chunk, this);
 
                 Output.Log($"CG: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
             });
@@ -60,24 +57,22 @@ public sealed class GameManager : Component
         ChunkGenerationThread.Start();
     }
 
-    private void MeshBuildingThread()
+    public void MeshBuildingThread()
     {
-        MeshBuilder MeshBuilder = new();
+        MeshBuilder meshBuilder = new();
         Stopwatch stopwatch = new();
-        stopwatch.Start();
 
         Thread MeshBuildingThread = new(() =>
         {
-            while (true)
-                if (Generator.ChunksToBuild.Any())
-                    if (Generator.ChunksToBuild.TryDequeue(out var chunk))
-                    {
-                        stopwatch.Restart();
+            if (Generator.ChunksToBuild.Any())
+                if (Generator.ChunksToBuild.TryDequeue(out var chunk))
+                {
+                    stopwatch.Restart();
 
-                        MeshBuilder.GenerateMesh(chunk, this);
+                    meshBuilder.GenerateMesh(chunk, this);
 
-                        Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
-                    }
+                    Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                }
         });
 
         MeshBuildingThread.Start();
