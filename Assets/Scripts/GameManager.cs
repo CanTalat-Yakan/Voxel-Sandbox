@@ -3,6 +3,7 @@
 using Engine;
 using Engine.Components;
 using Engine.ECS;
+using Engine.Editor;
 using Engine.Loader;
 using Engine.Utilities;
 
@@ -28,21 +29,32 @@ public sealed class GameManager : Component
         }
     }
 
+    private static ParallelOptions _options = new() { MaxDegreeOfParallelism = Environment.ProcessorCount - 2 };
+
     public override void OnStart()
     {
         Generator.Initialize(new Vector3Int(0, 0, 0));
 
-        int chunkGenerationThreadCount = 4;
-        for (int i = 0; i < chunkGenerationThreadCount; i++)
-            ChunkGenerationThread();
-
-        //MeshBuildingThread();
+        ChunkGenerationThread();
+        MeshBuildingThread();
     }
 
-    public override void OnUpdate()
+    private void ChunkGenerationThread()
     {
-        if (Input.GetKey(Vortice.DirectInput.Key.B, InputState.Down))
-            MeshBuildingThread();
+        NoiseSampler NoiseSampler = new();
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
+
+        Thread ChunkGenerationThread = new(() =>
+        {
+            NoiseSampler NoiseSampler = new();
+            Parallel.ForEach(Generator.ChunksToGenerate.AsEnumerable(), _options, chunk =>
+            {
+                NoiseSampler.GenerateChunkContent(chunk, this);
+            });
+        });
+
+        ChunkGenerationThread.Start();
     }
 
     private void MeshBuildingThread()
@@ -68,27 +80,4 @@ public sealed class GameManager : Component
         MeshBuildingThread.Start();
     }
 
-    private void ChunkGenerationThread()
-    {
-        NoiseSampler NoiseSampler = new();
-        Stopwatch stopwatch = new();
-        stopwatch.Start();
-
-        // Create a new thread to run the chunk processing
-        Thread ChunkGenerationThread = new(() =>
-        {
-            while (true)
-                if (Generator.ChunksToGenerate.Any())
-                    if (Generator.ChunksToGenerate.TryDequeue(out var chunk))
-                    {
-                        stopwatch.Restart();
-
-                        NoiseSampler.GenerateChunkContent(chunk, this);
-
-                        Output.Log($"CG: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
-                    }
-        });
-
-        ChunkGenerationThread.Start();
-    }
 }

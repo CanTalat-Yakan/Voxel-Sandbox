@@ -22,8 +22,8 @@ public sealed class MeshBuilder
         int maxVertexFloats = maxVertices * FloatsPerVertex;
 
         // Preallocate arrays
-        var vertices = new float[maxVertexFloats / 5];
-        var indices = new int[maxIndices / 5];
+        var vertices = new float[maxVertexFloats / 3];
+        var indices = new int[maxIndices / 3];
 
         int vertexFloatCount = 0;
         int indexCount = 0;
@@ -44,17 +44,7 @@ public sealed class MeshBuilder
 
     private void AddVoxelFaces(Chunk chunk, Vector3Byte voxelPosition, VoxelType voxelType, ref float[] vertices, ref int vertexFloatCount, ref int[] indices, ref int indexCount)
     {
-        if (vertexFloatCount + MaxFacesPerVoxel * VerticesPerFace * 2 >= vertices.Length)
-        {
-            Output.Log("Array Resized");
-            Array.Resize(ref vertices, vertices.Length + vertices.Length / 10);
-        }
-
-        if (indexCount + MaxFacesPerVoxel * IndicesPerFace * 2 >= indices.Length)
-        {
-            Output.Log("Array Resized");
-            Array.Resize(ref indices, indices.Length + indices.Length / 10);
-        }
+        ResizeArrays(ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
 
         Vector3Byte adjacentVoxelPosition = new();
 
@@ -69,6 +59,21 @@ public sealed class MeshBuilder
             // Check if the adjacent voxel is empty
             if (!chunk.IsWithinBounds(adjacentVoxelPosition) || chunk.IsVoxelEmpty(adjacentVoxelPosition))
                 AddFace(voxelPosition, voxelType, normalIndex, ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
+        }
+    }
+
+    private void ResizeArrays(ref float[] vertices, ref int vertexFloatCount, ref int[] indices, ref int indexCount)
+    {
+        if (vertexFloatCount + MaxFacesPerVoxel * VerticesPerFace * 2 >= vertices.Length)
+        {
+            Output.Log("Array Resized");
+            Array.Resize(ref vertices, vertices.Length + vertices.Length / 10);
+        }
+
+        if (indexCount + MaxFacesPerVoxel * IndicesPerFace * 2 >= indices.Length)
+        {
+            Output.Log("Array Resized");
+            Array.Resize(ref indices, indices.Length + indices.Length / 10);
         }
     }
 
