@@ -47,10 +47,13 @@ public sealed class GameManager : Component
 
         Thread ChunkGenerationThread = new(() =>
         {
-            NoiseSampler NoiseSampler = new();
             Parallel.ForEach(Generator.ChunksToGenerate.AsEnumerable(), _options, chunk =>
             {
+                stopwatch.Restart();
+
                 NoiseSampler.GenerateChunkContent(chunk, this);
+
+                Output.Log($"CG: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
             });
         });
 
