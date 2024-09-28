@@ -1,4 +1,6 @@
-﻿namespace VoxelSandbox;
+﻿using System.Collections.Concurrent;
+
+namespace VoxelSandbox;
 
 public sealed class Generator
 {
@@ -12,8 +14,8 @@ public sealed class Generator
     public static readonly int LODCount = 3;
     public static readonly int NativeRadius = 8;
 
-    public Queue<Chunk> ChunksToGenerate = new();
-    public Queue<Chunk> ChunksToBuild = new();
+    public ConcurrentQueue<Chunk> ChunksToGenerate = new();
+    public ConcurrentQueue<Chunk> ChunksToBuild = new();
 
     public void Initialize(Vector3Int originPosition)
     {

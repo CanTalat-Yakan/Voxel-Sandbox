@@ -32,7 +32,7 @@ public sealed class GameManager : Component
     {
         Generator.Initialize(new Vector3Int(0, 0, 0));
 
-        int chunkGenerationThreadCount = 2;
+        int chunkGenerationThreadCount = 4;
         for (int i = 0; i < chunkGenerationThreadCount; i++)
             ChunkGenerationThread();
 
@@ -55,12 +55,14 @@ public sealed class GameManager : Component
         {
             while (true)
                 if (Generator.ChunksToBuild.Any())
-                {
-                    stopwatch.Restart();
-                    MeshBuilder.GenerateMesh(Generator.ChunksToBuild.Dequeue(), this);
+                    if (Generator.ChunksToBuild.TryDequeue(out var chunk))
+                    {
+                        stopwatch.Restart();
 
-                    //Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
-                }
+                        MeshBuilder.GenerateMesh(chunk, this);
+
+                        Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                    }
         });
 
         MeshBuildingThread.Start();
@@ -77,12 +79,14 @@ public sealed class GameManager : Component
         {
             while (true)
                 if (Generator.ChunksToGenerate.Any())
-                {
-                    stopwatch.Restart();
-                    NoiseSampler.GenerateChunkContent(Generator.ChunksToGenerate.Dequeue(), this);
+                    if (Generator.ChunksToGenerate.TryDequeue(out var chunk))
+                    {
+                        stopwatch.Restart();
 
-                    //Output.Log($"CG: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
-                }
+                        NoiseSampler.GenerateChunkContent(chunk, this);
+
+                        Output.Log($"CG: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                    }
         });
 
         ChunkGenerationThread.Start();
