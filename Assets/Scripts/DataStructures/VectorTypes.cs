@@ -25,9 +25,16 @@ public struct Vector3Byte
         if (z < 0 || z >= 128)
             throw new ArgumentOutOfRangeException(nameof(z), "Z must be between 0 and 127.");
 
+        Set(x, y, z);
+    }
+
+    public Vector3Byte Set(int x, int y, int z)
+    {
         Byte1 = (byte)((x & 0b01111111) | ((y & 0b000000001) << 7)); // X and Y bit 0
         Byte2 = (byte)((y >> 1) & 0b11111111);                      // Y bits 1–8
         Byte3 = (byte)((z & 0b01111111) | ((y >> 9) & 0b00000001) << 7); // Z and Y bit 9
+
+        return this;
     }
 
     public override string ToString() =>

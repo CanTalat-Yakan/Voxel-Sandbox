@@ -3,14 +3,12 @@ using LibNoise.Primitive;
 
 namespace VoxelSandbox;
 
-public record NoiseData(int SurfaceHeight, int MountainHeight, int UndergroundDetail, int CaveAreaDetail, int BedrockHeight);
+public record NoiseData(int SurfaceHeight, int MountainHeight, int UndergroundDetail, int BedrockHeight);
 
 public sealed partial class NoiseSampler
 {
     public void GenerateChunkContent(Chunk chunk, GameManager GameManager)
     {
-        chunk.SolidVoxelData = new bool[chunk.MaxVoxelCapacity];
-        chunk.VoxelTypeData = new VoxelType[chunk.MaxVoxelCapacity];
 
         for (int x = 1; x <= chunk.ChunkSizeXZ; x++)
             for (int z = 1; z <= chunk.ChunkSizeXZ; z++)
@@ -31,9 +29,15 @@ public sealed partial class NoiseSampler
         chunk.SetVoxelType(voxelPosition, voxelType);
         chunk.SetSolidVoxel(voxelPosition);
 
+        Vector3Byte adjacentVoxelPosition = new();
+
         foreach (var direction in Vector3Int.Directions)
         {
-            Vector3Byte adjacentVoxelPosition = (direction + voxelPosition).ToVector3Byte();
+            adjacentVoxelPosition.Set(
+                (byte)(voxelPosition.X + direction.X),
+                (byte)(voxelPosition.Y + direction.Y),
+                (byte)(voxelPosition.Z + direction.Z));
+
             VoxelType adjacentVoxelType = VoxelType.None;
 
             // If the adjacent voxel was not found, the current iterated voxel is exposed
@@ -63,7 +67,6 @@ public sealed partial class NoiseSampler
         int surfaceHeight = noiseData.SurfaceHeight;
         int mountainHeight = noiseData.MountainHeight;
         int undergroundDetail = noiseData.UndergroundDetail;
-        int caveAreaDetail = noiseData.CaveAreaDetail;
         int bedrockHeight = noiseData.BedrockHeight;
 
         int x = voxelPosition.X;
@@ -81,8 +84,6 @@ public sealed partial class NoiseSampler
                 sample = VoxelType.Dirt;
             else
             {
-                voxelPosition = new(x, y / chunk.VoxelSize, z);
-
                 // Check cave noise to determine if this voxel should be empty (cave)
                 if (y < undergroundDetail)
                     sample = y - 1 < bedrockHeight ? VoxelType.DiamondOre : VoxelType.Stone;
@@ -117,12 +118,11 @@ public sealed partial class NoiseSampler
         int surfaceHeight = GetSurfaceHeight(nx, nz);
         int mountainHeight = GetMountainHeight(nx, nz);
         int undergroundDetail = GetUndergroundDetail(nx, nz);
-        int caveAreaDetail = GetCaveAreaNoise(nx, nz);
         int bedrockHeight = GetBedrockNoise();
 
         surfaceHeight += (mountainHeight + 1) / 2;
 
-        noiseData = new(surfaceHeight, mountainHeight, undergroundDetail, caveAreaDetail, bedrockHeight);
+        noiseData = new(surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight);
 
         chunk.SetNoiseData(noisePosition.X, noisePosition.Z, noiseData);
 
@@ -165,13 +165,6 @@ public sealed partial class NoiseSampler
         Frequency = 0.005f,
         Scale = 0.5f
     };
-    public Billow _caveAreaNoise = new()
-    {
-        Primitive2D = s_perlinPrimitive,
-        OctaveCount = 3,
-        Frequency = 0.005f,
-        Scale = 100
-    };
 
     private int GetSurfaceHeight(int x, int z) =>
         (int)_surfaceNoise.GetValue(x, z) + 100;
@@ -184,9 +177,6 @@ public sealed partial class NoiseSampler
 
     private double GetCaveNoise(int x, int y, int z) =>
         _caveNoise.GetValue(x, y, z);
-
-    private int GetCaveAreaNoise(int x, int z) =>
-        (int)_caveAreaNoise.GetValue(x, z);
 
     private int GetBedrockNoise() =>
         Random.Next(0, 5);

@@ -32,11 +32,17 @@ public sealed class GameManager : Component
     {
         Generator.Initialize(new Vector3Int(0, 0, 0));
 
-        int chunkGenerationThreadCount = 2;
+        int chunkGenerationThreadCount = 4;
         for (int i = 0; i < chunkGenerationThreadCount; i++)
             ChunkGenerationThread();
 
-        MeshBuildingThread();
+        //MeshBuildingThread();
+    }
+
+    public override void OnUpdate()
+    {
+        if (Input.GetKey(Vortice.DirectInput.Key.B, InputState.Down))
+            MeshBuildingThread();
     }
 
     private void MeshBuildingThread()

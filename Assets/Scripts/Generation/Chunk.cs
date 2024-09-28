@@ -38,6 +38,9 @@ public sealed class Chunk
     {
         WorldPosition = worldPosition;
         LevelOfDetail = levelOfDetail;
+
+        SolidVoxelData = new bool[MaxVoxelCapacity];
+        VoxelTypeData = new VoxelType[MaxVoxelCapacity];
     }
 
     public Vector3Int GetChunkSize() =>
