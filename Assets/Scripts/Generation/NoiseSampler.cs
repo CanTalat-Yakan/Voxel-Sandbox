@@ -9,7 +9,6 @@ public sealed partial class NoiseSampler
 {
     public void GenerateChunkContent(Chunk chunk, GameManager GameManager)
     {
-
         for (int x = 1; x <= chunk.ChunkSizeXZ; x++)
             for (int z = 1; z <= chunk.ChunkSizeXZ; z++)
                 for (int y = 1; y < chunk.ChunkSizeY; y++)

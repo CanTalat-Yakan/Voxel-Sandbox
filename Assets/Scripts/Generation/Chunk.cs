@@ -1,4 +1,5 @@
 ﻿using Engine.Components;
+using System.Collections;
 
 namespace VoxelSandbox;
 
@@ -6,7 +7,7 @@ public sealed class Chunk
 {
     public Mesh Mesh;
 
-    public bool[] SolidVoxelData;
+    public BitArray SolidVoxelData;
     public VoxelType[] VoxelTypeData;
     public List<Vector3Byte> ExposedVoxelData = new();
     public Dictionary<int, NoiseData> NoiseData = new();
@@ -39,7 +40,7 @@ public sealed class Chunk
         WorldPosition = worldPosition;
         LevelOfDetail = levelOfDetail;
 
-        SolidVoxelData = new bool[MaxVoxelCapacity];
+        SolidVoxelData = new BitArray(MaxVoxelCapacity);
         VoxelTypeData = new VoxelType[MaxVoxelCapacity];
     }
 
