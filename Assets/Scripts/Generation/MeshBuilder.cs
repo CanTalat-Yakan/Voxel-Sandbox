@@ -36,7 +36,7 @@ public sealed class MeshBuilder
         entity.Transform.LocalScale *= chunk.VoxelSize;
 
         chunk.Mesh = entity.AddComponent<Mesh>();
-        chunk.Mesh.SetMeshData(indices, vertices, GetPositions(chunk), null, new InputLayoutHelper().AddUV());
+        chunk.Mesh.SetMeshData(indices, vertices, GetPositions(chunk), new InputLayoutHelper().AddUV());
         chunk.Mesh.SetMaterialTextures([new("TextureAtlas.png", 0)]);
         chunk.Mesh.SetMaterialPipeline("VoxelShader");
     }
