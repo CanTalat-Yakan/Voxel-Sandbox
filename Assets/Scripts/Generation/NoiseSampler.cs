@@ -7,7 +7,7 @@ public record NoiseData(int SurfaceHeight, int MountainHeight, int UndergroundDe
 
 public sealed partial class NoiseSampler
 {
-    public void GenerateChunkContent(Chunk chunk)
+    public void GenerateChunkContent(Chunk chunk, GameManager GameManager)
     {
         chunk.SolidVoxelData = new bool[chunk.MaxVoxelCapacity];
         chunk.VoxelTypeData = new VoxelType[chunk.MaxVoxelCapacity];
@@ -17,7 +17,7 @@ public sealed partial class NoiseSampler
                 for (int y = 1; y < chunk.ChunkSizeY; y++)
                     AddExposedVoxel(new(x, y, z), chunk);
 
-        GameManager.Instance.Generator.ChunksToBuild.Enqueue(chunk);
+        GameManager.Generator.ChunksToBuild.Enqueue(chunk);
     }
 }
 

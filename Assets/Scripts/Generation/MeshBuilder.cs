@@ -12,7 +12,7 @@ public sealed class MeshBuilder
     public const int IndicesPerFace = 6;
     public const int FloatsPerVertex = 2; // Position and Data
 
-    public void GenerateMesh(Chunk chunk)
+    public void GenerateMesh(Chunk chunk, GameManager GameManager)
     {
         int maxVoxels = chunk.ExposedVoxelData.Count;
 
@@ -31,7 +31,7 @@ public sealed class MeshBuilder
             // Add faces for each visible side of the voxel
             AddVoxelFaces(chunk, voxel, chunk.GetVoxelType(voxel), ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
 
-        var entity = GameManager.Instance.Entity.Manager.CreateEntity();
+        var entity = GameManager.Entity.Manager.CreateEntity();
         entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
         entity.Transform.LocalScale *= chunk.VoxelSize;
 

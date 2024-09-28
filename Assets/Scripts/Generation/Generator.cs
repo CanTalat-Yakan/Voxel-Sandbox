@@ -26,7 +26,7 @@ public sealed class Generator
 
     public static void GetChunkFromPosition(Vector3Int worldPosition, out Chunk chunk, out Vector3Byte localVoxelPosition)
     {
-        Vector3Int chunkPosition = new Vector3Int();
+        Vector3Int chunkPosition = new();
         chunkPosition.Y = 0;
 
         chunkPosition.X = worldPosition.X / ChunkSizeXZ * ChunkSizeXZ;

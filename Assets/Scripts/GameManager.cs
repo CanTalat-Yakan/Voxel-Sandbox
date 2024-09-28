@@ -10,14 +10,10 @@ namespace VoxelSandbox;
 
 public sealed class GameManager : Component
 {
-    public static GameManager Instance { get; private set; }
-
     public Generator Generator = new();
 
     public override void OnAwake()
     {
-        Instance = this;
-
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlas.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
@@ -55,7 +51,7 @@ public sealed class GameManager : Component
                 if (Generator.ChunksToBuild.Any())
                 {
                     stopwatch.Restart();
-                    MeshBuilder.GenerateMesh(Generator.ChunksToBuild.Dequeue());
+                    MeshBuilder.GenerateMesh(Generator.ChunksToBuild.Dequeue(), this);
 
                     Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
                 }
@@ -77,7 +73,7 @@ public sealed class GameManager : Component
                 if (Generator.ChunksToGenerate.Any())
                 {
                     stopwatch.Restart();
-                    NoiseSampler.GenerateChunkContent(Generator.ChunksToGenerate.Dequeue());
+                    NoiseSampler.GenerateChunkContent(Generator.ChunksToGenerate.Dequeue(), this);
 
                     Output.Log($"CG: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
                 }
