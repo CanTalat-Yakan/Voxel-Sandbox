@@ -4,8 +4,6 @@ namespace VoxelSandbox;
 
 public sealed class Generator
 {
-    // Sparse storage for chunks
-    // Dictionary to store generated chunks by LOD level
     public static Dictionary<int, Dictionary<Vector3Int, Chunk>> GeneratedChunks = new();
 
     public const int ChunkSizeXZ = 32;

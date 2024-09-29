@@ -32,6 +32,9 @@ public sealed class MeshBuilder
             // Add faces for each visible side of the voxel
             AddVoxelFaces(chunk, voxel, chunk.GetVoxelType(voxel), ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
 
+        if (vertexFloatCount == 0)
+            return;
+
         var entity = GameManager.Entity.Manager.CreateEntity();
         entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
         entity.Transform.LocalScale *= chunk.VoxelSize;

@@ -3,7 +3,6 @@
 using Engine;
 using Engine.Components;
 using Engine.ECS;
-using Engine.Editor;
 using Engine.Loader;
 using Engine.Utilities;
 
@@ -29,8 +28,6 @@ public sealed class GameManager : Component
         }
     }
 
-    private static ParallelOptions _options = new() { MaxDegreeOfParallelism = Environment.ProcessorCount - 2 };
-
     public override void OnStart() =>
         Generator.Initialize(this);
 
@@ -42,11 +39,13 @@ public sealed class GameManager : Component
         NoiseSampler noiseSampler = new();
         Stopwatch stopwatch = new();
 
+        ParallelOptions options = new() { MaxDegreeOfParallelism = Environment.ProcessorCount - 2 };
+
         Thread ChunkGenerationThread = new(() =>
         {
-            Parallel.ForEach(Generator.ChunksToGenerate.AsEnumerable(), _options, chunk =>
+            Parallel.ForEach(Generator.ChunksToGenerate.AsEnumerable(), options, chunk =>
             {
-                stopwatch.Restart();
+                stopwatch.Start();
 
                 noiseSampler.GenerateChunkContent(chunk, this);
 
@@ -59,15 +58,17 @@ public sealed class GameManager : Component
 
     public void MeshBuildingThread()
     {
+        if (!Generator.ChunksToBuild.Any())
+            return;
+
         MeshBuilder meshBuilder = new();
         Stopwatch stopwatch = new();
 
         Thread MeshBuildingThread = new(() =>
         {
-            if (Generator.ChunksToBuild.Any())
                 if (Generator.ChunksToBuild.TryDequeue(out var chunk))
                 {
-                    stopwatch.Restart();
+                    stopwatch.Start();
 
                     meshBuilder.GenerateMesh(chunk, this);
 

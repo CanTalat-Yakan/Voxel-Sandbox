@@ -20,7 +20,7 @@ public sealed class Chunk
 
     public int MaxVoxelCapacity => PaddedChunkSizeXZSquared * ChunkSizeY + PaddedChunkSizeXZSquared;
 
-    public int PaddedChunkSizeXZSquared => _paddedChunkSizeXZsquared ??= (int)Math.Pow(PaddedChunkSizeXZ, 2);
+    public int PaddedChunkSizeXZSquared => _paddedChunkSizeXZsquared ??= PaddedChunkSizeXZ * PaddedChunkSizeXZ;
     private int? _paddedChunkSizeXZsquared = null;
 
     public int PaddedChunkSizeXZ => _paddedChunkSizeXZ ??= ChunkSizeXZ + 1;
@@ -50,28 +50,28 @@ public sealed class Chunk
             ChunkSizeY,
             ChunkSizeXZ) * VoxelSize;
 
-    public bool IsWithinBounds(Vector3Byte localPosition) =>
-        localPosition.X >= 1 && localPosition.X <= ChunkSizeXZ
-     && localPosition.Y >= 1 && localPosition.Y <= ChunkSizeY
-     && localPosition.Z >= 1 && localPosition.Z <= ChunkSizeXZ;
+    public bool IsWithinBounds(Vector3Byte position) =>
+        position.X >= 1 && position.X <= ChunkSizeXZ
+     && position.Y >= 1 && position.Y <= ChunkSizeY
+     && position.Z >= 1 && position.Z <= ChunkSizeXZ;
 
-    public void SetExposedVoxel(Vector3Byte localPosition) =>
-        ExposedVoxelData.Add(localPosition);
+    public void SetExposedVoxel(Vector3Byte position) =>
+        ExposedVoxelData.Add(position);
 
-    public VoxelType GetVoxelType(Vector3Byte localPosition) =>
-        VoxelTypeData[ToIndex(localPosition)];
+    public VoxelType GetVoxelType(Vector3Byte position) =>
+        VoxelTypeData[ToIndex(position)];
 
-    public void SetVoxelType(Vector3Byte localPosition, VoxelType voxelType) =>
-        VoxelTypeData[ToIndex(localPosition)] = voxelType;
+    public void SetVoxelType(Vector3Byte position, VoxelType voxelType) =>
+        VoxelTypeData[ToIndex(position)] = voxelType;
 
-    public bool IsVoxelEmpty(Vector3Byte localPosition) =>
-        !IsVoxelSolid(localPosition);
+    public bool IsVoxelEmpty(Vector3Byte position) =>
+        !IsVoxelSolid(position);
 
-    public bool IsVoxelSolid(Vector3Byte localPosition) =>
-        SolidVoxelData[ToIndex(localPosition)] == true;
+    public bool IsVoxelSolid(Vector3Byte position) =>
+        SolidVoxelData[ToIndex(position)] == true;
 
-    public void SetSolidVoxel(Vector3Byte localPosition) =>
-        SolidVoxelData[ToIndex(localPosition)] = true;
+    public void SetSolidVoxel(Vector3Byte position) =>
+        SolidVoxelData[ToIndex(position)] = true;
 
     public bool TryGetNoiseData(int x, int z, out NoiseData noiseData) =>
         NoiseData.TryGetValue(ToIndex(x, z), out noiseData);
@@ -79,9 +79,9 @@ public sealed class Chunk
     public bool SetNoiseData(int x, int z, NoiseData noiseData) =>
         NoiseData.TryAdd(x * ChunkSizeXZ + z, noiseData);
 
-    public int ToIndex(Vector3Byte localPosition) =>
-        localPosition.X + (localPosition.Z * PaddedChunkSizeXZ) + (localPosition.Y * PaddedChunkSizeXZSquared);
+    public int ToIndex(Vector3Byte position) =>
+        position.X + (position.Z * PaddedChunkSizeXZ) + (position.Y * PaddedChunkSizeXZSquared);
 
     public int ToIndex(int x, int z) =>
-        x * ChunkSizeXZ + z;
+        x * PaddedChunkSizeXZSquared + z;
 }
