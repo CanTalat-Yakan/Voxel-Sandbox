@@ -9,8 +9,9 @@ public sealed class Chunk
 
     public BitArray SolidVoxelData;
     public VoxelType[] VoxelTypeData;
+    public NoiseData[] NoiseData;
+
     public List<Vector3Byte> ExposedVoxelData = new();
-    public Dictionary<int, NoiseData> NoiseData = new();
 
     public Vector3Int WorldPosition { get; private set; }
     public int LevelOfDetail { get; private set; }
@@ -42,6 +43,7 @@ public sealed class Chunk
 
         SolidVoxelData = new BitArray(MaxVoxelCapacity);
         VoxelTypeData = new VoxelType[MaxVoxelCapacity];
+        NoiseData = new NoiseData[PaddedChunkSizeXZSquared * 2];
     }
 
     public Vector3Int GetChunkSize() =>
@@ -73,15 +75,15 @@ public sealed class Chunk
     public void SetSolidVoxel(Vector3Byte position) =>
         SolidVoxelData[ToIndex(position)] = true;
 
-    public bool TryGetNoiseData(int x, int z, out NoiseData noiseData) =>
-        NoiseData.TryGetValue(ToIndex(x, z), out noiseData);
+    public NoiseData GetNoiseData(int x, int z) =>
+        NoiseData[ToIndex(x, z)];
 
-    public bool SetNoiseData(int x, int z, NoiseData noiseData) =>
-        NoiseData.TryAdd(x * ChunkSizeXZ + z, noiseData);
+    public void SetNoiseData(int x, int z, NoiseData noiseData) =>
+        NoiseData[ToIndex(x, z)] = noiseData;
 
     public int ToIndex(Vector3Byte position) =>
         position.X + (position.Z * PaddedChunkSizeXZ) + (position.Y * PaddedChunkSizeXZSquared);
 
     public int ToIndex(int x, int z) =>
-        x * PaddedChunkSizeXZSquared + z;
+        x * PaddedChunkSizeXZ + z;
 }

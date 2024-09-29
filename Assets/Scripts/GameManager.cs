@@ -45,7 +45,7 @@ public sealed class GameManager : Component
         {
             Parallel.ForEach(Generator.ChunksToGenerate.AsEnumerable(), options, chunk =>
             {
-                stopwatch.Start();
+                stopwatch.Restart();
 
                 noiseSampler.GenerateChunkContent(chunk, this);
 

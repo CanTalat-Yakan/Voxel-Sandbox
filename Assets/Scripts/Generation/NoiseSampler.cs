@@ -112,7 +112,8 @@ public sealed partial class NoiseSampler
 
     private NoiseData SampleNoise(Chunk chunk, ref Vector3Byte noisePosition)
     {
-        if (chunk.TryGetNoiseData(noisePosition.X, noisePosition.Z, out var noiseData))
+        NoiseData noiseData = chunk.GetNoiseData(noisePosition.X, noisePosition.Z);
+        if (noiseData is not null)
             return noiseData;
 
         int nx = chunk.WorldPosition.X + noisePosition.X * chunk.VoxelSize;
