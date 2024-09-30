@@ -3,7 +3,7 @@ using LibNoise.Primitive;
 
 namespace VoxelSandbox;
 
-public record NoiseData(int SurfaceHeight, int MountainHeight, int UndergroundDetail, int BedrockHeight);
+public record NoiseData(byte SurfaceHeight, byte MountainHeight, byte UndergroundDetail, byte BedrockHeight);
 
 public sealed partial class NoiseSampler
 {
@@ -119,12 +119,12 @@ public sealed partial class NoiseSampler
         int nx = chunk.WorldPosition.X + noisePosition.X * chunk.VoxelSize;
         int nz = chunk.WorldPosition.Z + noisePosition.Z * chunk.VoxelSize;
 
-        int surfaceHeight = GetSurfaceHeight(nx, nz);
-        int mountainHeight = GetMountainHeight(nx, nz);
-        int undergroundDetail = GetUndergroundDetail(nx, nz);
-        int bedrockHeight = GetBedrockNoise();
+        byte surfaceHeight = GetSurfaceHeight(nx, nz);
+        byte mountainHeight = GetMountainHeight(nx, nz);
+        byte undergroundDetail = GetUndergroundDetail(nx, nz);
+        byte bedrockHeight = GetBedrockNoise();
 
-        surfaceHeight += (mountainHeight + 1) / 2;
+        surfaceHeight += (byte)((mountainHeight + 1) / 2);
 
         noiseData = new(surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight);
 
@@ -170,18 +170,18 @@ public sealed partial class NoiseSampler
         Scale = 0.5f
     };
 
-    private int GetSurfaceHeight(int x, int z) =>
-        (int)_surfaceNoise.GetValue(x, z) + 100;
+    private byte GetSurfaceHeight(int x, int z) =>
+        (byte)(_surfaceNoise.GetValue(x, z) + 100);
 
-    private int GetMountainHeight(int x, int z) =>
-        (int)_mountainNoise.GetValue(x, z);
+    private byte GetMountainHeight(int x, int z) =>
+        (byte)_mountainNoise.GetValue(x, z);
 
-    private int GetUndergroundDetail(int x, int z) =>
-        (int)_undergroundNoise.GetValue(x, z) + 10;
+    private byte GetUndergroundDetail(int x, int z) =>
+        (byte)(_undergroundNoise.GetValue(x, z) + 10);
+
+    private byte GetBedrockNoise() =>
+        (byte)Random.Next(0, 5);
 
     private double GetCaveNoise(int x, int y, int z) =>
         _caveNoise.GetValue(x, y, z);
-
-    private int GetBedrockNoise() =>
-        Random.Next(0, 5);
 }
