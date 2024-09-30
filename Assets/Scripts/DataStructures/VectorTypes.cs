@@ -1,4 +1,7 @@
-﻿namespace VoxelSandbox;
+﻿using Assimp;
+using static System.Net.Mime.MediaTypeNames;
+
+namespace VoxelSandbox;
 
 public struct Vector3Byte
 {
@@ -15,6 +18,12 @@ public struct Vector3Byte
         | ((Byte3 >> 7) & 0b00000001) << 9;  // Bit 7 of byte3 (Y bit 9)
 
     public int Z => Byte3 & 0b01111111; // Bits 0–6 (7 bits)
+
+    public static readonly Vector3Byte Zero = new(0, 0, 0);
+    public static readonly Vector3Byte One = new(1, 1, 1);
+    public static readonly Vector3Byte UnitX = new(1, 0, 0);
+    public static readonly Vector3Byte UnitY = new(0, 1, 0);
+    public static readonly Vector3Byte UnitZ = new(0, 0, 1);
 
     public Vector3Byte(int x, int y, int z)
     {
@@ -45,7 +54,7 @@ public struct Vector3Byte
 
     public Vector3Int ToVector3Int() =>
         new(X, Y, Z);
-    
+
     public override bool Equals(object obj)
     {
         if (obj is Vector3Byte other)
@@ -67,17 +76,20 @@ public struct Vector3Byte
         }
     }
 
+    public static Vector3Byte operator *(Vector3Byte a, int b) =>
+        a.Set(a.X * b, a.Y * b, a.Z * b);
+
     public static Vector3Byte operator -(Vector3Byte a, System.Numerics.Vector3 b) =>
-        new(a.X - (int)b.X, a.Y - (int)b.Y, a.Z - (int)b.Z);
+        a.Set(a.X - (int)b.X, a.Y - (int)b.Y, a.Z - (int)b.Z);
 
     public static Vector3Byte operator -(Vector3Byte a, Vector3Int b) =>
-        new(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+        a.Set(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
 
     public static Vector3Byte operator +(Vector3Byte a, Vector3Int b) =>
-        new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+        a.Set(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 
     public static Vector3Byte operator +(Vector3Byte a, Vector3Byte b) =>
-        new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+        a.Set(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 
     public static bool operator ==(Vector3Byte a, Vector3Byte b) =>
         a.X == b.X && a.Y == b.Y && a.Z == b.Z;
@@ -121,6 +133,16 @@ public struct Vector3Int
         X = x;
         Y = y;
         Z = z;
+    }
+
+    public void Set(int? x = null, int? y = null, int? z = null)
+    {
+        if (x is not null)
+            X = x.Value;
+        if (y is not null)
+            Y = y.Value;
+        if (z is not null)
+            Z = z.Value;
     }
 
     public override string ToString() =>

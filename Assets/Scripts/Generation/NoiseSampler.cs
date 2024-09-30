@@ -7,14 +7,50 @@ public record NoiseData(byte SurfaceHeight, byte MountainHeight, byte Undergroun
 
 public sealed partial class NoiseSampler
 {
-    public void GenerateChunkContent(Chunk chunk, GameManager GameManager)
+    public void GenerateChunkContent(Chunk chunk, GameManager gameManager)
     {
+        ProcessChunk(chunk, gameManager);
+
         for (int x = 1; x <= chunk.ChunkSizeXZ; x++)
             for (int z = 1; z <= chunk.ChunkSizeXZ; z++)
                 for (int y = 1; y < chunk.ChunkSizeY; y++)
-                    AddExposedVoxel(new(x, y, z), chunk);
+                    AddExposedVoxel(new(x, y + chunk.WorldPosition.Y, z), chunk);
 
-        GameManager.Generator.ChunksToBuild.Enqueue(chunk);
+        gameManager.Generator.ChunksToBuild.Enqueue(chunk);
+    }
+
+    void ProcessChunk(Chunk chunk, GameManager gameManager)
+    {
+        // Sample the surface heights at the four corners of the chunk
+        NoiseData noiseData1 = SampleNoise(chunk, Vector3Byte.One);
+        NoiseData noiseData2 = SampleNoise(chunk, Vector3Byte.One * chunk.ChunkSizeXZ);
+        NoiseData noiseData3 = SampleNoise(chunk, Vector3Byte.UnitX * chunk.ChunkSizeXZ);
+        NoiseData noiseData4 = SampleNoise(chunk, Vector3Byte.UnitZ * chunk.ChunkSizeXZ);
+
+        // Extract surface heights from the noise data
+        float height1 = noiseData1.SurfaceHeight;
+        float height2 = noiseData2.SurfaceHeight;
+        float height3 = noiseData3.SurfaceHeight;
+        float height4 = noiseData4.SurfaceHeight;
+
+        // Compute grid coordinates in the Y-axis for each corner
+        int gridY1 = (int)(height1 / chunk.ChunkSizeY) * chunk.ChunkSizeY;
+        int gridY2 = (int)(height2 / chunk.ChunkSizeY) * chunk.ChunkSizeY;
+        int gridY3 = (int)(height3 / chunk.ChunkSizeY) * chunk.ChunkSizeY;
+        int gridY4 = (int)(height4 / chunk.ChunkSizeY) * chunk.ChunkSizeY;
+
+        // Set the chunk's world position Y to the calculated grid coordinate
+        chunk.WorldPosition.Set(y: gridY1);
+
+        // Check if the corners are in different grid cells
+        HashSet<int> uniqueGridYs = new() { gridY1, gridY2, gridY3, gridY4 };
+        if (uniqueGridYs.Count > 1)
+            // Enqueue a new chunk for each unique grid cell
+            foreach (int y in uniqueGridYs)
+            {
+                Vector3Int chunkPosition = new Vector3Int(chunk.WorldPosition.X, y, chunk.WorldPosition.Z);
+                gameManager.Generator.ChunksToGenerate.Enqueue(new Chunk(chunkPosition, chunk.LevelOfDetail));
+            }
     }
 }
 
@@ -66,7 +102,7 @@ public sealed partial class NoiseSampler
         if (sample is not VoxelType.None)
             return true;
 
-        var noiseData = SampleNoise(chunk, ref voxelPosition);
+        var noiseData = SampleNoise(chunk, voxelPosition.X, voxelPosition.Z);
         int surfaceHeight = noiseData.SurfaceHeight;
         int mountainHeight = noiseData.MountainHeight;
         int undergroundDetail = noiseData.UndergroundDetail;
@@ -112,14 +148,17 @@ public sealed partial class NoiseSampler
         return sample is not VoxelType.None;
     }
 
-    private NoiseData SampleNoise(Chunk chunk, ref Vector3Byte noisePosition)
+    private NoiseData SampleNoise(Chunk chunk, Vector3Byte position) =>
+        SampleNoise(chunk, position.X, position.Z);
+
+    private NoiseData SampleNoise(Chunk chunk, int x, int z)
     {
-        NoiseData noiseData = chunk.GetNoiseData(noisePosition.X, noisePosition.Z);
+        NoiseData noiseData = chunk.GetNoiseData(x, z);
         if (noiseData is not null)
             return noiseData;
 
-        int nx = chunk.WorldPosition.X + noisePosition.X * chunk.VoxelSize;
-        int nz = chunk.WorldPosition.Z + noisePosition.Z * chunk.VoxelSize;
+        int nx = chunk.WorldPosition.X + x * chunk.VoxelSize;
+        int nz = chunk.WorldPosition.Z + z * chunk.VoxelSize;
 
         byte surfaceHeight = GetSurfaceHeight(nx, nz);
         byte mountainHeight = GetMountainHeight(nx, nz);
@@ -130,7 +169,7 @@ public sealed partial class NoiseSampler
 
         noiseData = new(surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight);
 
-        chunk.SetNoiseData(noisePosition.X, noisePosition.Z, noiseData);
+        chunk.SetNoiseData(x, z, noiseData);
 
         return noiseData;
     }

@@ -1,5 +1,6 @@
-﻿using Engine.Components;
-using System.Collections;
+﻿using System.Collections;
+
+using Engine.Components;
 
 namespace VoxelSandbox;
 
@@ -13,7 +14,7 @@ public sealed class Chunk
 
     public List<Vector3Byte> ExposedVoxelData = new();
 
-    public Vector3Int WorldPosition { get; private set; }
+    public Vector3Int WorldPosition { get; set; }
     public int LevelOfDetail { get; private set; }
 
     public int VoxelSize => _voxelSize ??= (int)Math.Pow(2, Math.Max(0, LevelOfDetail - 1));
