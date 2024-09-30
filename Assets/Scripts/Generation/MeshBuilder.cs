@@ -20,10 +20,11 @@ public sealed class MeshBuilder
         int maxVertices = maxVoxels * MaxFacesPerVoxel * VerticesPerFace;
         int maxIndices = maxVoxels * MaxFacesPerVoxel * IndicesPerFace;
         int maxVertexFloats = maxVertices * FloatsPerVertex;
+        int compressionFactor = maxVertices > 1000 ? 2 : 1;
 
         // Preallocate arrays
-        var vertices = new float[maxVertexFloats / 2];
-        var indices = new int[maxIndices / 2];
+        var vertices = new float[maxVertexFloats / compressionFactor];
+        var indices = new int[maxIndices / compressionFactor];
 
         int vertexFloatCount = 0;
         int indexCount = 0;
@@ -35,11 +36,15 @@ public sealed class MeshBuilder
         if (vertexFloatCount == 0)
             return;
 
-        var entity = GameManager.Entity.Manager.CreateEntity();
-        entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
-        entity.Transform.LocalScale *= chunk.VoxelSize;
+        if (chunk.Mesh is null)
+        {
+            var entity = GameManager.Entity.Manager.CreateEntity();
+            chunk.Mesh = entity.AddComponent<Mesh>();
+        }
 
-        chunk.Mesh = entity.AddComponent<Mesh>();
+        chunk.Mesh.Entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
+        chunk.Mesh.Entity.Transform.LocalScale *= chunk.VoxelSize;
+
         chunk.Mesh.SetMeshData(indices, vertices, GetPositions(chunk), new InputLayoutHelper().AddUV());
         chunk.Mesh.SetMaterialTextures([new("TextureAtlas.png", 0)]);
         chunk.Mesh.SetMaterialPipeline("VoxelShader");

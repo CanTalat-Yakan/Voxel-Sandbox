@@ -1,15 +1,17 @@
 ﻿using System.Collections.Concurrent;
 
+using Engine.Essentials;
+
 namespace VoxelSandbox;
 
 public sealed class Generator
 {
     public static Dictionary<int, Dictionary<Vector3Int, Chunk>> GeneratedChunks = new();
 
-    public const int ChunkSizeXZ = 32;
-    public const int ChunkSizeY = 64;
+    public const int ChunkSizeXZ = 30;
+    public const int ChunkSizeY = 60;
 
-    public static readonly int LODCount = 3;
+    public static readonly int LODCount = 1;
     public static readonly int NativeRadius = 8;
 
     public ConcurrentQueue<Chunk> ChunksToGenerate = new();
@@ -55,7 +57,7 @@ public sealed class Generator
 
         CalculateChunks(newPlayerPosition);
 
-        GameManager.ChunkGenerationThread();
+        GameManager.ChunkGenerationThreadParallel();
     }
 
     private void CalculateChunks(Vector3Int worldPosition)
@@ -113,10 +115,15 @@ public sealed class Generator
     private void CheckChunk(int levelOfDetail, Vector3Int chunkWorldPosition)
     {
         if (GeneratedChunks[levelOfDetail].Keys.Contains(chunkWorldPosition))
-            GeneratedChunks[levelOfDetail][chunkWorldPosition].Mesh.IsEnabled = true;
+        {
+            Chunk oldChunk = GeneratedChunks[levelOfDetail][chunkWorldPosition];
+            PoolManager.GetPool<Chunk>().Return(oldChunk.Reset());
+            GeneratedChunks[levelOfDetail].Remove(chunkWorldPosition);
+        }
         else
         {
-            Chunk newChunk = new(chunkWorldPosition, levelOfDetail);
+            Chunk newChunk = PoolManager.GetPool<Chunk>().Get();
+            newChunk.Initialize(chunkWorldPosition, levelOfDetail);
             GeneratedChunks[levelOfDetail].Add(chunkWorldPosition, newChunk);
             ChunksToGenerate.Enqueue(newChunk);
         }

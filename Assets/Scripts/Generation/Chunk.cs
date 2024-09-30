@@ -12,6 +12,9 @@ public sealed class Chunk
     public VoxelType[] VoxelTypeData;
     public NoiseData[] NoiseData;
 
+    public bool GeneratedChunkBottom = false;
+    public bool GeneratedChunkTop = false;
+
     public List<Vector3Byte> ExposedVoxelData = new();
 
     public Vector3Int WorldPosition { get; set; }
@@ -37,14 +40,29 @@ public sealed class Chunk
     public int ChunkSizeXZMultiplier => _chunkSizeXZMultiplier ??= LevelOfDetail == 0 ? 1 : 2;
     private int? _chunkSizeXZMultiplier = null;
 
-    public Chunk(Vector3Int worldPosition, int levelOfDetail)
+    public Chunk()
+    {
+        SolidVoxelData = new BitArray(MaxVoxelCapacity);
+        VoxelTypeData = new VoxelType[MaxVoxelCapacity];
+        NoiseData = new NoiseData[PaddedChunkSizeXZSquared * 2];
+    }
+
+    public Chunk Initialize(Vector3Int worldPosition, int levelOfDetail)
     {
         WorldPosition = worldPosition;
         LevelOfDetail = levelOfDetail;
 
-        SolidVoxelData = new BitArray(MaxVoxelCapacity);
-        VoxelTypeData = new VoxelType[MaxVoxelCapacity];
-        NoiseData = new NoiseData[PaddedChunkSizeXZSquared * 2];
+        return this;
+    }
+
+    public Chunk Reset()
+    {
+        SolidVoxelData.SetAll(false);
+
+        for (int i = 0; i < NoiseData.Length; i++)
+            NoiseData[i] = null;
+
+        return this;
     }
 
     public Vector3Int GetChunkSize() =>
