@@ -4,10 +4,11 @@ using Vortice.DirectInput;
 
 using Engine.ECS;
 using Engine.Utilities;
+using Engine.Components;
 
 namespace VoxelSandbox;
 
-public class PlayerMovement : Component
+public class PlayerController : Component
 {
     // Movement and rotation settings
     public float MovementSpeed = 10f;
@@ -29,6 +30,16 @@ public class PlayerMovement : Component
     private Vector3 _euler;
 
     private bool _isGrounded = false;
+
+    public static void Initialize(GameManager gameManager)
+    {
+        var controller = gameManager.Entity.Manager.CreateCamera(name: "Controller").Entity;
+        controller.Transform.SetPosition(y: 200);
+        controller.AddComponent<PlayerController>();
+        controller.AddComponent<RayCaster>().SetCamera(controller);
+        controller.GetComponent<Camera>()[0].FOV = 100;
+        controller.GetComponent<Camera>()[0].Clipping.Y = 10000;
+    }
 
     public override void OnUpdate()
     {

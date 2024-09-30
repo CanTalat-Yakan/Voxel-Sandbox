@@ -14,6 +14,7 @@ public sealed class Chunk
 
     public bool GeneratedChunkBottom = false;
     public bool GeneratedChunkTop = false;
+    public bool GeneratedChunkFromChunk = false;
 
     public List<Vector3Byte> ExposedVoxelData = new();
 
@@ -23,7 +24,7 @@ public sealed class Chunk
     public int VoxelSize => _voxelSize ??= (int)Math.Pow(2, Math.Max(0, LevelOfDetail - 1));
     private int? _voxelSize = null;
 
-    public int MaxVoxelCapacity => PaddedChunkSizeXZSquared * ChunkSizeY + PaddedChunkSizeXZSquared;
+    public int MaxVoxelCapacity => PaddedChunkSizeXZSquared * PaddedChunkSizeY + PaddedChunkSizeXZSquared;
 
     public int PaddedChunkSizeXZSquared => _paddedChunkSizeXZsquared ??= PaddedChunkSizeXZ * PaddedChunkSizeXZ;
     private int? _paddedChunkSizeXZsquared = null;
@@ -34,6 +35,9 @@ public sealed class Chunk
     public int ChunkSizeXZ => _chunkSizeXZ ??= Generator.ChunkSizeXZ * ChunkSizeXZMultiplier;
     private int? _chunkSizeXZ = null;
 
+    public int PaddedChunkSizeY => _paddedChunkSizeY ??= ChunkSizeY + 2;
+    public int? _paddedChunkSizeY = null;
+    
     public int ChunkSizeY => _chunkSizeY ??= Generator.ChunkSizeY / VoxelSize;
     public int? _chunkSizeY = null;
 
@@ -44,7 +48,7 @@ public sealed class Chunk
     {
         SolidVoxelData = new BitArray(MaxVoxelCapacity);
         VoxelTypeData = new VoxelType[MaxVoxelCapacity];
-        NoiseData = new NoiseData[PaddedChunkSizeXZSquared * 2];
+        NoiseData = new NoiseData[PaddedChunkSizeXZSquared];
     }
 
     public Chunk Initialize(Vector3Int worldPosition, int levelOfDetail)
@@ -104,5 +108,5 @@ public sealed class Chunk
         position.X + (position.Z * PaddedChunkSizeXZ) + (position.Y * PaddedChunkSizeXZSquared);
 
     public int ToIndex(int x, int z) =>
-        x * PaddedChunkSizeXZ + z;
+        x + z * PaddedChunkSizeXZ;
 }

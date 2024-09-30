@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 
 using Engine;
-using Engine.Components;
 using Engine.ECS;
 using Engine.Loader;
 using Engine.Utilities;
@@ -11,21 +10,15 @@ namespace VoxelSandbox;
 public sealed class GameManager : Component
 {
     public Generator Generator = new();
+    public NoiseSampler NoiseSampler = new();
+    public MeshBuilder MeshBuilder = new();
 
     public override void OnAwake()
     {
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlas.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
-        if (false)
-        {
-            var controller = Entity.Manager.CreateCamera(name: "Controller").Entity;
-            controller.Transform.SetPosition(y: 200);
-            controller.AddComponent<PlayerMovement>();
-            controller.AddComponent<RayCaster>().SetCamera(controller);
-            controller.GetComponent<Camera>()[0].FOV = 100;
-            controller.GetComponent<Camera>()[0].Clipping.Y = 10000;
-        }
+        //PlayerController.Initialize();
     }
 
     public override void OnStart() =>
@@ -34,42 +27,24 @@ public sealed class GameManager : Component
     public override void OnUpdate() =>
         MeshBuildingThread();
 
-    public void GenerateChunk(Chunk chunk)
-    {
-        NoiseSampler noiseSampler = new();
-        Stopwatch stopwatch = new();
-
-        Thread ChunkGenerationThread = new(() =>
-        {
-            stopwatch.Restart();
-
-            noiseSampler.GenerateChunkContent(chunk, this);
-
-            Output.Log($"CG: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
-        });
-
-        ChunkGenerationThread.Start();
-    }
-
     public void ChunkGenerationThreadParallel()
     {
-        NoiseSampler noiseSampler = new();
         Stopwatch stopwatch = new();
 
-        ParallelOptions options = new() { MaxDegreeOfParallelism = Environment.ProcessorCount - 2 };
+        ParallelOptions options = new() { MaxDegreeOfParallelism = Environment.ProcessorCount / 2 };
 
         Thread ChunkGenerationThread = new(() =>
         {
-            // Use Parallel.For to create a fixed number of tasks/threads
-            Parallel.For(0, Generator.ChunksToGenerate.Count, options, i =>
-            {
-                Generator.ChunksToGenerate.TryDequeue(out var chunk);
+            var chunksToGenerate = Generator.ChunksToGenerate.ToArray();
+            Generator.ChunksToGenerate.Clear();
 
+            Parallel.ForEach(chunksToGenerate, options, chunk =>
+            {
                 stopwatch.Restart();
 
-                noiseSampler.GenerateChunkContent(chunk, this);
+                NoiseSampler.GenerateChunkContent(chunk, this);
 
-                //Output.Log($"CG: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                Output.Log($"CG: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
             });
 
             if (!Generator.ChunksToGenerate.IsEmpty)
@@ -81,10 +56,9 @@ public sealed class GameManager : Component
 
     public void MeshBuildingThread()
     {
-        if (!Generator.ChunksToBuild.Any())
+        if (Generator.ChunksToBuild.IsEmpty)
             return;
 
-        MeshBuilder meshBuilder = new();
         Stopwatch stopwatch = new();
 
         Thread MeshBuildingThread = new(() =>
@@ -93,9 +67,9 @@ public sealed class GameManager : Component
             {
                 stopwatch.Start();
 
-                meshBuilder.GenerateMesh(chunk, this);
+                MeshBuilder.GenerateMesh(chunk, this);
 
-                //Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
             }
         });
 

@@ -9,10 +9,10 @@ public sealed class Generator
     public static Dictionary<int, Dictionary<Vector3Int, Chunk>> GeneratedChunks = new();
 
     public const int ChunkSizeXZ = 30;
-    public const int ChunkSizeY = 60;
+    public const int ChunkSizeY = 30;
 
     public static readonly int LODCount = 1;
-    public static readonly int NativeRadius = 8;
+    public static readonly int NativeRadius = 10;
 
     public ConcurrentQueue<Chunk> ChunksToGenerate = new();
     public ConcurrentQueue<Chunk> ChunksToBuild = new();

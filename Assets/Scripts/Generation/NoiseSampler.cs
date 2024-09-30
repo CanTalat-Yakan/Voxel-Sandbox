@@ -1,10 +1,7 @@
-﻿using System.Numerics;
-
-using LibNoise.Filter;
+﻿using LibNoise.Filter;
 using LibNoise.Primitive;
 
 using Engine.Essentials;
-using Engine.Utilities;
 
 namespace VoxelSandbox;
 
@@ -18,12 +15,15 @@ public sealed partial class NoiseSampler
     {
         GameManager = gameManager;
 
-        int gridY = GetGridY(SampleNoise(chunk, Vector3Byte.OneXZ).SurfaceHeight, chunk.ChunkSizeY);
-        chunk.WorldPosition = chunk.WorldPosition.Set(y: gridY);
+        if (!chunk.GeneratedChunkFromChunk)
+        {
+            int gridY = GetGridY(SampleNoise(chunk, Vector3Byte.OneXZ).SurfaceHeight, chunk.ChunkSizeY);
+            chunk.WorldPosition = chunk.WorldPosition.Set(y: gridY);
+        }
 
         for (int x = 1; x <= chunk.ChunkSizeXZ; x++)
             for (int z = 1; z <= chunk.ChunkSizeXZ; z++)
-                for (int y = 1; y < chunk.ChunkSizeY; y++)
+                for (int y = 1; y <= chunk.ChunkSizeY; y++)
                     AddExposedVoxel(new(x, y, z), chunk);
 
         gameManager.Generator.ChunksToBuild.Enqueue(chunk);
@@ -41,19 +41,21 @@ public sealed partial class NoiseSampler
         else return;
 
         Vector3Int chunkPosition = new(chunk.WorldPosition.X, GetGridY(noiseData.SurfaceHeight, chunk.ChunkSizeY), chunk.WorldPosition.Z);
-        Output.Log(chunkPosition);
-        //Chunk newChunk = PoolManager.GetPool<Chunk>().Get().Initialize(
-        //    chunkPosition,
-        //    chunk.LevelOfDetail);
-        //GameManager.Generator.ChunksToGenerate.Enqueue(newChunk);
+        if (Generator.GeneratedChunks[chunk.LevelOfDetail].ContainsKey(chunkPosition))
+            return;
+
+        //Output.Log(chunkPosition);
+        Chunk newChunk = PoolManager.GetPool<Chunk>().Get().Initialize(
+            chunkPosition,
+            chunk.LevelOfDetail);
+
+        newChunk.GeneratedChunkFromChunk = true;
+
+        Generator.GeneratedChunks[chunk.LevelOfDetail].Add(chunkPosition, newChunk);
+        GameManager.Generator.ChunksToGenerate.Enqueue(newChunk);
         //var prim = GameManager.Entity.Manager.CreatePrimitive().Entity;
         //prim.Transform.SetPosition(chunkPosition.X + chunk.ChunkSizeXZ / 2, chunkPosition.Y + chunk.ChunkSizeY / 2, chunkPosition.Z + chunk.ChunkSizeXZ / 2);
-        //prim.Transform.LocalPosition += Vector3.One / 2;
         //prim.Transform.SetScale(chunk.ChunkSizeXZ, chunk.ChunkSizeY, chunk.ChunkSizeXZ);
-
-        //GameManager.GenerateChunk(PoolManager.GetPool<Chunk>().Get().Initialize(
-        //    new(chunk.WorldPosition.X, GetGridY(noiseData.SurfaceHeight, chunk.ChunkSizeY), chunk.WorldPosition.Z),
-        //    chunk.LevelOfDetail));
     }
 }
 
