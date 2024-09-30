@@ -18,7 +18,7 @@ public sealed class GameManager : Component
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlas.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
-        //PlayerController.Initialize();
+        //PlayerController.Initialize(this);
     }
 
     public override void OnStart() =>
