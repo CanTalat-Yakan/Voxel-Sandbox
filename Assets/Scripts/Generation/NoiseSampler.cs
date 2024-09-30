@@ -80,6 +80,8 @@ public sealed partial class NoiseSampler
         {
             if (y <= surfaceHeight + chunk.VoxelSize && y >= surfaceHeight)
                 sample = VoxelType.Grass;
+            else if (y < surfaceHeight)
+                sample = VoxelType.Stone;
         }
         else if (y < surfaceHeight)
         {
