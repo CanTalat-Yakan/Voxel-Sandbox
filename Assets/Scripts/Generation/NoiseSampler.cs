@@ -42,14 +42,14 @@ public sealed partial class NoiseSampler
 
         Vector3Int chunkPosition = new(chunk.WorldPosition.X, GetGridY(noiseData.SurfaceHeight, chunk.ChunkSizeY), chunk.WorldPosition.Z);
         Output.Log(chunkPosition);
-        Chunk newChunk = PoolManager.GetPool<Chunk>().Get().Initialize(
-            chunkPosition,
-            chunk.LevelOfDetail);
-        GameManager.Generator.ChunksToGenerate.Enqueue(newChunk);
-        var prim = GameManager.Entity.Manager.CreatePrimitive().Entity;
-        prim.Transform.SetPosition(chunkPosition.X + chunk.ChunkSizeXZ / 2, chunkPosition.Y + chunk.ChunkSizeY / 2, chunkPosition.Z + chunk.ChunkSizeXZ / 2);
-        prim.Transform.LocalPosition += Vector3.One / 2;
-        prim.Transform.SetScale(chunk.ChunkSizeXZ, chunk.ChunkSizeY, chunk.ChunkSizeXZ);
+        //Chunk newChunk = PoolManager.GetPool<Chunk>().Get().Initialize(
+        //    chunkPosition,
+        //    chunk.LevelOfDetail);
+        //GameManager.Generator.ChunksToGenerate.Enqueue(newChunk);
+        //var prim = GameManager.Entity.Manager.CreatePrimitive().Entity;
+        //prim.Transform.SetPosition(chunkPosition.X + chunk.ChunkSizeXZ / 2, chunkPosition.Y + chunk.ChunkSizeY / 2, chunkPosition.Z + chunk.ChunkSizeXZ / 2);
+        //prim.Transform.LocalPosition += Vector3.One / 2;
+        //prim.Transform.SetScale(chunk.ChunkSizeXZ, chunk.ChunkSizeY, chunk.ChunkSizeXZ);
 
         //GameManager.GenerateChunk(PoolManager.GetPool<Chunk>().Get().Initialize(
         //    new(chunk.WorldPosition.X, GetGridY(noiseData.SurfaceHeight, chunk.ChunkSizeY), chunk.WorldPosition.Z),

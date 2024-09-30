@@ -28,7 +28,7 @@ public sealed class Chunk
     public int PaddedChunkSizeXZSquared => _paddedChunkSizeXZsquared ??= PaddedChunkSizeXZ * PaddedChunkSizeXZ;
     private int? _paddedChunkSizeXZsquared = null;
 
-    public int PaddedChunkSizeXZ => _paddedChunkSizeXZ ??= ChunkSizeXZ + 1;
+    public int PaddedChunkSizeXZ => _paddedChunkSizeXZ ??= ChunkSizeXZ + 2;
     public int? _paddedChunkSizeXZ = null;
 
     public int ChunkSizeXZ => _chunkSizeXZ ??= Generator.ChunkSizeXZ * ChunkSizeXZMultiplier;
