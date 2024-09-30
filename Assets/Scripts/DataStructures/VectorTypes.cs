@@ -21,6 +21,7 @@ public struct Vector3Byte
 
     public static readonly Vector3Byte Zero = new(0, 0, 0);
     public static readonly Vector3Byte One = new(1, 1, 1);
+    public static readonly Vector3Byte OneXZ = new(1, 0, 1);
     public static readonly Vector3Byte UnitX = new(1, 0, 0);
     public static readonly Vector3Byte UnitY = new(0, 1, 0);
     public static readonly Vector3Byte UnitZ = new(0, 0, 1);
@@ -135,7 +136,7 @@ public struct Vector3Int
         Z = z;
     }
 
-    public void Set(int? x = null, int? y = null, int? z = null)
+    public Vector3Int Set(int? x = null, int? y = null, int? z = null)
     {
         if (x is not null)
             X = x.Value;
@@ -143,6 +144,8 @@ public struct Vector3Int
             Y = y.Value;
         if (z is not null)
             Z = z.Value;
+
+        return this;
     }
 
     public override string ToString() =>

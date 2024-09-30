@@ -7,7 +7,7 @@ public sealed class Generator
     public static Dictionary<int, Dictionary<Vector3Int, Chunk>> GeneratedChunks = new();
 
     public const int ChunkSizeXZ = 32;
-    public const int ChunkSizeY = 384;
+    public const int ChunkSizeY = 64;
 
     public static readonly int LODCount = 3;
     public static readonly int NativeRadius = 8;

@@ -14,7 +14,7 @@ public sealed partial class NoiseSampler
         for (int x = 1; x <= chunk.ChunkSizeXZ; x++)
             for (int z = 1; z <= chunk.ChunkSizeXZ; z++)
                 for (int y = 1; y < chunk.ChunkSizeY; y++)
-                    AddExposedVoxel(new(x, y + chunk.WorldPosition.Y, z), chunk);
+                    AddExposedVoxel(new(x, y, z), chunk);
 
         gameManager.Generator.ChunksToBuild.Enqueue(chunk);
     }
@@ -22,8 +22,8 @@ public sealed partial class NoiseSampler
     void ProcessChunk(Chunk chunk, GameManager gameManager)
     {
         // Sample the surface heights at the four corners of the chunk
-        NoiseData noiseData1 = SampleNoise(chunk, Vector3Byte.One);
-        NoiseData noiseData2 = SampleNoise(chunk, Vector3Byte.One * chunk.ChunkSizeXZ);
+        NoiseData noiseData1 = SampleNoise(chunk, Vector3Byte.OneXZ);
+        NoiseData noiseData2 = SampleNoise(chunk, Vector3Byte.OneXZ * chunk.ChunkSizeXZ);
         NoiseData noiseData3 = SampleNoise(chunk, Vector3Byte.UnitX * chunk.ChunkSizeXZ);
         NoiseData noiseData4 = SampleNoise(chunk, Vector3Byte.UnitZ * chunk.ChunkSizeXZ);
 
@@ -40,7 +40,7 @@ public sealed partial class NoiseSampler
         int gridY4 = (int)(height4 / chunk.ChunkSizeY) * chunk.ChunkSizeY;
 
         // Set the chunk's world position Y to the calculated grid coordinate
-        chunk.WorldPosition.Set(y: gridY1);
+        chunk.WorldPosition = chunk.WorldPosition.Set(y: gridY1);
 
         // Check if the corners are in different grid cells
         HashSet<int> uniqueGridYs = new() { gridY1, gridY2, gridY3, gridY4 };
@@ -109,7 +109,7 @@ public sealed partial class NoiseSampler
         int bedrockHeight = noiseData.BedrockHeight;
 
         int x = voxelPosition.X;
-        int y = voxelPosition.Y * chunk.VoxelSize;
+        int y = voxelPosition.Y * chunk.VoxelSize + chunk.WorldPosition.Y;
         int z = voxelPosition.Z;
 
         if (chunk.LevelOfDetail > 0)
