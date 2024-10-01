@@ -160,7 +160,6 @@ public struct Vector3Int
 
     public override int GetHashCode()
     {
-        // Combine hash codes of X, Y, and Z for a unique hash
         unchecked
         {
             int hash = 17;
