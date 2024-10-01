@@ -6,12 +6,12 @@ namespace VoxelSandbox;
 
 public sealed class Generator
 {
-    public static Dictionary<int, Dictionary<Vector3Int, Chunk>> GeneratedChunks = new();
+    public static Dictionary<int, ConcurrentDictionary<Vector3Int, Chunk>> GeneratedChunks = new();
 
     public const int ChunkSize = 30;
 
     public static readonly int LODCount = 1;
-    public static readonly int NativeRadius = 8;
+    public static readonly int NativeRadius = 24;
 
     public ConcurrentQueue<Chunk> ChunksToGenerate = new();
     public ConcurrentQueue<Chunk> ChunksToBuild = new();
@@ -117,13 +117,13 @@ public sealed class Generator
         {
             Chunk oldChunk = GeneratedChunks[levelOfDetail][chunkWorldPosition];
             PoolManager.GetPool<Chunk>().Return(oldChunk.Reset());
-            GeneratedChunks[levelOfDetail].Remove(chunkWorldPosition);
+            GeneratedChunks[levelOfDetail].TryRemove(chunkWorldPosition, out _);
         }
         else
         {
             Chunk newChunk = PoolManager.GetPool<Chunk>().Get();
             newChunk.Initialize(GameManager, chunkWorldPosition, levelOfDetail);
-            GeneratedChunks[levelOfDetail].Add(chunkWorldPosition, newChunk);
+            GeneratedChunks[levelOfDetail].TryAdd(chunkWorldPosition, newChunk);
             ChunksToGenerate.Enqueue(newChunk);
         }
     }

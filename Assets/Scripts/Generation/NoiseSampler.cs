@@ -33,8 +33,12 @@ public sealed partial class NoiseSampler
         if (chunk.IsChunkFromChunk)
             return;
 
+        Generator.GeneratedChunks[chunk.LevelOfDetail].TryRemove(chunk.WorldPosition, out _);
+
         int gridY = GetGridY(SampleNoise(chunk, Vector3Short.UnitXZ).SurfaceHeight, chunk.ChunkSize);
         chunk.WorldPosition = chunk.WorldPosition.Set(y: gridY);
+
+        Generator.GeneratedChunks[chunk.LevelOfDetail].TryAdd(chunk.WorldPosition, chunk);
     }
 
     private void CheckChunkVertically(Chunk chunk, NoiseData noiseData)
@@ -57,7 +61,8 @@ public sealed partial class NoiseSampler
         newChunk.Initialize(GameManager, chunkPosition, chunk.LevelOfDetail);
         newChunk.IsChunkFromChunk = true;
 
-        Generator.GeneratedChunks[chunk.LevelOfDetail].Add(chunkPosition, newChunk);
+        Generator.GeneratedChunks[chunk.LevelOfDetail].TryAdd(chunkPosition, newChunk);
+
         GameManager.Generator.ChunksToGenerate.Enqueue(newChunk);
         //var prim = GameManager.Entity.Manager.CreatePrimitive().Entity;
         //prim.Transform.LocalPosition = (chunkPosition + chunk.ChunkSize / 2).ToVector3();
