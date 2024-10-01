@@ -44,7 +44,8 @@ public sealed class GameManager : Component
 
                 NoiseSampler.GenerateChunkContent(chunk, this);
 
-                Output.Log($"CG: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                Output.Log($"CG: {GetFormattedTime(stopwatch)}");
+
             });
 
             if (!Generator.ChunksToGenerate.IsEmpty)
@@ -69,11 +70,18 @@ public sealed class GameManager : Component
 
                 MeshBuilder.GenerateMesh(chunk, this);
 
-                Output.Log($"MB: {(int)(stopwatch.Elapsed.TotalSeconds * 1000.0)} ms");
+                Output.Log($"MB: {GetFormattedTime(stopwatch)}");
             }
         });
 
         MeshBuildingThread.Start();
     }
 
+    private string GetFormattedTime(Stopwatch stopwatch) =>
+        stopwatch.Elapsed.TotalMilliseconds switch
+        {
+            double ms when ms >= 1.5 => $"{ms:F3} ms",
+            double ms when ms < 1.5 => $"{ms * 1000:F0} µs",
+            _ => "Unknown"
+        };
 }

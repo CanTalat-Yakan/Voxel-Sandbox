@@ -5,7 +5,7 @@ using Engine.Essentials;
 
 namespace VoxelSandbox;
 
-public record NoiseData(byte SurfaceHeight, byte MountainHeight, byte UndergroundDetail, byte BedrockHeight);
+public record NoiseData(byte SurfaceHeight, byte UndergroundDetail, byte BedrockHeight);
 
 public sealed partial class NoiseSampler
 {
@@ -26,7 +26,7 @@ public sealed partial class NoiseSampler
     }
 
     private int GetGridY(int y, int chunkSizeY) =>
-        (int)(y / chunkSizeY) * chunkSizeY;
+        y / chunkSizeY * chunkSizeY;
 
     private void SetGridY(Chunk chunk)
     {
@@ -37,7 +37,7 @@ public sealed partial class NoiseSampler
         chunk.WorldPosition = chunk.WorldPosition.Set(y: gridY);
     }
 
-    private void ProcessChunk(Chunk chunk, NoiseData noiseData)
+    private void CheckChunkVertically(Chunk chunk, NoiseData noiseData)
     {
         if (chunk.IsChunkFromChunk)
             return;
@@ -115,11 +115,10 @@ public sealed partial class NoiseSampler
 
         var noiseData = SampleNoise(chunk, voxelPosition.X, voxelPosition.Z);
         int surfaceHeight = noiseData.SurfaceHeight;
-        int mountainHeight = noiseData.MountainHeight;
         int undergroundDetail = noiseData.UndergroundDetail;
         int bedrockHeight = noiseData.BedrockHeight;
 
-        ProcessChunk(chunk, noiseData);
+        CheckChunkVertically(chunk, noiseData);
 
         int x = voxelPosition.X;
         int y = voxelPosition.Y * chunk.VoxelSize + chunk.WorldPosition.Y;
@@ -156,7 +155,7 @@ public sealed partial class NoiseSampler
             }
         }
         else if (y == surfaceHeight)
-            sample = VoxelType.Sandstone;
+            sample = VoxelType.Sand;
 
         return sample is not VoxelType.None;
     }
@@ -180,7 +179,7 @@ public sealed partial class NoiseSampler
 
         surfaceHeight += (byte)((mountainHeight + 1) / 2);
 
-        noiseData = new(surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight);
+        noiseData = new(surfaceHeight, undergroundDetail, bedrockHeight);
 
         chunk.SetNoiseData(x, z, noiseData);
 
