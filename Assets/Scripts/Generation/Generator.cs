@@ -30,7 +30,7 @@ public sealed class Generator
         UpdateChunks(new Vector3Int(0, 0, 0));
     }
 
-    public static void GetChunkFromPosition(Vector3Int worldPosition, out Chunk chunk, out Vector3Byte localVoxelPosition)
+    public static void GetChunkFromPosition(Vector3Int worldPosition, out Chunk chunk, out Vector3Short localVoxelPosition)
     {
         Vector3Int chunkPosition = new();
         chunkPosition.Y = 0;

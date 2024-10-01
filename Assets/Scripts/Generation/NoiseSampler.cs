@@ -33,7 +33,7 @@ public sealed partial class NoiseSampler
         if (chunk.GeneratedChunkFromChunk)
             return;
 
-        int gridY = GetGridY(SampleNoise(chunk, Vector3Byte.OneXZ).SurfaceHeight, chunk.ChunkSize);
+        int gridY = GetGridY(SampleNoise(chunk, Vector3Short.OneXZ).SurfaceHeight, chunk.ChunkSize);
         chunk.WorldPosition = chunk.WorldPosition.Set(y: gridY);
     }
 
@@ -69,7 +69,7 @@ public sealed partial class NoiseSampler
 
 public sealed partial class NoiseSampler
 {
-    private void AddExposedVoxel(Vector3Byte voxelPosition, Chunk chunk)
+    private void AddExposedVoxel(Vector3Short voxelPosition, Chunk chunk)
     {
         if (!SampleVoxel(out var voxelType, ref voxelPosition, chunk))
             return;
@@ -77,7 +77,7 @@ public sealed partial class NoiseSampler
         chunk.SetVoxelType(voxelPosition, voxelType);
         chunk.SetSolidVoxel(voxelPosition);
 
-        Vector3Byte adjacentVoxelPosition = new();
+        Vector3Short adjacentVoxelPosition = new();
 
         int x = voxelPosition.X;
         int y = voxelPosition.Y;
@@ -108,7 +108,7 @@ public sealed partial class NoiseSampler
         }
     }
 
-    private bool SampleVoxel(out VoxelType sample, ref Vector3Byte voxelPosition, Chunk chunk)
+    private bool SampleVoxel(out VoxelType sample, ref Vector3Short voxelPosition, Chunk chunk)
     {
         sample = chunk.GetVoxelType(voxelPosition);
 
@@ -163,7 +163,7 @@ public sealed partial class NoiseSampler
         return sample is not VoxelType.None;
     }
 
-    private NoiseData SampleNoise(Chunk chunk, Vector3Byte position) =>
+    private NoiseData SampleNoise(Chunk chunk, Vector3Short position) =>
         SampleNoise(chunk, position.X, position.Z);
 
     private NoiseData SampleNoise(Chunk chunk, int x, int z)

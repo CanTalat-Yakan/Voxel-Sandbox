@@ -30,9 +30,9 @@ float3 UnpackFloatToVector3(float packedFloat)
 {
     uint packed = asuint(packedFloat);
 
-    // Unpack a float into a float3 (X, Y, Z) where X and Z get 8 bits, Y gets 16 bits
-    float X = (packed >> 24) & 0xFF; // Extract the 8 bits for X
-    float Y = (packed >> 8) & 0xFFFF; // Extract the 16 bits for Y
+    // Unpack a float into a float3 (X, Y, Z) where X, Y and Z get 8 bits
+    float X = (packed >> 16) & 0xFF; // Extract the 8 bits for X
+    float Y = (packed >> 8) & 0xFF; // Extract the 8 bits for Y
     float Z = packed & 0xFF; // Extract the 8 bits for Z
 
     return float3(X, Y, Z);

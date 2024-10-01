@@ -1,49 +1,50 @@
-﻿using Assimp;
-using static System.Net.Mime.MediaTypeNames;
-
-namespace VoxelSandbox;
-
-public struct Vector3Byte
+﻿namespace VoxelSandbox;
+public struct Vector3Short
 {
-    public byte Byte1; // X (7 bits) + lower Y bit (1 bit)
-    public byte Byte2; // Middle Y bits (8 bits)
-    public byte Byte3; // Z (7 bits) + upper Y bit (1 bit)
+    public ushort Data;
 
-    // Properties to extract X, Y, Z from the bytes
-    public int X => Byte1 & 0b01111111; // Bits 0–6 (7 bits)
+    public int X => (Data >> 0) & 0b00011111;    // Bits 0–4 (5 bits)
+    public int Y => (Data >> 5) & 0b00011111;    // Bits 5–9 (5 bits)
+    public int Z => (Data >> 10) & 0b00011111;   // Bits 10–14 (5 bits)
 
-    public int Y =>
-          ((Byte1 >> 7) & 0b00000001)        // Bit 7 of byte1 (Y bit 0)
-        | ((Byte2 & 0b11111111) << 1)        // Bits 0–7 of byte2 (Y bits 1–8)
-        | ((Byte3 >> 7) & 0b00000001) << 9;  // Bit 7 of byte3 (Y bit 9)
+    public static readonly Vector3Short Zero = new(0, 0, 0);
+    public static readonly Vector3Short One = new(1, 1, 1);
+    public static readonly Vector3Short OneXZ = new(1, 0, 1);
+    public static readonly Vector3Short UnitX = new(1, 0, 0);
+    public static readonly Vector3Short UnitY = new(0, 1, 0);
+    public static readonly Vector3Short UnitZ = new(0, 0, 1);
 
-    public int Z => Byte3 & 0b01111111; // Bits 0–6 (7 bits)
-
-    public static readonly Vector3Byte Zero = new(0, 0, 0);
-    public static readonly Vector3Byte One = new(1, 1, 1);
-    public static readonly Vector3Byte OneXZ = new(1, 0, 1);
-    public static readonly Vector3Byte UnitX = new(1, 0, 0);
-    public static readonly Vector3Byte UnitY = new(0, 1, 0);
-    public static readonly Vector3Byte UnitZ = new(0, 0, 1);
-
-    public Vector3Byte(int x, int y, int z)
+    public Vector3Short(int x, int y, int z)
     {
-        if (x < 0 || x >= 128)
-            throw new ArgumentOutOfRangeException(nameof(x), "X must be between 0 and 127.");
-        if (y < 0 || y >= 1024)
-            throw new ArgumentOutOfRangeException(nameof(y), "Y must be between 0 and 1023.");
-        if (z < 0 || z >= 128)
-            throw new ArgumentOutOfRangeException(nameof(z), "Z must be between 0 and 127.");
+        if (x < 0 || x >= 32)
+            throw new ArgumentOutOfRangeException(nameof(x), "X must be between 0 and 31.");
+        if (y < 0 || y >= 32)
+            throw new ArgumentOutOfRangeException(nameof(y), "Y must be between 0 and 31.");
+        if (z < 0 || z >= 32)
+            throw new ArgumentOutOfRangeException(nameof(z), "Z must be between 0 and 31.");
 
-        Set(x, y, z);
+        Data = (ushort)(
+            ((x & 0b00011111) << 0) |
+            ((y & 0b00011111) << 5) |
+            ((z & 0b00011111) << 10)
+        );
     }
 
-    public Vector3Byte Set(int x, int y, int z)
+    // Method to set the values of X, Y, Z
+    public Vector3Short Set(int x, int y, int z)
     {
-        Byte1 = (byte)((x & 0b01111111) | ((y & 0b000000001) << 7)); // X and Y bit 0
-        Byte2 = (byte)((y >> 1) & 0b11111111);                      // Y bits 1–8
-        Byte3 = (byte)((z & 0b01111111) | ((y >> 9) & 0b00000001) << 7); // Z and Y bit 9
+        if (x < 0 || x >= 32)
+            throw new ArgumentOutOfRangeException(nameof(x), "X must be between 0 and 31.");
+        if (y < 0 || y >= 32)
+            throw new ArgumentOutOfRangeException(nameof(y), "Y must be between 0 and 31.");
+        if (z < 0 || z >= 32)
+            throw new ArgumentOutOfRangeException(nameof(z), "Z must be between 0 and 31.");
 
+        Data = (ushort)(
+            ((x & 0b00011111) << 0) |
+            ((y & 0b00011111) << 5) |
+            ((z & 0b00011111) << 10)
+        );
         return this;
     }
 
@@ -58,46 +59,38 @@ public struct Vector3Byte
 
     public override bool Equals(object obj)
     {
-        if (obj is Vector3Byte other)
-            return Byte1 == other.Byte1 && Byte2 == other.Byte2 && Byte3 == other.Byte3;
+        if (obj is Vector3Short other)
+            return Data == other.Data;
 
         return false;
     }
 
-    public override int GetHashCode()
-    {
-        // Combine hash codes of X, Y, and Z for a unique hash
-        unchecked
-        {
-            int hash = 17;
-            hash = hash * 31 + Byte1.GetHashCode();
-            hash = hash * 31 + Byte2.GetHashCode();
-            hash = hash * 31 + Byte3.GetHashCode();
-            return hash;
-        }
-    }
+    public override int GetHashCode() =>
+        Data.GetHashCode();
 
-    public static Vector3Byte operator *(Vector3Byte a, int b) =>
-        a.Set(a.X * b, a.Y * b, a.Z * b);
+    // Operator overloads
+    public static Vector3Short operator *(Vector3Short a, int b) =>
+        new Vector3Short(a.X * b, a.Y * b, a.Z * b);
 
-    public static Vector3Byte operator -(Vector3Byte a, System.Numerics.Vector3 b) =>
-        a.Set(a.X - (int)b.X, a.Y - (int)b.Y, a.Z - (int)b.Z);
+    public static Vector3Short operator -(Vector3Short a, System.Numerics.Vector3 b) =>
+        new Vector3Short(a.X - (int)b.X, a.Y - (int)b.Y, a.Z - (int)b.Z);
 
-    public static Vector3Byte operator -(Vector3Byte a, Vector3Int b) =>
-        a.Set(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+    public static Vector3Short operator -(Vector3Short a, Vector3Int b) =>
+        new Vector3Short(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
 
-    public static Vector3Byte operator +(Vector3Byte a, Vector3Int b) =>
-        a.Set(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+    public static Vector3Short operator +(Vector3Short a, Vector3Int b) =>
+        new Vector3Short(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 
-    public static Vector3Byte operator +(Vector3Byte a, Vector3Byte b) =>
-        a.Set(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+    public static Vector3Short operator +(Vector3Short a, Vector3Short b) =>
+        new Vector3Short(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 
-    public static bool operator ==(Vector3Byte a, Vector3Byte b) =>
-        a.X == b.X && a.Y == b.Y && a.Z == b.Z;
+    public static bool operator ==(Vector3Short a, Vector3Short b) =>
+        a.Data == b.Data;
 
-    public static bool operator !=(Vector3Byte a, Vector3Byte b) =>
-        !(a == b);
+    public static bool operator !=(Vector3Short a, Vector3Short b) =>
+        a.Data != b.Data;
 }
+
 
 public struct Vector3Int
 {
@@ -154,7 +147,7 @@ public struct Vector3Int
     public System.Numerics.Vector3 ToVector3() =>
         new(X, Y, Z);
 
-    public Vector3Byte ToVector3Byte() =>
+    public Vector3Short ToVector3Byte() =>
         new(X, Y, Z);
 
     public override bool Equals(object obj)
@@ -196,7 +189,7 @@ public struct Vector3Int
         return a;
     }
 
-    public static Vector3Int operator +(Vector3Int a, Vector3Byte b) =>
+    public static Vector3Int operator +(Vector3Int a, Vector3Short b) =>
         new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 
     public static Vector3Int operator +(Vector3Int a, Vector3Int b) =>

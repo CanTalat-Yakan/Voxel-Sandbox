@@ -50,11 +50,11 @@ public sealed class MeshBuilder
         chunk.Mesh.SetMaterialPipeline("VoxelShader");
     }
 
-    private void AddVoxelFaces(Chunk chunk, Vector3Byte voxelPosition, VoxelType voxelType, ref float[] vertices, ref int vertexFloatCount, ref int[] indices, ref int indexCount)
+    private void AddVoxelFaces(Chunk chunk, Vector3Short voxelPosition, VoxelType voxelType, ref float[] vertices, ref int vertexFloatCount, ref int[] indices, ref int indexCount)
     {
         ResizeArrays(ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
 
-        Vector3Byte adjacentVoxelPosition = new();
+        Vector3Short adjacentVoxelPosition = new();
 
         // Check each face direction for visibility
         for (byte normalIndex = 0; normalIndex < Vector3Int.Directions.Length; normalIndex++)
@@ -85,7 +85,7 @@ public sealed class MeshBuilder
         }
     }
 
-    private void AddFace(Vector3Byte voxelPosition, VoxelType voxelType, byte normalIndex, ref float[] vertices, ref int vertexFloatCount, ref int[] indices, ref int indexCount)
+    private void AddFace(Vector3Short voxelPosition, VoxelType voxelType, byte normalIndex, ref float[] vertices, ref int vertexFloatCount, ref int[] indices, ref int indexCount)
     {
         byte textureIndex = (byte)voxelType;
         byte lightIndex = 0;
@@ -104,7 +104,7 @@ public sealed class MeshBuilder
         int z = voxelPosition.Z;
 
         // Define face vertices
-        Vector3Byte[] faceVertices = normalIndex switch
+        Vector3Short[] faceVertices = normalIndex switch
         {
             0 => // Top
             [

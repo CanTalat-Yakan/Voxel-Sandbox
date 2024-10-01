@@ -20,17 +20,17 @@ public enum VoxelType : byte
 
 public static class VoxelData
 {
-    public static IEnumerable<float> Pack(Vector3Byte position, byte uv, byte tile, byte normal, byte light)
+    public static IEnumerable<float> Pack(Vector3Short position, byte uv, byte tile, byte normal, byte light)
     {
         yield return PackVector3ToFloat(position);
         yield return PackBytesToFloat(uv, tile, normal, light);
     }
 
-    // Pack a Vector3Byte with X and Z (8 bits each) and Y (16 bits) into a float
-    public static float PackVector3ToFloat(Vector3Byte position)
+    // Pack a Vector3Byte with X, Y and Z (8 bits each) into a float
+    public static float PackVector3ToFloat(Vector3Short position)
     {
         // Combine X (8 bits), Y (16 bits), and Z (8 bits) into a 32-bit integer
-        uint packed = ((uint)position.X << 24) | ((uint)position.Y << 8) | (byte)position.Z;
+        uint packed = ((uint)position.X << 16) | ((uint)position.Y << 8) | (byte)position.Z;
 
         // Convert the packed integer into a float
         return BitConverter.ToSingle(BitConverter.GetBytes(packed), 0);

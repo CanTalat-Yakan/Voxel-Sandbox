@@ -16,7 +16,7 @@ public sealed class Chunk
     public bool GeneratedChunkTop = false;
     public bool GeneratedChunkFromChunk = false;
 
-    public List<Vector3Byte> ExposedVoxelData = new();
+    public List<Vector3Short> ExposedVoxelData = new();
 
     public Vector3Int WorldPosition { get; set; }
     public int LevelOfDetail { get; private set; }
@@ -66,27 +66,27 @@ public sealed class Chunk
             ChunkSize,
             ChunkSize) * VoxelSize;
 
-    public bool IsWithinBounds(Vector3Byte position) =>
+    public bool IsWithinBounds(Vector3Short position) =>
         position.X >= 1 && position.X <= ChunkSize
      && position.Y >= 1 && position.Y <= ChunkSize
      && position.Z >= 1 && position.Z <= ChunkSize;
 
-    public void SetExposedVoxel(Vector3Byte position) =>
+    public void SetExposedVoxel(Vector3Short position) =>
         ExposedVoxelData.Add(position);
 
-    public VoxelType GetVoxelType(Vector3Byte position) =>
+    public VoxelType GetVoxelType(Vector3Short position) =>
         VoxelTypeData[ToIndex(position)];
 
-    public void SetVoxelType(Vector3Byte position, VoxelType voxelType) =>
+    public void SetVoxelType(Vector3Short position, VoxelType voxelType) =>
         VoxelTypeData[ToIndex(position)] = voxelType;
 
-    public bool IsVoxelEmpty(Vector3Byte position) =>
+    public bool IsVoxelEmpty(Vector3Short position) =>
         !IsVoxelSolid(position);
 
-    public bool IsVoxelSolid(Vector3Byte position) =>
+    public bool IsVoxelSolid(Vector3Short position) =>
         SolidVoxelData[ToIndex(position)] == true;
 
-    public void SetSolidVoxel(Vector3Byte position) =>
+    public void SetSolidVoxel(Vector3Short position) =>
         SolidVoxelData[ToIndex(position)] = true;
 
     public NoiseData GetNoiseData(int x, int z) =>
@@ -95,7 +95,7 @@ public sealed class Chunk
     public void SetNoiseData(int x, int z, NoiseData noiseData) =>
         NoiseData[ToIndex(x, z)] = noiseData;
 
-    public int ToIndex(Vector3Byte position) =>
+    public int ToIndex(Vector3Short position) =>
         position.X + position.Z * PaddedChunkSize + position.Y * PaddedChunkSizeSquared;
 
     public int ToIndex(int x, int z) =>
