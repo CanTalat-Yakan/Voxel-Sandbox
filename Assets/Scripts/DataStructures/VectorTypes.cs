@@ -1,4 +1,5 @@
 ﻿namespace VoxelSandbox;
+
 public struct Vector3Short
 {
     public ushort Data;
