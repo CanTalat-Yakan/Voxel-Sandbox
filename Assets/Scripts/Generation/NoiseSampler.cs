@@ -15,15 +15,11 @@ public sealed partial class NoiseSampler
     {
         GameManager = gameManager;
 
-        if (!chunk.GeneratedChunkFromChunk)
-        {
-            int gridY = GetGridY(SampleNoise(chunk, Vector3Byte.OneXZ).SurfaceHeight, chunk.ChunkSizeY);
-            chunk.WorldPosition = chunk.WorldPosition.Set(y: gridY);
-        }
+        SetGridY(chunk);
 
-        for (int x = 1; x <= chunk.ChunkSizeXZ; x++)
-            for (int z = 1; z <= chunk.ChunkSizeXZ; z++)
-                for (int y = 1; y <= chunk.ChunkSizeY; y++)
+        for (int x = 1; x <= chunk.ChunkSize; x++)
+            for (int z = 1; z <= chunk.ChunkSize; z++)
+                for (int y = 1; y <= chunk.ChunkSize; y++)
                     AddExposedVoxel(new(x, y, z), chunk);
 
         gameManager.Generator.ChunksToBuild.Enqueue(chunk);
@@ -32,15 +28,27 @@ public sealed partial class NoiseSampler
     private int GetGridY(int y, int chunkSizeY) =>
         (int)(y / chunkSizeY) * chunkSizeY;
 
-    void ProcessChunk(Chunk chunk, NoiseData noiseData)
+    private void SetGridY(Chunk chunk)
     {
+        if (chunk.GeneratedChunkFromChunk)
+            return;
+
+        int gridY = GetGridY(SampleNoise(chunk, Vector3Byte.OneXZ).SurfaceHeight, chunk.ChunkSize);
+        chunk.WorldPosition = chunk.WorldPosition.Set(y: gridY);
+    }
+
+    private void ProcessChunk(Chunk chunk, NoiseData noiseData)
+    {
+        if (chunk.GeneratedChunkFromChunk)
+            return;
+
         if (!chunk.GeneratedChunkBottom && noiseData.SurfaceHeight == chunk.WorldPosition.Y - 1)
             chunk.GeneratedChunkBottom = true;
-        else if (!chunk.GeneratedChunkTop && noiseData.SurfaceHeight == chunk.WorldPosition.Y + chunk.ChunkSizeY + 1)
+        else if (!chunk.GeneratedChunkTop && noiseData.SurfaceHeight == chunk.WorldPosition.Y + chunk.ChunkSize + 1)
             chunk.GeneratedChunkTop = true;
         else return;
 
-        Vector3Int chunkPosition = new(chunk.WorldPosition.X, GetGridY(noiseData.SurfaceHeight, chunk.ChunkSizeY), chunk.WorldPosition.Z);
+        Vector3Int chunkPosition = new(chunk.WorldPosition.X, GetGridY(noiseData.SurfaceHeight, chunk.ChunkSize), chunk.WorldPosition.Z);
         if (Generator.GeneratedChunks[chunk.LevelOfDetail].ContainsKey(chunkPosition))
             return;
 
