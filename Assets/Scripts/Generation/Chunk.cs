@@ -26,14 +26,14 @@ public sealed class Chunk
 
     public int MaxVoxelCapacity => PaddedChunkSizeSquared * PaddedChunkSize + PaddedChunkSizeSquared;
 
-    public int PaddedChunkSizeSquared => _paddedChunkSizeXZsquared ??= PaddedChunkSize * PaddedChunkSize;
-    private int? _paddedChunkSizeXZsquared = null;
+    public int PaddedChunkSizeSquared => _paddedChunkSizeSquared ??= PaddedChunkSize * PaddedChunkSize;
+    private int? _paddedChunkSizeSquared = null;
 
-    public int PaddedChunkSize => _paddedChunkSizeY ??= ChunkSize + 2;
-    public int? _paddedChunkSizeY = null;
+    public int PaddedChunkSize => _paddedChunkSize ??= ChunkSize + 2;
+    public int? _paddedChunkSize = null;
     
-    public int ChunkSize => _chunkSizeY ??= Generator.ChunkSizeY / VoxelSize;
-    public int? _chunkSizeY = null;
+    public int ChunkSize => _chunkSize ??= Generator.ChunkSize / VoxelSize;
+    public int? _chunkSize = null;
 
     public Chunk()
     {

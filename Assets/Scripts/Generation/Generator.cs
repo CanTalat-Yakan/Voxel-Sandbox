@@ -8,8 +8,7 @@ public sealed class Generator
 {
     public static Dictionary<int, Dictionary<Vector3Int, Chunk>> GeneratedChunks = new();
 
-    public const int ChunkSizeXZ = 30;
-    public const int ChunkSizeY = 30;
+    public const int ChunkSize = 30;
 
     public static readonly int LODCount = 1;
     public static readonly int NativeRadius = 24;
@@ -35,13 +34,13 @@ public sealed class Generator
         Vector3Int chunkPosition = new();
         chunkPosition.Y = 0;
 
-        chunkPosition.X = worldPosition.X / ChunkSizeXZ * ChunkSizeXZ;
-        if (worldPosition.X < 0 && (worldPosition.X % ChunkSizeXZ) != 0)
-            chunkPosition.X -= ChunkSizeXZ;
+        chunkPosition.X = worldPosition.X / ChunkSize * ChunkSize;
+        if (worldPosition.X < 0 && (worldPosition.X % ChunkSize) != 0)
+            chunkPosition.X -= ChunkSize;
 
-        chunkPosition.Z = worldPosition.Z / ChunkSizeXZ * ChunkSizeXZ;
-        if (worldPosition.Z < 0 && (worldPosition.Z % ChunkSizeXZ) != 0)
-            chunkPosition.Z -= ChunkSizeXZ;
+        chunkPosition.Z = worldPosition.Z / ChunkSize * ChunkSize;
+        if (worldPosition.Z < 0 && (worldPosition.Z % ChunkSize) != 0)
+            chunkPosition.Z -= ChunkSize;
 
         chunk = null;
         if (GeneratedChunks[0].ContainsKey(chunkPosition))
@@ -68,7 +67,7 @@ public sealed class Generator
         Func<int, int> multiplyerIfLOD0 = i => currentLOD(i) == 0 ? 1 : 0;
         Func<int, int> multiplyerIfLOD1Plus = i => 1 - multiplyerIfLOD0(i);
 
-        Func<int, int> chunkSize = i => (int)Math.Pow(2, currentLOD(i)) * ChunkSizeXZ;
+        Func<int, int> chunkSize = i => (int)Math.Pow(2, currentLOD(i)) * ChunkSize;
         Func<int, int> previousChunkSize = i => chunkSize(Math.Max(0, currentLOD(i) - 1));
 
         Func<int, int> chunkOffset = i => (multiplyerIfLOD1Plus(i) + 1) * Math.Min(1, currentLOD(i)) * (currentLOD(i) * chunkSize(i) + chunkSize(i));
@@ -80,8 +79,8 @@ public sealed class Generator
 
         // Calculate the center chunk position for the player
         Vector3Int centerChunkPosition = new(
-            worldPosition.X / (ChunkSizeXZ * 2) * ChunkSizeXZ * 2, 0,
-            worldPosition.Z / (ChunkSizeXZ * 2) * ChunkSizeXZ * 2);
+            worldPosition.X / (ChunkSize * 2) * ChunkSize * 2, 0,
+            worldPosition.Z / (ChunkSize * 2) * ChunkSize * 2);
 
         foreach (var LODChunks in GeneratedChunks.Values)
             foreach (var chunk in LODChunks.Values)
