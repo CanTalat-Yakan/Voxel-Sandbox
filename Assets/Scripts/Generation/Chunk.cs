@@ -20,7 +20,7 @@ public sealed class Chunk
 
     public Vector3Int WorldPosition { get; set; }
     public int LevelOfDetail { get; private set; }
-     
+
     public int VoxelSize => _voxelSize ??= (int)Math.Pow(2, LevelOfDetail);
     private int? _voxelSize = null;
 
@@ -31,7 +31,7 @@ public sealed class Chunk
 
     public int PaddedChunkSize => _paddedChunkSize ??= ChunkSize + 2;
     public int? _paddedChunkSize = null;
-    
+
     public int ChunkSize => _chunkSize ??= Generator.ChunkSize / VoxelSize;
     public int? _chunkSize = null;
 
@@ -61,10 +61,7 @@ public sealed class Chunk
     }
 
     public Vector3Int GetChunkSize() =>
-        new Vector3Int(
-            ChunkSize,
-            ChunkSize,
-            ChunkSize) * VoxelSize;
+        Vector3Int.One * ChunkSize * VoxelSize;
 
     public bool IsWithinBounds(Vector3Short position) =>
         position.X >= 1 && position.X <= ChunkSize

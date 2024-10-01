@@ -33,7 +33,7 @@ public sealed partial class NoiseSampler
         if (chunk.GeneratedChunkFromChunk)
             return;
 
-        int gridY = GetGridY(SampleNoise(chunk, Vector3Short.OneXZ).SurfaceHeight, chunk.ChunkSize);
+        int gridY = GetGridY(SampleNoise(chunk, Vector3Short.UnitXZ).SurfaceHeight, chunk.ChunkSize);
         chunk.WorldPosition = chunk.WorldPosition.Set(y: gridY);
     }
 
@@ -61,9 +61,9 @@ public sealed partial class NoiseSampler
 
         Generator.GeneratedChunks[chunk.LevelOfDetail].Add(chunkPosition, newChunk);
         GameManager.Generator.ChunksToGenerate.Enqueue(newChunk);
-        //var prim = GameManager.Entity.Manager.CreatePrimitive().Entity;
-        //prim.Transform.SetPosition(chunkPosition.X + chunk.ChunkSizeXZ / 2, chunkPosition.Y + chunk.ChunkSizeY / 2, chunkPosition.Z + chunk.ChunkSizeXZ / 2);
-        //prim.Transform.SetScale(chunk.ChunkSizeXZ, chunk.ChunkSizeY, chunk.ChunkSizeXZ);
+        var prim = GameManager.Entity.Manager.CreatePrimitive().Entity;
+        prim.Transform.LocalPosition = (chunkPosition + chunk.ChunkSize / 2).ToVector3();
+        prim.Transform.LocalScale *= chunk.ChunkSize;
     }
 }
 
