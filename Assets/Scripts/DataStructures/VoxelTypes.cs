@@ -29,7 +29,7 @@ public static class VoxelData
     // Pack a Vector3Byte with X, Y and Z (8 bits each) into a float
     public static float PackVector3ToFloat(Vector3Short position)
     {
-        // Combine X (8 bits), Y (16 bits), and Z (8 bits) into a 32-bit integer
+        // Combine X (8 bits), Y (8 bits), and Z (8 bits) into a 32-bit integer
         uint packed = ((uint)position.X << 16) | ((uint)position.Y << 8) | (byte)position.Z;
 
         // Convert the packed integer into a float
