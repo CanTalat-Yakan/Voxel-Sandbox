@@ -148,8 +148,9 @@ public sealed class MeshBuilder
         // Add Vertices
         for (byte i = 0; i < VerticesPerFace; i++)
         {
-            vertices[vertexFloatCount++] = VoxelData.PackVector3ToFloat(faceVertices[i]);
-            vertices[vertexFloatCount++] = VoxelData.PackBytesToFloat(i, textureIndex, normalIndex, lightIndex);
+            vertices[vertexFloatCount++] = VoxelData.PackVector3ToFloat(faceVertices[i]); // 5 bits, 5 bits, 5 bits, Unused = 17 bits
+            vertices[vertexFloatCount++] = VoxelData.PackBytesToFloat(i, textureIndex, normalIndex, lightIndex); // 2 bits, 8 bits, 3 bits, Unused = 19 bits 
+            // Use 24 bits to represent color rgb. Put some in the first float and some in the second.
         }
 
         // Add indices
