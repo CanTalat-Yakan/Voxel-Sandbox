@@ -30,7 +30,7 @@ public sealed partial class NoiseSampler
 
     private void SetGridY(Chunk chunk)
     {
-        if (chunk.GeneratedChunkFromChunk)
+        if (chunk.IsChunkFromChunk)
             return;
 
         int gridY = GetGridY(SampleNoise(chunk, Vector3Short.UnitXZ).SurfaceHeight, chunk.ChunkSize);
@@ -39,13 +39,13 @@ public sealed partial class NoiseSampler
 
     private void ProcessChunk(Chunk chunk, NoiseData noiseData)
     {
-        if (chunk.GeneratedChunkFromChunk)
+        if (chunk.IsChunkFromChunk)
             return;
 
-        if (!chunk.GeneratedChunkBottom && noiseData.SurfaceHeight == chunk.WorldPosition.Y - 1)
-            chunk.GeneratedChunkBottom = true;
-        else if (!chunk.GeneratedChunkTop && noiseData.SurfaceHeight == chunk.WorldPosition.Y + chunk.ChunkSize + 1)
-            chunk.GeneratedChunkTop = true;
+        if (!chunk.IsBottomChunkGenerated && noiseData.SurfaceHeight == chunk.WorldPosition.Y - 1)
+            chunk.IsBottomChunkGenerated = true;
+        else if (!chunk.IsTopChunkGenerated && noiseData.SurfaceHeight == chunk.WorldPosition.Y + chunk.ChunkSize + 1)
+            chunk.IsTopChunkGenerated = true;
         else return;
 
         Vector3Int chunkPosition = new(chunk.WorldPosition.X, GetGridY(noiseData.SurfaceHeight, chunk.ChunkSize), chunk.WorldPosition.Z);
@@ -53,17 +53,15 @@ public sealed partial class NoiseSampler
             return;
 
         //Output.Log(chunkPosition);
-        Chunk newChunk = PoolManager.GetPool<Chunk>().Get().Initialize(
-            chunkPosition,
-            chunk.LevelOfDetail);
-
-        newChunk.GeneratedChunkFromChunk = true;
+        Chunk newChunk = PoolManager.GetPool<Chunk>().Get();
+        newChunk.Initialize(GameManager, chunkPosition, chunk.LevelOfDetail);
+        newChunk.IsChunkFromChunk = true;
 
         Generator.GeneratedChunks[chunk.LevelOfDetail].Add(chunkPosition, newChunk);
         GameManager.Generator.ChunksToGenerate.Enqueue(newChunk);
-        var prim = GameManager.Entity.Manager.CreatePrimitive().Entity;
-        prim.Transform.LocalPosition = (chunkPosition + chunk.ChunkSize / 2).ToVector3();
-        prim.Transform.LocalScale *= chunk.ChunkSize;
+        //var prim = GameManager.Entity.Manager.CreatePrimitive().Entity;
+        //prim.Transform.LocalPosition = (chunkPosition + chunk.ChunkSize / 2).ToVector3();
+        //prim.Transform.LocalScale *= chunk.ChunkSize;
     }
 }
 
@@ -158,7 +156,7 @@ public sealed partial class NoiseSampler
             }
         }
         else if (y == surfaceHeight)
-            sample = VoxelType.Grass;
+            sample = VoxelType.Sandstone;
 
         return sample is not VoxelType.None;
     }
@@ -204,6 +202,7 @@ public sealed partial class NoiseSampler
         Frequency = 0.01f,      // Lower frequency for broader features
         Scale = 7.5f,           // Adjust scale to manage the level of detail
     };
+
     private Billow _mountainNoise = new()
     {
         Primitive2D = s_perlinPrimitive,
@@ -211,6 +210,7 @@ public sealed partial class NoiseSampler
         Frequency = 0.0002f,
         Scale = 200,
     };
+
     private Billow _undergroundNoise = new()
     {
         Primitive2D = s_perlinPrimitive,
@@ -218,6 +218,7 @@ public sealed partial class NoiseSampler
         Frequency = 0.05f,
         Scale = 15f,
     };
+
     public Billow _caveNoise = new()
     {
         Primitive3D = s_perlinPrimitive,

@@ -36,12 +36,6 @@ public sealed class MeshBuilder
         if (vertexFloatCount == 0)
             return;
 
-        if (chunk.Mesh is null)
-        {
-            var entity = GameManager.Entity.Manager.CreateEntity();
-            chunk.Mesh = entity.AddComponent<Mesh>();
-        }
-
         chunk.Mesh.Entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
         chunk.Mesh.Entity.Transform.LocalScale *= chunk.VoxelSize;
 

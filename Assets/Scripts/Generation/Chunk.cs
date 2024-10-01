@@ -12,9 +12,9 @@ public sealed class Chunk
     public VoxelType[] VoxelTypeData;
     public NoiseData[] NoiseData;
 
-    public bool GeneratedChunkBottom = false;
-    public bool GeneratedChunkTop = false;
-    public bool GeneratedChunkFromChunk = false;
+    public bool IsBottomChunkGenerated = false;
+    public bool IsTopChunkGenerated = false;
+    public bool IsChunkFromChunk = false;
 
     public List<Vector3Short> ExposedVoxelData = new();
 
@@ -42,8 +42,10 @@ public sealed class Chunk
         NoiseData = new NoiseData[PaddedChunkSizeSquared];
     }
 
-    public Chunk Initialize(Vector3Int worldPosition, int levelOfDetail)
+    public Chunk Initialize(GameManager gameManager, Vector3Int worldPosition, int levelOfDetail)
     {
+        Mesh ??= gameManager.Entity.Manager.CreateEntity().AddComponent<Mesh>();
+
         WorldPosition = worldPosition;
         LevelOfDetail = levelOfDetail;
 

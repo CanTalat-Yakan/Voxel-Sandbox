@@ -11,7 +11,7 @@ public sealed class Generator
     public const int ChunkSize = 30;
 
     public static readonly int LODCount = 1;
-    public static readonly int NativeRadius = 24;
+    public static readonly int NativeRadius = 8;
 
     public ConcurrentQueue<Chunk> ChunksToGenerate = new();
     public ConcurrentQueue<Chunk> ChunksToBuild = new();
@@ -122,7 +122,7 @@ public sealed class Generator
         else
         {
             Chunk newChunk = PoolManager.GetPool<Chunk>().Get();
-            newChunk.Initialize(chunkWorldPosition, levelOfDetail);
+            newChunk.Initialize(GameManager, chunkWorldPosition, levelOfDetail);
             GeneratedChunks[levelOfDetail].Add(chunkWorldPosition, newChunk);
             ChunksToGenerate.Enqueue(newChunk);
         }
