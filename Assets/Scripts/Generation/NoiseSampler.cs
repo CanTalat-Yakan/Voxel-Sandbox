@@ -234,7 +234,7 @@ public sealed partial class NoiseSampler
     };
 
     private byte GetSurfaceHeight(int x, int z) =>
-        (byte)(_surfaceNoise.GetValue(x, z) + 100);
+        (byte)(_surfaceNoise.GetValue(x, z));
 
     private byte GetMountainHeight(int x, int z) =>
         (byte)_mountainNoise.GetValue(x, z);
