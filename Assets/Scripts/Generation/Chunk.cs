@@ -12,11 +12,11 @@ public sealed class Chunk
     public VoxelType[] VoxelTypeData;
     public NoiseData[] NoiseData;
 
-    public bool IsBottomChunkGenerated = false;
-    public bool IsTopChunkGenerated = false;
-    public bool IsChunkFromChunk = false;
-
     public List<Vector3Short> ExposedVoxelData = new();
+
+    public bool IsChunkFromChunk = false;
+    public bool IsTopChunkGenerated = false;
+    public bool IsBottomChunkGenerated = false;
 
     public Vector3Int WorldPosition { get; set; }
     public int LevelOfDetail { get; private set; }
@@ -24,7 +24,8 @@ public sealed class Chunk
     public int VoxelSize => _voxelSize ??= (int)Math.Pow(2, LevelOfDetail);
     private int? _voxelSize = null;
 
-    public int MaxVoxelCapacity => PaddedChunkSizeSquared * PaddedChunkSize + PaddedChunkSizeSquared;
+    public int MaxVoxelCapacity => _maxVoxelCapacity ??= PaddedChunkSizeSquared * PaddedChunkSize + PaddedChunkSizeSquared;
+    private int? _maxVoxelCapacity = null;
 
     public int PaddedChunkSizeSquared => _paddedChunkSizeSquared ??= PaddedChunkSize * PaddedChunkSize;
     private int? _paddedChunkSizeSquared = null;

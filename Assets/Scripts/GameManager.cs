@@ -13,6 +13,8 @@ public sealed class GameManager : Component
     public NoiseSampler NoiseSampler = new();
     public MeshBuilder MeshBuilder = new();
 
+    private bool _processingChunkGeneration = false;
+
     public override void OnAwake()
     {
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlas.png");
@@ -35,6 +37,8 @@ public sealed class GameManager : Component
 
         Thread ChunkGenerationThread = new(() =>
         {
+            _processingChunkGeneration = true;
+
             var chunksToGenerate = Generator.ChunksToGenerate.ToArray();
             Generator.ChunksToGenerate.Clear();
 
@@ -50,6 +54,8 @@ public sealed class GameManager : Component
 
             if (!Generator.ChunksToGenerate.IsEmpty)
                 ChunkGenerationThreadParallel();
+
+            _processingChunkGeneration = false;
         });
 
         ChunkGenerationThread.Start();
@@ -57,7 +63,7 @@ public sealed class GameManager : Component
 
     public void MeshBuildingThread()
     {
-        if (Generator.ChunksToBuild.IsEmpty)
+        if (_processingChunkGeneration || Generator.ChunksToBuild.IsEmpty)
             return;
 
         Stopwatch stopwatch = new();

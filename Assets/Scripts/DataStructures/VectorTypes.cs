@@ -2,7 +2,7 @@
 
 public struct Vector3Short
 {
-    public ushort Data;
+    public ushort Data { get; set; }
 
     public int X => (Data >> 0) & 0b00011111;    // Bits 0–4 (5 bits)
     public int Y => (Data >> 5) & 0b00011111;    // Bits 5–9 (5 bits)

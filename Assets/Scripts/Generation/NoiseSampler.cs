@@ -61,7 +61,9 @@ public sealed partial class NoiseSampler
         newChunk.Initialize(GameManager, chunkPosition, chunk.LevelOfDetail);
         newChunk.IsChunkFromChunk = true;
 
-        Generator.GeneratedChunks[chunk.LevelOfDetail].TryAdd(chunkPosition, newChunk);
+        bool result = false;
+        do result = Generator.GeneratedChunks[chunk.LevelOfDetail].TryAdd(chunkPosition, newChunk);
+        while (!result);
 
         GameManager.Generator.ChunksToGenerate.Enqueue(newChunk);
         //var prim = GameManager.Entity.Manager.CreatePrimitive().Entity;
@@ -174,8 +176,8 @@ public sealed partial class NoiseSampler
         if (noiseData is not null)
             return noiseData;
 
-        int nx = chunk.WorldPosition.X + x * chunk.VoxelSize;
-        int nz = chunk.WorldPosition.Z + z * chunk.VoxelSize;
+        int nx = x * chunk.VoxelSize + chunk.WorldPosition.X;
+        int nz = z * chunk.VoxelSize + chunk.WorldPosition.Z;
 
         byte surfaceHeight = GetSurfaceHeight(nx, nz);
         byte mountainHeight = GetMountainHeight(nx, nz);

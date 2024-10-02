@@ -29,9 +29,9 @@ public sealed class MeshBuilder
         int vertexFloatCount = 0;
         int indexCount = 0;
 
-        foreach (var voxel in chunk.ExposedVoxelData)
+        foreach (var voxelPosition in chunk.ExposedVoxelData)
             // Add faces for each visible side of the voxel
-            AddVoxelFaces(chunk, voxel, chunk.GetVoxelType(voxel), ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
+            AddVoxelFaces(chunk, voxelPosition, chunk.GetVoxelType(voxelPosition), ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
 
         if (vertexFloatCount == 0)
             return;

@@ -1,4 +1,4 @@
-﻿sealed class Program
+﻿internal class Program
 {
     [STAThread]
     private static void Main() =>
