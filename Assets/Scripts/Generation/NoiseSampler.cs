@@ -177,7 +177,7 @@ public sealed partial class NoiseSampler
             }
         }
         else if (y == surfaceHeight)
-            sample = VoxelType.Sand;
+            sample = VoxelType.Grass;
 
         return sample is not VoxelType.None;
     }
