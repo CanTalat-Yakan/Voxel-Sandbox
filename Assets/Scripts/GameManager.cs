@@ -49,7 +49,6 @@ public sealed class GameManager : Component
                 NoiseSampler.GenerateChunkContent(chunk, this);
 
                 Output.Log($"CG: {GetFormattedTime(stopwatch)}");
-
             });
 
             if (!Generator.ChunksToGenerate.IsEmpty)
@@ -61,33 +60,46 @@ public sealed class GameManager : Component
         ChunkGenerationThread.Start();
     }
 
-    public void MeshBuildingThread()
+    public void ChunkGenerationThread(Chunk chunk)
+    {
+        Stopwatch stopwatch = new();
+
+        Task.Run(() =>
+        {
+            stopwatch.Start();
+
+            NoiseSampler.GenerateChunkContent(chunk, this);
+
+            Output.Log($"CG: {GetFormattedTime(stopwatch)}");
+        });
+    }
+
+    public void MeshBuildingThread(Chunk chunk = null)
     {
         if (_processingChunkGeneration || Generator.ChunksToBuild.IsEmpty)
             return;
 
+        if (chunk is null)
+            if (!Generator.ChunksToBuild.TryDequeue(out chunk))
+                return;
+
         Stopwatch stopwatch = new();
 
-        Thread MeshBuildingThread = new(() =>
+        Task.Run(() =>
         {
-            if (Generator.ChunksToBuild.TryDequeue(out var chunk))
-            {
-                stopwatch.Start();
+            stopwatch.Start();
 
-                MeshBuilder.GenerateMesh(chunk, this);
+            MeshBuilder.GenerateMesh(chunk, this);
 
-                Output.Log($"MB: {GetFormattedTime(stopwatch)}");
-            }
+            Output.Log($"MB: {GetFormattedTime(stopwatch)}");
         });
-
-        MeshBuildingThread.Start();
     }
 
     private string GetFormattedTime(Stopwatch stopwatch) =>
         stopwatch.Elapsed.TotalMilliseconds switch
         {
-            double ms when ms >= 1.5 => $"{ms:F3} ms",
-            double ms when ms < 1.5 => $"{ms * 1000:F0} µs",
+            double ms when ms >= 3 => $"{(int)ms} ms",
+            double ms when ms < 3 => $"{ms * 1000:F0} µs",
             _ => "Unknown"
         };
 }

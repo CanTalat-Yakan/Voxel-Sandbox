@@ -65,7 +65,10 @@ public sealed partial class NoiseSampler
         do result = Generator.GeneratedChunks[chunk.LevelOfDetail].TryAdd(chunkPosition, newChunk);
         while (!result);
 
-        GameManager.Generator.ChunksToGenerate.Enqueue(newChunk);
+        //GameManager.Generator.ChunksToGenerate.Enqueue(newChunk);
+
+        GameManager.ChunkGenerationThread(newChunk);
+
         //var prim = GameManager.Entity.Manager.CreatePrimitive().Entity;
         //prim.Transform.LocalPosition = (chunkPosition + chunk.ChunkSize / 2).ToVector3();
         //prim.Transform.LocalScale *= chunk.ChunkSize;
