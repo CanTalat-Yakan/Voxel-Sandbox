@@ -33,8 +33,6 @@ public sealed class GameManager : Component
     {
         Stopwatch stopwatch = new();
 
-        ParallelOptions options = new() { MaxDegreeOfParallelism = Environment.ProcessorCount / 2 };
-
         Thread ChunkGenerationThread = new(() =>
         {
             _processingChunkGeneration = true;
@@ -42,14 +40,14 @@ public sealed class GameManager : Component
             var chunksToGenerate = Generator.ChunksToGenerate.ToArray();
             Generator.ChunksToGenerate.Clear();
 
-            Parallel.ForEach(chunksToGenerate, options, chunk =>
+            foreach(var chunk in chunksToGenerate)
             {
                 stopwatch.Restart();
 
                 NoiseSampler.GenerateChunkContent(chunk, this);
 
                 Output.Log($"CG: {GetFormattedTime(stopwatch)}");
-            });
+            }
 
             if (!Generator.ChunksToGenerate.IsEmpty)
                 ChunkGenerationThreadParallel();
