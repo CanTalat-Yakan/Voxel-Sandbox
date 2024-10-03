@@ -191,8 +191,7 @@ public sealed partial class NoiseSampler
         byte bedrockHeight = GetBedrockNoise();
 
         mountainHeight = (int)Math.Max(0, mountainHeight - 180);
-        surfaceHeight += 1000 + mountainHeight;
-        undergroundDetail += 10;
+        surfaceHeight += mountainHeight;
 
         noiseData = new(surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight);
 
@@ -242,23 +241,17 @@ public sealed partial class NoiseSampler
     };
 
     private int GetSurfaceHeight(int x, int z) =>
-        (int)_surfaceNoise.GetValue(x, z);
+        (int)_surfaceNoise.GetValue(x, z) + 1000;
 
     private int GetMountainHeight(int x, int z) =>
         (int)_mountainNoise.GetValue(x, z);
 
     private byte GetUndergroundDetail(int x, int z) =>
-        (byte)_undergroundNoise.GetValue(x, z);
+        (byte)(_undergroundNoise.GetValue(x, z) + 10);
 
     private byte GetBedrockNoise() =>
         (byte)Random.Next(0, 5);
 
     private double GetCaveNoise(int x, int y, int z) =>
         _caveNoise.GetValue(x, y, z);
-
-    public static double ApplyCurve(double input, double exponent) =>
-        Math.Pow(input, exponent);
-
-    public static double ApplyS_Curve(double t) =>
-        t * t * (3 - 2 * t);
 }
