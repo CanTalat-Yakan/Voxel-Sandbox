@@ -26,39 +26,14 @@ public sealed class GameManager : Component
     public override void OnStart() =>
         Generator.Initialize(this);
 
-    public override void OnUpdate() =>
-        MeshBuildingThread();
-
-    public void ChunkGenerationThreadParallel()
+    public override void OnUpdate()
     {
-        Stopwatch stopwatch = new();
-
-        Thread ChunkGenerationThread = new(() =>
-        {
-            _processingChunkGeneration = true;
-
-            var chunksToGenerate = Generator.ChunksToGenerate.ToArray();
-            Generator.ChunksToGenerate.Clear();
-
-            foreach(var chunk in chunksToGenerate)
-            {
-                stopwatch.Restart();
-
-                NoiseSampler.GenerateChunkContent(chunk, this);
-
-                Output.Log($"CG: {GetFormattedTime(stopwatch)}");
-            }
-
-            if (!Generator.ChunksToGenerate.IsEmpty)
-                ChunkGenerationThreadParallel();
-
-            _processingChunkGeneration = false;
-        });
-
-        ChunkGenerationThread.Start();
+        if (Generator.ChunksToGenerate.TryDequeue(out var chunk))
+            ChunkGenerationTask(chunk);
+        MeshBuildingTask();
     }
 
-    public void ChunkGenerationThread(Chunk chunk)
+    public void ChunkGenerationTask(Chunk chunk)
     {
         Stopwatch stopwatch = new();
 
@@ -72,7 +47,7 @@ public sealed class GameManager : Component
         });
     }
 
-    public void MeshBuildingThread(Chunk chunk = null)
+    public void MeshBuildingTask(Chunk chunk = null)
     {
         if (_processingChunkGeneration || Generator.ChunksToBuild.IsEmpty)
             return;

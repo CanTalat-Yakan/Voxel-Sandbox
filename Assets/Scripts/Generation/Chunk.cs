@@ -50,6 +50,8 @@ public sealed class Chunk
         WorldPosition = worldPosition;
         LevelOfDetail = levelOfDetail;
 
+        _voxelSize = null;
+
         return this;
     }
 

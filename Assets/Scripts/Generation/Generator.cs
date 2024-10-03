@@ -10,8 +10,8 @@ public sealed class Generator
 
     public const int ChunkSize = 30;
 
-    public static readonly int LODCount = 1;
-    public static readonly int NativeRadius = 32;
+    public static readonly int LODCount = 3;
+    public static readonly int NativeRadius = 8;
 
     public ConcurrentQueue<Chunk> ChunksToGenerate = new();
     public ConcurrentQueue<Chunk> ChunksToBuild = new();
@@ -55,8 +55,6 @@ public sealed class Generator
         ChunksToBuild.Clear();
 
         CalculateChunks(newPlayerPosition);
-
-        GameManager.ChunkGenerationThreadParallel();
     }
 
     private void CalculateChunks(Vector3Int worldPosition)
@@ -81,10 +79,6 @@ public sealed class Generator
         Vector3Int centerChunkPosition = new(
             worldPosition.X / (ChunkSize * 2) * ChunkSize * 2, 0,
             worldPosition.Z / (ChunkSize * 2) * ChunkSize * 2);
-
-        foreach (var LODChunks in GeneratedChunks.Values)
-            foreach (var chunk in LODChunks.Values)
-                chunk.Mesh.IsEnabled = false;
 
         for (int i = 0; i < combinedLODRadius; i++)
             for (int j = -chunkCountXZ(i); j <= chunkCountXZ(i); j++)

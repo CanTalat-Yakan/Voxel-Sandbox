@@ -35,7 +35,7 @@ public sealed partial class NoiseSampler
 
         Generator.GeneratedChunks[chunk.LevelOfDetail].TryRemove(chunk.WorldPosition, out _);
 
-        int gridY = GetGridY(SampleNoise(chunk, Vector3Short.UnitXZ).SurfaceHeight, chunk.ChunkSize);
+        int gridY = GetGridY(SampleNoise(chunk, Vector3Short.UnitXZ).SurfaceHeight, chunk.ChunkSize * chunk.VoxelSize);
         chunk.WorldPosition = chunk.WorldPosition.Set(y: gridY);
 
         Generator.GeneratedChunks[chunk.LevelOfDetail].TryAdd(chunk.WorldPosition, chunk);
@@ -48,11 +48,11 @@ public sealed partial class NoiseSampler
 
         if (!chunk.IsBottomChunkGenerated && noiseData.SurfaceHeight == chunk.WorldPosition.Y - 1)
             chunk.IsBottomChunkGenerated = true;
-        else if (!chunk.IsTopChunkGenerated && noiseData.SurfaceHeight == chunk.WorldPosition.Y + chunk.ChunkSize + 1)
+        else if (!chunk.IsTopChunkGenerated && noiseData.SurfaceHeight == chunk.WorldPosition.Y + chunk.ChunkSize * chunk.VoxelSize + 1)
             chunk.IsTopChunkGenerated = true;
         else return;
 
-        Vector3Int chunkPosition = new(chunk.WorldPosition.X, GetGridY(noiseData.SurfaceHeight, chunk.ChunkSize), chunk.WorldPosition.Z);
+        Vector3Int chunkPosition = new(chunk.WorldPosition.X, GetGridY(noiseData.SurfaceHeight, chunk.ChunkSize * chunk.VoxelSize), chunk.WorldPosition.Z);
         if (Generator.GeneratedChunks[chunk.LevelOfDetail].ContainsKey(chunkPosition))
             return;
 
@@ -67,7 +67,7 @@ public sealed partial class NoiseSampler
 
         //GameManager.Generator.ChunksToGenerate.Enqueue(newChunk);
 
-        GameManager.ChunkGenerationThread(newChunk);
+        GameManager.ChunkGenerationTask(newChunk);
 
         //var prim = GameManager.Entity.Manager.CreatePrimitive().Entity;
         //prim.Transform.LocalPosition = (chunkPosition + chunk.ChunkSize / 2).ToVector3();
