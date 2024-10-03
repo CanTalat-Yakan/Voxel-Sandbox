@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 
 using Engine;
+using Engine.Components;
 using Engine.ECS;
 using Engine.Loader;
 using Engine.Utilities;
@@ -19,6 +20,8 @@ public sealed class GameManager : Component
     {
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlas.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
+
+        Camera.Main.Entity.Transform.SetPosition(y: 1100);
 
         //PlayerController.Initialize(this);
     }

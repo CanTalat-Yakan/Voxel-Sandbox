@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace VoxelSandbox;
 
-public record NoiseData(byte SurfaceHeight, byte UndergroundDetail, byte BedrockHeight);
+public record NoiseData(int SurfaceHeight, int MountainHeight, byte UndergroundDetail, byte BedrockHeight);
 
 public sealed partial class NoiseSampler
 {
@@ -55,9 +55,6 @@ public sealed partial class NoiseSampler
 
     private void CheckChunkVertically(Chunk chunk, NoiseData noiseData)
     {
-        if (chunk.IsChunkFromChunk)
-            return;
-
         if (!chunk.IsBottomChunkGenerated && noiseData.SurfaceHeight == chunk.WorldPosition.Y - 1)
             chunk.IsBottomChunkGenerated = true;
         else if (!chunk.IsTopChunkGenerated && noiseData.SurfaceHeight == chunk.WorldPosition.Y + chunk.ChunkSize * chunk.VoxelSize + 1)
@@ -137,6 +134,7 @@ public sealed partial class NoiseSampler
 
         var noiseData = SampleNoise(chunk, voxelPosition.X, voxelPosition.Z);
         int surfaceHeight = noiseData.SurfaceHeight;
+        int mountainHeight = noiseData.MountainHeight;
         int undergroundDetail = noiseData.UndergroundDetail;
         int bedrockHeight = noiseData.BedrockHeight;
 
@@ -146,14 +144,7 @@ public sealed partial class NoiseSampler
         int y = voxelPosition.Y * chunk.VoxelSize + chunk.WorldPosition.Y;
         int z = voxelPosition.Z;
 
-        if (chunk.LevelOfDetail > 0)
-        {
-            if (y <= surfaceHeight + chunk.VoxelSize && y >= surfaceHeight)
-                sample = VoxelType.Grass;
-            else if (y < surfaceHeight)
-                sample = VoxelType.Stone;
-        }
-        else if (y < surfaceHeight)
+        if (y < surfaceHeight)
         {
             if (y > surfaceHeight - undergroundDetail + 5)
                 sample = VoxelType.Dirt;
@@ -176,7 +167,7 @@ public sealed partial class NoiseSampler
                     sample = VoxelType.Stone;
             }
         }
-        else if (y == surfaceHeight)
+        else if (y <= surfaceHeight)
             sample = VoxelType.Grass;
 
         return sample is not VoxelType.None;
@@ -194,14 +185,16 @@ public sealed partial class NoiseSampler
         int nx = x * chunk.VoxelSize + chunk.WorldPosition.X;
         int nz = z * chunk.VoxelSize + chunk.WorldPosition.Z;
 
-        byte surfaceHeight = GetSurfaceHeight(nx, nz);
-        byte mountainHeight = GetMountainHeight(nx, nz);
+        int surfaceHeight = GetSurfaceHeight(nx, nz);
+        int mountainHeight = GetMountainHeight(nx, nz);
         byte undergroundDetail = GetUndergroundDetail(nx, nz);
         byte bedrockHeight = GetBedrockNoise();
 
-        surfaceHeight += (byte)((mountainHeight + 1) / 2);
+        mountainHeight = (int)Math.Max(0, mountainHeight - 180);
+        surfaceHeight += 1000 + mountainHeight;
+        undergroundDetail += 10;
 
-        noiseData = new(surfaceHeight, undergroundDetail, bedrockHeight);
+        noiseData = new(surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight);
 
         chunk.SetNoiseData(x, z, noiseData);
 
@@ -219,7 +212,7 @@ public sealed partial class NoiseSampler
     private Billow _surfaceNoise = new()
     {
         Primitive2D = s_perlinPrimitive,
-        OctaveCount = 8,        // Fewer octaves for a smoother look
+        OctaveCount = 6,        // Fewer octaves for a smoother look
         Frequency = 0.01f,      // Lower frequency for broader features
         Scale = 7.5f,           // Adjust scale to manage the level of detail
     };
@@ -228,7 +221,7 @@ public sealed partial class NoiseSampler
     {
         Primitive2D = s_perlinPrimitive,
         OctaveCount = 3,
-        Frequency = 0.0002f,
+        Frequency = 0.001f,
         Scale = 200,
     };
 
@@ -248,18 +241,24 @@ public sealed partial class NoiseSampler
         Scale = 0.5f
     };
 
-    private byte GetSurfaceHeight(int x, int z) =>
-        (byte)(_surfaceNoise.GetValue(x, z));
+    private int GetSurfaceHeight(int x, int z) =>
+        (int)_surfaceNoise.GetValue(x, z);
 
-    private byte GetMountainHeight(int x, int z) =>
-        (byte)_mountainNoise.GetValue(x, z);
+    private int GetMountainHeight(int x, int z) =>
+        (int)_mountainNoise.GetValue(x, z);
 
     private byte GetUndergroundDetail(int x, int z) =>
-        (byte)(_undergroundNoise.GetValue(x, z) + 10);
+        (byte)_undergroundNoise.GetValue(x, z);
 
     private byte GetBedrockNoise() =>
         (byte)Random.Next(0, 5);
 
     private double GetCaveNoise(int x, int y, int z) =>
         _caveNoise.GetValue(x, y, z);
+
+    public static double ApplyCurve(double input, double exponent) =>
+        Math.Pow(input, exponent);
+
+    public static double ApplyS_Curve(double t) =>
+        t * t * (3 - 2 * t);
 }
