@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Numerics;
 
 using Engine.DataStructures;
@@ -12,8 +13,12 @@ public sealed class MeshBuilder
     public const int IndicesPerFace = 6;
     public const int FloatsPerVertex = 2; // Position and Data
 
-    public void GenerateMesh(Chunk chunk, GameManager GameManager)
+    private Stopwatch _stopwatch = new();
+
+    public void GenerateMesh(Chunk chunk)
     {
+        _stopwatch.Start();
+
         int maxVoxels = chunk.ExposedVoxelData.Count;
 
         int maxVertices = maxVoxels * MaxFacesPerVoxel * VerticesPerFace;
@@ -41,6 +46,12 @@ public sealed class MeshBuilder
         chunk.Mesh.SetMeshData(indices, vertices, GetPositions(chunk), new InputLayoutHelper().AddUV());
         chunk.Mesh.SetMaterialTextures([new("TextureAtlas.png", 0)]);
         chunk.Mesh.SetMaterialPipeline("VoxelShader");
+
+        _stopwatch.Stop();
+
+        Output.Log($"MB: {_stopwatch.Elapsed.TotalMilliseconds * 1000:F0} µs");
+
+        _stopwatch.Reset();
     }
 
     private void AddVoxelFaces(Chunk chunk, Vector3Short voxelPosition, VoxelType voxelType, ref float[] vertices, ref int vertexFloatCount, ref int[] indices, ref int indexCount)

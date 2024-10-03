@@ -2,6 +2,8 @@
 using LibNoise.Primitive;
 
 using Engine.Essentials;
+using Engine.Utilities;
+using System.Diagnostics;
 
 namespace VoxelSandbox;
 
@@ -11,8 +13,12 @@ public sealed partial class NoiseSampler
 {
     GameManager GameManager;
 
+    private Stopwatch _stopwatch = new();
+
     public void GenerateChunkContent(Chunk chunk, GameManager gameManager)
     {
+        _stopwatch.Start();
+
         GameManager = gameManager;
 
         SetGridY(chunk);
@@ -23,6 +29,12 @@ public sealed partial class NoiseSampler
                     AddExposedVoxel(new(x, y, z), chunk);
 
         gameManager.Generator.ChunksToBuild.Enqueue(chunk);
+
+        _stopwatch.Stop();
+
+        Output.Log($"CG: {_stopwatch.Elapsed.TotalMilliseconds * 1000:F0} µs");
+
+        _stopwatch.Reset();
     }
 
     private int GetGridY(int y, int chunkSizeY) =>

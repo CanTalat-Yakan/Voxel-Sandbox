@@ -30,21 +30,17 @@ public sealed class GameManager : Component
     {
         if (Generator.ChunksToGenerate.TryDequeue(out var chunk))
             ChunkGenerationTask(chunk);
+
         MeshBuildingTask();
     }
 
     public void ChunkGenerationTask(Chunk chunk)
     {
-        Stopwatch stopwatch = new();
+        _processingChunkGeneration = true;
 
-        Task.Run(() =>
-        {
-            stopwatch.Start();
+        Task.Run(() => { NoiseSampler.GenerateChunkContent(chunk, this); });
 
-            NoiseSampler.GenerateChunkContent(chunk, this);
-
-            Output.Log($"CG: {GetFormattedTime(stopwatch)}");
-        });
+        _processingChunkGeneration = false;
     }
 
     public void MeshBuildingTask(Chunk chunk = null)
@@ -56,19 +52,10 @@ public sealed class GameManager : Component
             if (!Generator.ChunksToBuild.TryDequeue(out chunk))
                 return;
 
-        Stopwatch stopwatch = new();
-
-        Task.Run(() =>
-        {
-            stopwatch.Start();
-
-            MeshBuilder.GenerateMesh(chunk, this);
-
-            Output.Log($"MB: {GetFormattedTime(stopwatch)}");
-        });
+        Task.Run(() => { MeshBuilder.GenerateMesh(chunk); });
     }
 
-    private string GetFormattedTime(Stopwatch stopwatch) =>
+    public static string GetFormattedTime(Stopwatch stopwatch) =>
         stopwatch.Elapsed.TotalMilliseconds switch
         {
             double ms when ms >= 3 => $"{(int)ms} ms",
