@@ -145,6 +145,9 @@ public struct Vector3Int
     public override string ToString() =>
         $"({X}, {Y}, {Z})";
 
+    public static Vector3Int FromVector3(System.Numerics.Vector3 vector) =>
+        new((int)vector.X, (int)vector.Y, (int)vector.Z);
+
     public System.Numerics.Vector3 ToVector3() =>
         new(X, Y, Z);
 

@@ -11,7 +11,7 @@ public sealed class Generator
     public const int ChunkSize = 30;
 
     public static readonly int LODCount = 1;
-    public static readonly int NativeRadius = 20;
+    public static readonly int NativeRadius = 64;
 
     public ConcurrentQueue<Chunk> ChunksToGenerate = new();
     public ConcurrentQueue<Chunk> ChunksToBuild = new();
@@ -109,9 +109,9 @@ public sealed class Generator
     {
         if (GeneratedChunks[levelOfDetail].Keys.Contains(chunkWorldPosition))
         {
-            Chunk oldChunk = GeneratedChunks[levelOfDetail][chunkWorldPosition];
-            PoolManager.GetPool<Chunk>().Return(oldChunk.Reset());
-            GeneratedChunks[levelOfDetail].TryRemove(chunkWorldPosition, out _);
+            //Chunk oldChunk = GeneratedChunks[levelOfDetail][chunkWorldPosition];
+            //PoolManager.GetPool<Chunk>().Return(oldChunk.Reset());
+            //GeneratedChunks[levelOfDetail].TryRemove(chunkWorldPosition, out _);
         }
         else
         {
