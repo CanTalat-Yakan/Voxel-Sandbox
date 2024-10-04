@@ -69,7 +69,7 @@ public sealed class MeshBuilder
                 (byte)(voxelPosition.Z + Vector3Int.Directions[normalIndex].Z));
 
             // Check if the adjacent voxel is empty
-            if (!chunk.IsWithinBounds(adjacentVoxelPosition) || chunk.IsVoxelEmpty(adjacentVoxelPosition))
+            if (!chunk.IsWithinBounds(ref adjacentVoxelPosition) || chunk.IsVoxelEmpty(ref adjacentVoxelPosition))
                 AddFace(voxelPosition, voxelType, normalIndex, ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
         }
     }

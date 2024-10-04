@@ -68,28 +68,31 @@ public sealed class Chunk
     public Vector3Int GetChunkSize() =>
         Vector3Int.One * ChunkSize * VoxelSize;
 
-    public bool IsWithinBounds(Vector3Short position) =>
+    public bool IsWithinBounds(ref Vector3Short position) =>
         position.X >= 1 && position.X <= ChunkSize
      && position.Y >= 1 && position.Y <= ChunkSize
      && position.Z >= 1 && position.Z <= ChunkSize;
 
-    public void SetExposedVoxel(Vector3Short position) =>
+    public void SetExposedVoxel(ref Vector3Short position) =>
         ExposedVoxelData.Add(position);
 
     public VoxelType GetVoxelType(Vector3Short position) =>
-        VoxelTypeData[ToIndex(position)];
+        VoxelTypeData[ToIndex(ref position)];
+    
+    public VoxelType GetVoxelType(ref Vector3Short position) =>
+        VoxelTypeData[ToIndex(ref position)];
 
-    public void SetVoxelType(Vector3Short position, VoxelType voxelType) =>
-        VoxelTypeData[ToIndex(position)] = voxelType;
+    public void SetVoxelType(ref Vector3Short position, ref VoxelType voxelType) =>
+        VoxelTypeData[ToIndex(ref position)] = voxelType;
 
-    public bool IsVoxelEmpty(Vector3Short position) =>
-        !IsVoxelSolid(position);
+    public bool IsVoxelEmpty(ref Vector3Short position) =>
+        !IsVoxelSolid(ref position);
 
-    public bool IsVoxelSolid(Vector3Short position) =>
-        SolidVoxelData[ToIndex(position)] == true;
+    public bool IsVoxelSolid(ref Vector3Short position) =>
+        SolidVoxelData[ToIndex(ref position)] == true;
 
-    public void SetSolidVoxel(Vector3Short position) =>
-        SolidVoxelData[ToIndex(position)] = true;
+    public void SetSolidVoxel(ref Vector3Short position) =>
+        SolidVoxelData[ToIndex(ref position)] = true;
 
     public NoiseData GetNoiseData(int x, int z) =>
         NoiseData[ToIndex(x, z)];
@@ -97,7 +100,7 @@ public sealed class Chunk
     public void SetNoiseData(int x, int z, NoiseData noiseData) =>
         NoiseData[ToIndex(x, z)] = noiseData;
 
-    public int ToIndex(Vector3Short position) =>
+    public int ToIndex(ref Vector3Short position) =>
         position.X + position.Z * PaddedChunkSize + position.Y * PaddedChunkSizeSquared;
 
     public int ToIndex(int x, int z) =>

@@ -234,7 +234,7 @@ public class PlayerController : Component
                     Generator.GetChunkFromPosition(voxelPosition, out var chunk, out var localVoxelPosition);
 
                     if (chunk is not null && chunk.SolidVoxelData is not null)
-                        if(chunk.IsVoxelSolid(localVoxelPosition))
+                        if(chunk.IsVoxelSolid(ref localVoxelPosition))
                         // Collision detected
                         return true;
                 }

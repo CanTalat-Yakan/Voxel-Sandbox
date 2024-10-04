@@ -91,8 +91,8 @@ public sealed partial class NoiseSampler
         if (!SampleVoxel(out var voxelType, ref voxelPosition, chunk))
             return;
 
-        chunk.SetVoxelType(voxelPosition, voxelType);
-        chunk.SetSolidVoxel(voxelPosition);
+        chunk.SetVoxelType(ref voxelPosition, ref voxelType);
+        chunk.SetSolidVoxel(ref voxelPosition);
 
         Vector3Short adjacentVoxelPosition = new();
 
@@ -110,24 +110,24 @@ public sealed partial class NoiseSampler
             VoxelType adjacentVoxelType = VoxelType.None;
 
             // If the adjacent voxel was not found, the current iterated voxel is exposed
-            if (chunk.IsVoxelEmpty(adjacentVoxelPosition) && !SampleVoxel(out adjacentVoxelType, ref adjacentVoxelPosition, chunk))
+            if (chunk.IsVoxelEmpty(ref adjacentVoxelPosition) && !SampleVoxel(out adjacentVoxelType, ref adjacentVoxelPosition, chunk))
             {
-                chunk.SetExposedVoxel(voxelPosition);
+                chunk.SetExposedVoxel(ref voxelPosition);
 
                 return;
             }
 
             if (adjacentVoxelType is not VoxelType.None)
             {
-                chunk.SetVoxelType(adjacentVoxelPosition, adjacentVoxelType);
-                chunk.SetSolidVoxel(adjacentVoxelPosition);
+                chunk.SetVoxelType(ref adjacentVoxelPosition, ref adjacentVoxelType);
+                chunk.SetSolidVoxel(ref adjacentVoxelPosition);
             }
         }
     }
 
     private bool SampleVoxel(out VoxelType sample, ref Vector3Short voxelPosition, Chunk chunk)
     {
-        sample = chunk.GetVoxelType(voxelPosition);
+        sample = chunk.GetVoxelType(ref voxelPosition);
 
         if (sample is not VoxelType.None)
             return true;
