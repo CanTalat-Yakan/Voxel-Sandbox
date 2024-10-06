@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-using Engine;
+﻿using Engine;
 using Engine.Components;
 using Engine.ECS;
 using Engine.Loader;
@@ -31,18 +29,21 @@ public sealed class GameManager : Component
 
     public override void OnUpdate()
     {
-        if (Generator.ChunksToGenerate.TryDequeue(out var chunk))
-            ChunkGenerationTask(chunk);
-
+        ChunkGenerationTask();
         MeshBuildingTask();
     }
 
-    public void ChunkGenerationTask(Chunk chunk)
+    public void ChunkGenerationTask(Chunk chunk = null)
     {
+        if (Generator.ChunksToGenerate.IsEmpty)
+            return;
+
+        if (chunk is null)
+            if (!Generator.ChunksToGenerate.TryDequeue(out chunk))
+                return;
+
         _processingChunkGeneration = true;
-
         Task.Run(() => { NoiseSampler.GenerateChunkContent(chunk, this); });
-
         _processingChunkGeneration = false;
     }
 
@@ -57,12 +58,4 @@ public sealed class GameManager : Component
 
         Task.Run(() => { MeshBuilder.GenerateMesh(chunk); });
     }
-
-    public static string GetFormattedTime(Stopwatch stopwatch) =>
-        stopwatch.Elapsed.TotalMilliseconds switch
-        {
-            double ms when ms >= 3 => $"{(int)ms} ms",
-            double ms when ms < 3 => $"{ms * 1000:F0} µs",
-            _ => "Unknown"
-        };
 }

@@ -61,7 +61,6 @@ public struct Vector3Short
     public override int GetHashCode() =>
         Data.GetHashCode();
 
-    // Operator overloads
     public static Vector3Short operator *(Vector3Short a, int b) =>
         a.Set(a.X * b, a.Y * b, a.Z * b);
 
@@ -83,7 +82,6 @@ public struct Vector3Short
     public static bool operator !=(Vector3Short a, Vector3Short b) =>
         a.Data != b.Data;
 }
-
 
 public struct Vector3Int
 {

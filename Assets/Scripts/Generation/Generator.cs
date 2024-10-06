@@ -22,7 +22,6 @@ public sealed class Generator
     {
         GameManager = gameManager;
 
-        // Initialize generatedChunks dictionary for all LOD levels
         for (int i = 0; i < LODCount; i++)
             GeneratedChunks[i] = new();
 
@@ -32,15 +31,10 @@ public sealed class Generator
     public static void GetChunkFromPosition(Vector3Int worldPosition, out Chunk chunk, out Vector3Short localVoxelPosition)
     {
         Vector3Int chunkPosition = new();
-        chunkPosition.Y = 0;
 
         chunkPosition.X = worldPosition.X / ChunkSize * ChunkSize;
-        if (worldPosition.X < 0 && (worldPosition.X % ChunkSize) != 0)
-            chunkPosition.X -= ChunkSize;
-
         chunkPosition.Z = worldPosition.Z / ChunkSize * ChunkSize;
-        if (worldPosition.Z < 0 && (worldPosition.Z % ChunkSize) != 0)
-            chunkPosition.Z -= ChunkSize;
+        chunkPosition.Y = worldPosition.Y / ChunkSize * ChunkSize;
 
         chunk = null;
         if (GeneratedChunks[0].ContainsKey(chunkPosition))
@@ -75,7 +69,6 @@ public sealed class Generator
         Func<int, int> currentLODStartLengthXZ = i => currentLOD(i) == 1 ? NativeRadius + 1 : NativeRadius + 1 + (int)Math.Pow(2, Math.Max(1, currentLOD(i) - 1)) + NativeRadius / 2 / currentLOD(i);
         Func<int, int> chunkCountXZ = i => currentLOD(i) == 0 ? i : i % NativeRadius + (currentLODStartLengthXZ(i) - 1) / 2;
 
-        // Calculate the center chunk position for the player
         Vector3Int centerChunkPosition = new(
             worldPosition.X / (ChunkSize * 2) * ChunkSize * 2, 0,
             worldPosition.Z / (ChunkSize * 2) * ChunkSize * 2);

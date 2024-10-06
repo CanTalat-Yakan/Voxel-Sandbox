@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace VoxelSandbox;
 
-public record NoiseData(int SurfaceHeight, int MountainHeight, byte UndergroundDetail, byte BedrockHeight);
+public record NoiseData(ushort SurfaceHeight, ushort MountainHeight, byte UndergroundDetail, byte BedrockHeight);
 
 public sealed partial class NoiseSampler
 {
@@ -185,12 +185,12 @@ public sealed partial class NoiseSampler
         int nx = x * chunk.VoxelSize + chunk.WorldPosition.X;
         int nz = z * chunk.VoxelSize + chunk.WorldPosition.Z;
 
-        int surfaceHeight = GetSurfaceHeight(nx, nz);
-        int mountainHeight = GetMountainHeight(nx, nz);
+        ushort surfaceHeight = GetSurfaceHeight(nx, nz);
+        ushort mountainHeight = GetMountainHeight(nx, nz);
         byte undergroundDetail = GetUndergroundDetail(nx, nz);
         byte bedrockHeight = GetBedrockNoise();
 
-        mountainHeight = (int)Math.Max(0, mountainHeight - 180);
+        mountainHeight = (ushort)Math.Max(0, mountainHeight - 180);
         surfaceHeight += mountainHeight;
 
         noiseData = new(surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight);
@@ -240,11 +240,11 @@ public sealed partial class NoiseSampler
         Scale = 0.5f
     };
 
-    private int GetSurfaceHeight(int x, int z) =>
-        (int)_surfaceNoise.GetValue(x, z) + 1000;
+    private ushort GetSurfaceHeight(int x, int z) =>
+        (ushort)(_surfaceNoise.GetValue(x, z) + 1000);
 
-    private int GetMountainHeight(int x, int z) =>
-        (int)_mountainNoise.GetValue(x, z);
+    private ushort GetMountainHeight(int x, int z) =>
+        (ushort)_mountainNoise.GetValue(x, z);
 
     private byte GetUndergroundDetail(int x, int z) =>
         (byte)(_undergroundNoise.GetValue(x, z) + 10);
