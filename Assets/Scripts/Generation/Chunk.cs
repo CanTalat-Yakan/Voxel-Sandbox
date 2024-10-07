@@ -89,6 +89,9 @@ public sealed class Chunk
     public VoxelType GetVoxelType(ref Vector3Short position) =>
         VoxelTypeData[ToIndex(ref position)];
 
+    public void SetVoxelType(ref Vector3Short position, VoxelType voxelType) =>
+        VoxelTypeData[ToIndex(ref position)] = voxelType;
+    
     public void SetVoxelType(ref Vector3Short position, ref VoxelType voxelType) =>
         VoxelTypeData[ToIndex(ref position)] = voxelType;
 
@@ -98,9 +101,12 @@ public sealed class Chunk
     public bool IsVoxelSolid(ref Vector3Short position) =>
         SolidVoxelData[ToIndex(ref position)] == true;
 
+    public void SetEmptyVoxel(ref Vector3Short position) =>
+        SolidVoxelData[ToIndex(ref position)] = false;
+
     public void SetSolidVoxel(ref Vector3Short position) =>
         SolidVoxelData[ToIndex(ref position)] = true;
-
+    
     public NoiseData GetNoiseData(int x, int z) =>
         NoiseData[ToIndex(x, z)];
 

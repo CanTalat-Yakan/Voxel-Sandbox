@@ -29,7 +29,7 @@ public sealed partial class NoiseSampler
                 for (int y = 1; y <= chunk.ChunkSize; y++)
                     AddExposedVoxel(chunk, new(x, y, z));
 
-        gameManager.Generator.ChunksToBuild.Enqueue(chunk);
+        Generator.ChunksToBuild.Enqueue(chunk);
 
         Output.Log($"CG: {_stopwatch.Elapsed.TotalMilliseconds * 1000:F0} µs");
     }

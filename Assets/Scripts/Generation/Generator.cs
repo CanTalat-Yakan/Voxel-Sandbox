@@ -13,8 +13,8 @@ public sealed class Generator
     public static readonly int LODCount = 1;
     public static readonly int NativeRadius = 15;
 
-    public ConcurrentQueue<Chunk> ChunksToGenerate = new();
-    public ConcurrentQueue<Chunk> ChunksToBuild = new();
+    public static ConcurrentQueue<Chunk> ChunksToGenerate = new();
+    public static ConcurrentQueue<Chunk> ChunksToBuild = new();
 
     public GameManager GameManager;
 
@@ -26,6 +26,16 @@ public sealed class Generator
             GeneratedChunks[i] = new();
 
         UpdateChunks(new Vector3Int(0, 0, 0));
+    }
+
+    public static void SetVoxel(Vector3Int worldPosition)
+    {
+        GetChunkFromPosition(worldPosition, out var chunk, out var localVoxelPosition);
+
+        chunk.SetVoxelType(ref localVoxelPosition, VoxelType.None);
+        chunk.SetEmptyVoxel(ref localVoxelPosition);
+
+        ChunksToBuild.Enqueue(chunk);
     }
 
     public static void GetChunkFromPosition(Vector3Int worldPosition, out Chunk chunk, out Vector3Short localVoxelPosition)
