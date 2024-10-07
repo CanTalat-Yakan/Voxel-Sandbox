@@ -1,6 +1,6 @@
 ﻿namespace VoxelSandbox;
 
-public enum VoxelType : byte
+public enum VoxelType : ushort
 {
     None,
     Stone,
@@ -20,27 +20,16 @@ public enum VoxelType : byte
 
 public static class VoxelData
 {
-    public static IEnumerable<float> Pack(Vector3Short position, byte uv, byte tile, byte normal, byte light)
+    // Pack X, Y, Z (each 5 bits), vertexIndex (2 bits), normalIndex (3 bits), textureIndex (8 bits) and lightInfo (4 bits) into a 32-bit integer
+    public static float PackFloat(byte x, byte y, byte z, byte vertexIndex, byte normalIndex, ushort textureIndex, byte lightIndex)
     {
-        yield return PackVector3ToFloat(position);
-        yield return PackBytesToFloat(uv, tile, normal, light);
-    }
-
-    // Pack a Vector3Byte with X, Y and Z (8 bits each) into a float
-    public static float PackVector3ToFloat(Vector3Short position)
-    {
-        // Combine X (8 bits), Y (8 bits), and Z (8 bits) into a 32-bit integer
-        uint packed = ((uint)position.X << 16) | ((uint)position.Y << 8) | (byte)position.Z;
-
-        // Convert the packed integer into a float
-        return BitConverter.ToSingle(BitConverter.GetBytes(packed), 0);
-    }
-
-    // Pack 4 bytes into a float
-    public static float PackBytesToFloat(byte b1, byte b2, byte b3, byte b4)
-    {
-        // Combine the 4 bytes into a 32-bit integer
-        uint packed = ((uint)b1 << 24) | ((uint)b2 << 16) | ((uint)b3 << 8) | b4;
+        uint packed = ((uint)lightIndex << 28)    // 4 bits: bits 28-31
+                    | ((uint)textureIndex << 20)   // 8 bits: bits 20-27
+                    | ((uint)normalIndex << 17)    // 3 bits: bits 17-19
+                    | ((uint)vertexIndex << 15)    // 2 bits: bits 15-16
+                    | ((uint)z << 10)               // 5 bits: bits 10-14
+                    | ((uint)y << 5)                // 5 bits: bits 5-9
+                    | ((uint)x);                    // 5 bits: bits 0-4
 
         // Convert the packed integer into a float
         return BitConverter.ToSingle(BitConverter.GetBytes(packed), 0);

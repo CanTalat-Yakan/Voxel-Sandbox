@@ -14,22 +14,22 @@ PSInputVoxel VS(VSInputVoxel input)
     output.camerapos = Camera;
     output.lookat = ViewDirection;
     
-    float3 pos = UnpackFloatToVector3(input.data.x);
+    float3 pos = UnpackPosition(input.data);
     
     output.pos = mul(float4(pos, 1), mul(World, ViewProjection));
     output.worldpos = mul(float4(pos, 1), World);
 
-    int4 attributes = UnpackFloatToBytes(input.data.y);
+    int4 attributes = UnpackAttributes(input.data);
 
-    int textureUVIndex = attributes.x;
-    int textureIndex = attributes.y;
-    int normalIndex = attributes.z;
-    int lightValue = attributes.w;
+    int vertexIndex = attributes.x;
+    int normalIndex = attributes.y;
+    int textureIndex = attributes.z;
+    int lightIndex = attributes.w;
     
     output.normal = GetNormal(normalIndex);
     output.tangent = GetTangent(normalIndex);
     
-    output.uv = GetUV(textureUVIndex) * GetAtlasTileSize() + GetAtlasTileCoordinate(textureIndex);
+    output.uv = GetUV(vertexIndex) * GetAtlasTileSize() + GetAtlasTileCoordinate(textureIndex);
 
     return output;
 }

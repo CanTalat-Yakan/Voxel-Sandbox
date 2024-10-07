@@ -12,7 +12,7 @@ cbuffer PerModelConstantBuffer : register(b1)
 
 struct VSInputVoxel
 {
-    float2 data : TEXCOORD0;
+    float data : POSITION0;
 };
 
 struct PSInputVoxel
@@ -26,29 +26,27 @@ struct PSInputVoxel
     float2 uv : TEXCOORD0;
 };
 
-float3 UnpackFloatToVector3(float packedFloat)
+float3 UnpackPosition(float packedFloat)
 {
     uint packed = asuint(packedFloat);
 
-    // Unpack a float into a float3 (X, Y, Z) where X, Y and Z get 8 bits
-    float X = (packed >> 16) & 0xFF; // Extract the 8 bits for X
-    float Y = (packed >> 8) & 0xFF; // Extract the 8 bits for Y
-    float Z = packed & 0xFF; // Extract the 8 bits for Z
+    float X = packed & 0x1F; // 5 bits: bits 0-4
+    float Y = (packed >> 5) & 0x1F; // 5 bits: bits 5-9
+    float Z = (packed >> 10) & 0x1F; // 5 bits: bits 10-14
 
     return float3(X, Y, Z);
 }
 
-int4 UnpackFloatToBytes(float packedFloat)
+int4 UnpackAttributes(float packedFloat)
 {
     uint packed = asuint(packedFloat);
 
-    // Unpack a float into 4 bytes
-    uint b1 = (packed >> 24) & 0xFF;
-    uint b2 = (packed >> 16) & 0xFF;
-    uint b3 = (packed >> 8) & 0xFF;
-    uint b4 = packed & 0xFF;
+    uint vertexIndex = (packed >> 15) & 0x3; // 2 bits: bits 15-16
+    uint normalIndex = (packed >> 17) & 0x7; // 3 bits: bits 17-19
+    uint textureIndex = (packed >> 20) & 0xFF; // 8 bits: bits 20-27
+    uint lightIndex = (packed >> 28) & 0xF; // 4 bits: bits 28-31
 
-    return int4(b1, b2, b3, b4);
+    return int4(vertexIndex, normalIndex, textureIndex, lightIndex);
 }
 
 float GetAtlasTileSize(int rowsColumns = 4)

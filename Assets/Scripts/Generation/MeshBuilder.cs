@@ -11,7 +11,6 @@ public sealed class MeshBuilder
     public const int MaxFacesPerVoxel = 6;
     public const int VerticesPerFace = 4;
     public const int IndicesPerFace = 6;
-    public const int FloatsPerVertex = 2; // Position and Data
 
     private Stopwatch _stopwatch = new();
 
@@ -23,11 +22,10 @@ public sealed class MeshBuilder
 
         int maxVertices = maxVoxels * MaxFacesPerVoxel * VerticesPerFace;
         int maxIndices = maxVoxels * MaxFacesPerVoxel * IndicesPerFace;
-        int maxVertexFloats = maxVertices * FloatsPerVertex;
         int compressionFactor = maxVertices > 1000 ? 2 : 1;
 
         // Preallocate arrays
-        var vertices = new float[maxVertexFloats / compressionFactor];
+        var vertices = new float[maxVertices / compressionFactor];
         var indices = new int[maxIndices / compressionFactor];
 
         int vertexFloatCount = 0;
@@ -43,7 +41,7 @@ public sealed class MeshBuilder
         chunk.Mesh.Entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
         chunk.Mesh.Entity.Transform.LocalScale *= chunk.VoxelSize;
 
-        chunk.Mesh.SetMeshData(indices, vertices, GetPositions(chunk), new InputLayoutHelper().AddUV());
+        chunk.Mesh.SetMeshData(indices, vertices, GetPositions(chunk), new InputLayoutHelper().AddFloat());
         chunk.Mesh.SetMaterialTextures([new("TextureAtlas.png", 0)]);
         chunk.Mesh.SetMaterialPipeline("VoxelShader");
 
@@ -103,68 +101,70 @@ public sealed class MeshBuilder
         else if (normalIndex == 2 && Enum.IsDefined(typeof(VoxelType), enumName + "_Front"))
             textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Front");
 
-        int x = voxelPosition.X;
-        int y = voxelPosition.Y;
-        int z = voxelPosition.Z;
+        byte x = (byte)voxelPosition.X;
+        byte y = (byte)voxelPosition.Y;
+        byte z = (byte)voxelPosition.Z;
 
-        // Define face vertices
-        Vector3Short[] faceVertices = normalIndex switch
+        // Define vertex offsets based on the normal index
+        (byte offsetX, byte offsetY, byte offsetZ)[] vertexOffsets = normalIndex switch
         {
-            0 => // Top
+            0 =>
             [
-                new(x    , y + 1, z    ),
-                new(x    , y + 1, z + 1),
-                new(x + 1, y + 1, z + 1),
-                new(x + 1, y + 1, z    ),
+                (0, 1, 0),
+                (0, 1, 1),
+                (1, 1, 1),
+                (1, 1, 0)
             ],
-            1 => // Bottom
+            1 =>
             [
-                new(x    , y    , z    ),
-                new(x + 1, y    , z    ),
-                new(x + 1, y    , z + 1),
-                new(x    , y    , z + 1),
+                (0, 0, 0),
+                (1, 0, 0),
+                (1, 0, 1),
+                (0, 0, 1)
             ],
-            2 => // Front
+            2 =>
             [
-                new(x + 1, y    , z + 1),
-                new(x + 1, y + 1, z + 1),
-                new(x    , y + 1, z + 1),
-                new(x    , y    , z + 1),
+                (1, 0, 1),
+                (1, 1, 1),
+                (0, 1, 1),
+                (0, 0, 1)
             ],
-            3 => // Back
+            3 =>
             [
-                new(x    , y    , z    ),
-                new(x    , y + 1, z    ),
-                new(x + 1, y + 1, z    ),
-                new(x + 1, y    , z    ),
+                (0, 0, 0),
+                (0, 1, 0),
+                (1, 1, 0),
+                (1, 0, 0)
             ],
-            4 => // Right
+            4 =>
             [
-                new(x + 1, y    , z    ),
-                new(x + 1, y + 1, z    ),
-                new(x + 1, y + 1, z + 1),
-                new(x + 1, y    , z + 1),
+                (1, 0, 0),
+                (1, 1, 0),
+                (1, 1, 1),
+                (1, 0, 1)
             ],
-            5 => // Left
+            5 =>
             [
-                new(x    , y    , z + 1),
-                new(x    , y + 1, z + 1),
-                new(x    , y + 1, z    ),
-                new(x    , y    , z    ),
+                (0, 0, 1),
+                (0, 1, 1),
+                (0, 1, 0),
+                (0, 0, 0)
             ],
-            _ => null
+            _ => throw new ArgumentException("Invalid normal index")
         };
 
         // Add Vertices
-        for (byte i = 0; i < VerticesPerFace; i++)
+        for (byte vertexIndex = 0; vertexIndex < VerticesPerFace; vertexIndex++) 
         {
-            vertices[vertexFloatCount++] = VoxelData.PackVector3ToFloat(faceVertices[i]); // 5 bits, 5 bits, 5 bits, Unused = 17 bits
-            vertices[vertexFloatCount++] = VoxelData.PackBytesToFloat(i, textureIndex, normalIndex, lightIndex); // 2 bits, 8 bits, 3 bits, Unused = 19 bits 
-            // Use 24 bits to represent color rgb. Put some in the first float and some in the second.
+            byte vertexOffsetX = (byte)(x + vertexOffsets[vertexIndex].offsetX);
+            byte vertexOffsetY = (byte)(y + vertexOffsets[vertexIndex].offsetY);
+            byte vertexOffsetZ = (byte)(z + vertexOffsets[vertexIndex].offsetZ);
+
+            vertices[vertexFloatCount++] = VoxelData.PackFloat(vertexOffsetX, vertexOffsetY, vertexOffsetZ, vertexIndex, normalIndex, textureIndex, lightIndex);
         }
 
         // Add indices
-        int startIndex = (vertexFloatCount / 2) - 4; // Each vertex has 2 floats
+        int startIndex = vertexFloatCount - 4;
 
         indices[indexCount++] = startIndex;
         indices[indexCount++] = startIndex + 1;
