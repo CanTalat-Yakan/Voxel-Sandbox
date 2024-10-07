@@ -10,6 +10,8 @@ namespace VoxelSandbox;
 
 public class PlayerController : Component
 {
+    public Camera Camera;
+
     // Movement and rotation settings
     public float MovementSpeed = 10f;
     public float RotationSpeed = 50f;
@@ -31,20 +33,25 @@ public class PlayerController : Component
 
     private bool _isGrounded = false;
 
-    public static void Initialize(GameManager gameManager)
+    public void Initialize(GameManager gameManager)
     {
-        var controller = gameManager.Entity.Manager.CreateCamera(name: "Controller").Entity;
-        controller.Transform.SetPosition(y: 200);
-        controller.AddComponent<PlayerController>();
-        controller.AddComponent<RayCaster>().SetCamera(controller);
-        controller.GetComponent<Camera>()[0].FOV = 100;
-        controller.GetComponent<Camera>()[0].Clipping.Y = 10000;
+        Camera = gameManager.Entity.Manager.CreateCamera(name: "Camera");
+        Camera.FOV = 100;
+
+        Entity.Transform.SetPosition(y: 1100);
+        Entity.AddComponent<PlayerController>();
+        Entity.AddComponent<RayCaster>().SetCamera(Camera.Entity);
     }
 
     public override void OnUpdate()
     {
+        if (Camera is null)
+            return;
+
         HandleRotation();
         HandleMovement();
+
+        Camera.Entity.Transform.LocalPosition = Entity.Transform.Position + Vector3.UnitY * 1.8f;
     }
 
     private void HandleRotation()
@@ -59,7 +66,7 @@ public class PlayerController : Component
         // Clamp Vertical Rotation to ~90 degrees up and down.
         var clampedEuler = Entity.Transform.EulerAngles;
         clampedEuler.X = Math.Clamp(clampedEuler.X, -89, 89);
-        Entity.Transform.EulerAngles = clampedEuler;
+        Camera.Entity.Transform.EulerAngles = clampedEuler;
     }
 
     private void HandleMovement()
@@ -114,7 +121,7 @@ public class PlayerController : Component
     {
         Vector3 finalPosition = nextPosition;
 
-        float playerBottom = nextPosition.Y - PlayerHeight;
+        float playerBottom = nextPosition.Y;
         float playerTop = nextPosition.Y + PlayerHeight;
 
         // Check for ground collision
@@ -129,7 +136,7 @@ public class PlayerController : Component
                 float groundY = (float)Math.Floor(playerBottom - 0.1f) + 1f;
 
                 // Set the player's position so that their feet are on top of the ground voxel
-                finalPosition.Y = groundY + PlayerHeight;
+                finalPosition.Y = groundY;
             }
             else
                 _isGrounded = false;
@@ -162,17 +169,16 @@ public class PlayerController : Component
         // Check for obstacles in the movement direction
         if (horizontalMovement != Vector3.Zero)
         {
-            Vector3 proposedPosition = new Vector3(nextPosition.X, currentPosition.Y - 1, nextPosition.Z);
+            Vector3 proposedPosition = new Vector3(nextPosition.X, currentPosition.Y, nextPosition.Z);
 
             if (IsCollidingAtPosition(proposedPosition))
             {
                 // Attempt to step up
                 if (AttemptStepUp(currentPosition, horizontalMovement, out Vector3 steppedPosition))
                 {
-                    //finalPosition = steppedPosition;
-
-                    _velocity.Y = JumpForce;
-                    _isGrounded = false;
+                    // Move to the stepped position
+                    finalPosition = steppedPosition;
+                    _isGrounded = true;
                 }
                 else
                 {
@@ -213,33 +219,45 @@ public class PlayerController : Component
 
     private bool IsCollidingAtPosition(Vector3 position)
     {
-        // Determine the min and max coordinates of the player's bounding box
+        // Define the player's AABB at the given position
         float halfWidth = PlayerWidth / 2f;
-        float minX = position.X - halfWidth;
-        float maxX = position.X + halfWidth;
-
         float halfDepth = PlayerDepth / 2f;
-        float minZ = position.Z - halfDepth;
-        float maxZ = position.Z + halfDepth;
 
-        float minY = position.Y;
-        float maxY = position.Y + PlayerHeight;
+        Vector3 playerMin = new Vector3(position.X - halfWidth, position.Y, position.Z - halfDepth);
+        Vector3 playerMax = new Vector3(position.X + halfWidth, position.Y + PlayerHeight, position.Z + halfDepth);
 
-        // Loop through all voxels that the bounding box occupies
-        for (int x = (int)Math.Floor(minX); x <= (int)Math.Floor(maxX); x++)
-            for (int y = (int)Math.Floor(minY); y <= (int)Math.Floor(maxY); y++)
-                for (int z = (int)Math.Floor(minZ); z <= (int)Math.Floor(maxZ); z++)
+        // Loop through all voxels that the bounding box could potentially intersect
+        for (int x = (int)Math.Floor(playerMin.X); x <= (int)Math.Floor(playerMax.X); x++)
+            for (int y = (int)Math.Floor(playerMin.Y); y <= (int)Math.Floor(playerMax.Y); y++)
+                for (int z = (int)Math.Floor(playerMin.Z); z <= (int)Math.Floor(playerMax.Z); z++)
                 {
                     Vector3Int voxelPosition = new Vector3Int(x, y, z);
                     Generator.GetChunkFromPosition(voxelPosition, out var chunk, out var localVoxelPosition);
 
                     if (chunk is not null && chunk.SolidVoxelData is not null)
-                        if(chunk.IsVoxelSolid(ref localVoxelPosition))
-                        // Collision detected
-                        return true;
+                        if (chunk.IsVoxelSolid(ref localVoxelPosition))
+                        {
+                            // Define the voxel's AABB
+                            Vector3 voxelMin = new Vector3(x, y, z);
+                            Vector3 voxelMax = voxelMin + new Vector3(1, 1, 1);
+
+                            // Check for AABB intersection
+                            if (AABBIntersects(playerMin, playerMax, voxelMin, voxelMax))
+                            {
+                                // Collision detected
+                                return true;
+                            }
+                        }
                 }
 
         // No collision detected
         return false;
+    }
+
+    private bool AABBIntersects(Vector3 minA, Vector3 maxA, Vector3 minB, Vector3 maxB)
+    {
+        return (minA.X <= maxB.X && maxA.X >= minB.X) &&
+               (minA.Y <= maxB.Y && maxA.Y >= minB.Y) &&
+               (minA.Z <= maxB.Z && maxA.Z >= minB.Z);
     }
 }

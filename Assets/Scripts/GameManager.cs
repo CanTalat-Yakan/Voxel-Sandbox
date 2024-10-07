@@ -9,6 +9,7 @@ namespace VoxelSandbox;
 public sealed class GameManager : Component
 {
     public Generator Generator = new();
+
     public NoiseSampler NoiseSampler = new();
     public MeshBuilder MeshBuilder = new();
 
@@ -21,7 +22,7 @@ public sealed class GameManager : Component
 
         Camera.Main.Entity.Transform.SetPosition(y: 1100);
 
-        //PlayerController.Initialize(this);
+        Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerController>().Initialize(this);
     }
 
     public override void OnStart() =>

@@ -67,7 +67,10 @@ public sealed class Chunk
     }
 
     public int GetGridY(int y) =>
-        y / (ChunkSize * VoxelSize) * (ChunkSize * VoxelSize);
+        FloorDivision(y, ChunkSize * VoxelSize) * ChunkSize * VoxelSize;
+
+    private static int FloorDivision(int a, int b) =>
+        a >= 0 ? a / b : (a - (b - 1)) / b;
 
     public Vector3Int GetChunkSize() =>
         Vector3Int.One * ChunkSize * VoxelSize;

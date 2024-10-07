@@ -32,9 +32,10 @@ public sealed class Generator
     {
         Vector3Int chunkPosition = new();
 
-        chunkPosition.X = worldPosition.X / ChunkSize * ChunkSize;
-        chunkPosition.Z = worldPosition.Z / ChunkSize * ChunkSize;
-        chunkPosition.Y = worldPosition.Y / ChunkSize * ChunkSize;
+        // Use FloorDiv for correct chunk positioning
+        chunkPosition.X = FloorDivision(worldPosition.X, ChunkSize) * ChunkSize;
+        chunkPosition.Y = FloorDivision(worldPosition.Y, ChunkSize) * ChunkSize;
+        chunkPosition.Z = FloorDivision(worldPosition.Z, ChunkSize) * ChunkSize;
 
         chunk = null;
         if (GeneratedChunks[0].ContainsKey(chunkPosition))
@@ -42,6 +43,9 @@ public sealed class Generator
 
         localVoxelPosition = (worldPosition - chunkPosition).ToVector3Byte();
     }
+
+    private static int FloorDivision(int a, int b) =>
+        a >= 0 ? a / b : (a - (b - 1)) / b;
 
     public void UpdateChunks(Vector3Int newPlayerPosition)
     {
