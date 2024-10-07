@@ -210,8 +210,8 @@ public sealed partial class NoiseSampler
     {
         Primitive2D = s_perlinPrimitive,
         OctaveCount = 5,        // Fewer octaves for a smoother look
-        Frequency = 0.005f,      // Lower frequency for broader features
-        Scale = 5,           // Adjust scale to manage the level of detail
+        Frequency = 0.005f,     // Lower frequency for broader features
+        Scale = 5,              // Adjust scale to manage the level of detail
     };
     
     private Billow _surfaceNoiseMacro = new()
