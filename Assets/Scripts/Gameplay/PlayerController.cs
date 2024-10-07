@@ -29,11 +29,12 @@ namespace VoxelSandbox
 
         public void Initialize(GameManager gameManager)
         {
-            Camera = gameManager.Entity.Manager.CreateCamera(name: "Camera");
-            Camera.FOV = 100;
-
             Entity.Transform.SetPosition(y: 1100);
-            Entity.AddComponent<RayCaster>().SetCamera(Camera.Entity);
+
+            Camera = gameManager.Entity.Manager.CreateCamera(name: "Camera");
+
+            var cube = gameManager.Entity.Manager.CreatePrimitive();
+            Entity.AddComponent<RayCaster>().Initialize(cube.Entity, Camera.Entity);
 
             CharacterCollider = Entity.AddComponent<CharacterCollider>();
         }

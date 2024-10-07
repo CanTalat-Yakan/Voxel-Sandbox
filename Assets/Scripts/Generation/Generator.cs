@@ -28,11 +28,11 @@ public sealed class Generator
         UpdateChunks(new Vector3Int(0, 0, 0));
     }
 
-    public static void SetVoxel(Vector3Int worldPosition)
+    public static void SetVoxel(Vector3Int worldPosition, VoxelType voxelType)
     {
         GetChunkFromPosition(worldPosition, out var chunk, out var localVoxelPosition);
 
-        chunk.SetVoxelType(ref localVoxelPosition, VoxelType.None);
+        chunk.SetVoxelType(ref localVoxelPosition, ref voxelType);
         chunk.SetEmptyVoxel(ref localVoxelPosition);
 
         ChunksToBuild.Enqueue(chunk);

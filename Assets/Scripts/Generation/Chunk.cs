@@ -89,9 +89,6 @@ public sealed class Chunk
     public VoxelType GetVoxelType(ref Vector3Short position) =>
         VoxelTypeData[ToIndex(ref position)];
 
-    public void SetVoxelType(ref Vector3Short position, VoxelType voxelType) =>
-        VoxelTypeData[ToIndex(ref position)] = voxelType;
-    
     public void SetVoxelType(ref Vector3Short position, ref VoxelType voxelType) =>
         VoxelTypeData[ToIndex(ref position)] = voxelType;
 

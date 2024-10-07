@@ -17,24 +17,30 @@ namespace VoxelSandbox
         private Entity _cube;
         private Entity _camera;
 
+        public void Initialize(Entity cube, Entity camera)
+        {
+            _cube = cube;
+            _cube.Transform.LocalScale *= 1.01f;
+
+            _camera = camera;
+        }
+
         public override void OnUpdate()
         {
             PerformRayCast();
 
             // Example usage: Update a cube's position to visualize the hit voxel
             if (TargetVoxelPosition is not null && _cube is not null)
-                _cube.Transform.LocalPosition = TargetVoxelPosition.Value.ToVector3();
+                _cube.Transform.LocalPosition = TargetVoxelPosition.Value.ToVector3() + Vector3.One / 2;
 
-            if (Input.GetButton(MouseButton.Left, InputState.Down))
-                if (TargetVoxelPosition is not null)
-                    Generator.SetVoxel(TargetVoxelPosition.Value);
+            //if (TargetVoxelPosition is not null)
+            //    if (Input.GetButton(MouseButton.Left, InputState.Down))
+            //        Generator.SetVoxel(TargetVoxelPosition.Value, VoxelType.None);
+
+            //if (AdjacentVoxelPosition is not null)
+            //    if (Input.GetButton(MouseButton.Right, InputState.Down))
+            //        Generator.SetVoxel(AdjacentVoxelPosition.Value, VoxelType.Sand);
         }
-
-        public void SetCube(Entity cube) =>
-            _cube = cube;
-
-        public void SetCamera(Entity camera) =>
-            _camera = camera;
 
         private void PerformRayCast()
         {
