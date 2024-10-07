@@ -1,9 +1,10 @@
-﻿using LibNoise.Filter;
+﻿using System.Diagnostics;
+
+using LibNoise.Filter;
 using LibNoise.Primitive;
 
 using Engine.Essentials;
 using Engine.Utilities;
-using System.Diagnostics;
 
 namespace VoxelSandbox;
 
@@ -45,12 +46,16 @@ public sealed partial class NoiseSampler
         if (chunk.IsChunkFromChunk)
             return;
 
-        Generator.GeneratedChunks[chunk.LevelOfDetail].TryRemove(chunk.WorldPosition, out _);
+        bool result = false;
+        do result = Generator.GeneratedChunks[chunk.LevelOfDetail].TryRemove(chunk.WorldPosition, out _);
+        while (!result);
 
         int gridY = GetGridY(SampleNoise(chunk, Vector3Short.UnitXZ).SurfaceHeight, chunk.ChunkSize * chunk.VoxelSize);
         chunk.WorldPosition = chunk.WorldPosition.Set(y: gridY);
-
-        Generator.GeneratedChunks[chunk.LevelOfDetail].TryAdd(chunk.WorldPosition, chunk);
+        
+        result = false;
+        do result = Generator.GeneratedChunks[chunk.LevelOfDetail].TryAdd(chunk.WorldPosition, chunk);
+        while (!result);
     }
 
     private void CheckChunkVertically(Chunk chunk, NoiseData noiseData)
@@ -65,7 +70,6 @@ public sealed partial class NoiseSampler
         if (Generator.GeneratedChunks[chunk.LevelOfDetail].ContainsKey(chunkPosition))
             return;
 
-        //Output.Log(chunkPosition);
         Chunk newChunk = PoolManager.GetPool<Chunk>().Get();
         newChunk.Initialize(GameManager, chunkPosition, chunk.LevelOfDetail);
         newChunk.IsChunkFromChunk = true;
@@ -74,13 +78,7 @@ public sealed partial class NoiseSampler
         do result = Generator.GeneratedChunks[chunk.LevelOfDetail].TryAdd(chunkPosition, newChunk);
         while (!result);
 
-        //GameManager.Generator.ChunksToGenerate.Enqueue(newChunk);
-
         GameManager.ChunkGenerationTask(newChunk);
-
-        //var prim = GameManager.Entity.Manager.CreatePrimitive().Entity;
-        //prim.Transform.LocalPosition = (chunkPosition + chunk.ChunkSize / 2).ToVector3();
-        //prim.Transform.LocalScale *= chunk.ChunkSize;
     }
 }
 
@@ -190,7 +188,7 @@ public sealed partial class NoiseSampler
         byte undergroundDetail = GetUndergroundDetail(nx, nz);
         byte bedrockHeight = GetBedrockNoise();
 
-        mountainHeight = (ushort)Math.Max(0, mountainHeight - 180);
+        mountainHeight = (ushort)Math.Max(0, mountainHeight - 80);
         surfaceHeight += mountainHeight;
 
         noiseData = new(surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight);
@@ -208,20 +206,28 @@ public sealed partial class NoiseSampler
     private static Random Random = new(Seed);
     private static SimplexPerlin s_perlinPrimitive = new(Seed, LibNoise.NoiseQuality.Fast);
 
-    private Billow _surfaceNoise = new()
+    private Billow _surfaceNoiseMicro = new()
     {
         Primitive2D = s_perlinPrimitive,
-        OctaveCount = 6,        // Fewer octaves for a smoother look
-        Frequency = 0.01f,      // Lower frequency for broader features
-        Scale = 7.5f,           // Adjust scale to manage the level of detail
+        OctaveCount = 5,        // Fewer octaves for a smoother look
+        Frequency = 0.005f,      // Lower frequency for broader features
+        Scale = 5,           // Adjust scale to manage the level of detail
+    };
+    
+    private Billow _surfaceNoiseMacro = new()
+    {
+        Primitive2D = s_perlinPrimitive,
+        OctaveCount = 5,    
+        Frequency = 0.0002f,      
+        Scale = 50,
     };
 
     private Billow _mountainNoise = new()
     {
         Primitive2D = s_perlinPrimitive,
-        OctaveCount = 3,
+        OctaveCount = 7,
         Frequency = 0.001f,
-        Scale = 200,
+        Scale = 100,
     };
 
     private Billow _undergroundNoise = new()
@@ -229,7 +235,7 @@ public sealed partial class NoiseSampler
         Primitive2D = s_perlinPrimitive,
         OctaveCount = 6,
         Frequency = 0.05f,
-        Scale = 15f,
+        Scale = 15,
     };
 
     public Billow _caveNoise = new()
@@ -241,7 +247,7 @@ public sealed partial class NoiseSampler
     };
 
     private ushort GetSurfaceHeight(int x, int z) =>
-        (ushort)(_surfaceNoise.GetValue(x, z) + 1000);
+        (ushort)(_surfaceNoiseMicro.GetValue(x, z) + _surfaceNoiseMacro.GetValue(x, z) + 1000);
 
     private ushort GetMountainHeight(int x, int z) =>
         (ushort)_mountainNoise.GetValue(x, z);

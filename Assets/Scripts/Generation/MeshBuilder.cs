@@ -111,42 +111,42 @@ public sealed class MeshBuilder
         // Define vertex offsets based on the normal index
         (byte offsetX, byte offsetY, byte offsetZ)[] vertexOffsets = normalIndex switch
         {
-            0 =>
+            0 => // Top
             [
                 (0, 1, 0),
                 (0, 1, 1),
                 (1, 1, 1),
                 (1, 1, 0)
             ],
-            1 =>
+            1 => // Bottom
             [
                 (0, 0, 0),
                 (1, 0, 0),
                 (1, 0, 1),
                 (0, 0, 1)
             ],
-            2 =>
+            2 => // Front
             [
                 (1, 0, 1),
                 (1, 1, 1),
                 (0, 1, 1),
                 (0, 0, 1)
             ],
-            3 =>
+            3 => // Back
             [
                 (0, 0, 0),
                 (0, 1, 0),
                 (1, 1, 0),
                 (1, 0, 0)
             ],
-            4 =>
+            4 => // Right
             [
                 (1, 0, 0),
                 (1, 1, 0),
                 (1, 1, 1),
                 (1, 0, 1)
             ],
-            5 =>
+            5 => // Left
             [
                 (0, 0, 1),
                 (0, 1, 1),
