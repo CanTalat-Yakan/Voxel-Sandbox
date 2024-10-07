@@ -31,12 +31,9 @@ public sealed class MeshBuilder
         int vertexFloatCount = 0;
         int indexCount = 0;
 
-        for (ushort index = 0; index < chunk.ExposedVoxelPosition.Count; index++)
+        foreach (var voxelPosition in chunk.ExposedVoxelPosition)
             // Add faces for each visible side of the voxel
-            AddVoxelFaces(chunk, 
-                chunk.ExposedVoxelPosition[index], 
-                chunk.GetVoxelType(chunk.ExposedVoxelPosition[index]), 
-                ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
+            AddVoxelFaces(chunk, voxelPosition, chunk.GetVoxelType(voxelPosition), ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
 
         if (vertexFloatCount == 0)
             return;
@@ -155,7 +152,7 @@ public sealed class MeshBuilder
         };
 
         // Add Vertices
-        for (byte vertexIndex = 0; vertexIndex < VerticesPerFace; vertexIndex++) 
+        for (byte vertexIndex = 0; vertexIndex < VerticesPerFace; vertexIndex++)
         {
             byte vertexOffsetX = (byte)(x + vertexOffsets[vertexIndex].offsetX);
             byte vertexOffsetY = (byte)(y + vertexOffsets[vertexIndex].offsetY);
