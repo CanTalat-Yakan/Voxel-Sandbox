@@ -44,14 +44,14 @@ public sealed class MeshBuilder
         chunk.Mesh.Entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
         chunk.Mesh.Entity.Transform.LocalScale *= chunk.VoxelSize;
 
-        chunk.Mesh.SetMeshData(indices, vertices, GetPositions(chunk), new InputLayoutHelper().AddFloat());
+        chunk.Mesh.SetMeshData(vertices, indices, GetPositions(chunk), new InputLayoutHelper().AddFloat());
         chunk.Mesh.SetMaterialTextures([new("TextureAtlas.png", 0)]);
         chunk.Mesh.SetMaterialPipeline("VoxelShader");
 
+        chunk.IsChunkDirty = false;
+
         _stopwatch.Stop();
-
         Output.Log($"MB: {_stopwatch.Elapsed.TotalMilliseconds * 1000:F0} µs");
-
         _stopwatch.Reset();
     }
 
@@ -70,7 +70,7 @@ public sealed class MeshBuilder
                 (byte)(voxelPosition.Z + Vector3Int.Directions[normalIndex].Z));
 
             // Check if the adjacent voxel is empty
-            if (!chunk.IsWithinBounds(ref adjacentVoxelPosition) || chunk.IsVoxelEmpty(ref adjacentVoxelPosition))
+            if (chunk.IsVoxelEmpty(ref adjacentVoxelPosition))
                 AddFace(voxelPosition, voxelType, normalIndex, ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
         }
     }

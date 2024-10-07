@@ -14,7 +14,7 @@ public sealed class Chunk
 
     public List<Vector3Short> ExposedVoxelPosition = new();
 
-    public bool IsChunkDirty = false;
+    public bool IsChunkDirty = true;
     public bool IsChunkFromChunk = false;
     public bool IsTopChunkGenerated = false;
     public bool IsBottomChunkGenerated = false;
@@ -34,7 +34,7 @@ public sealed class Chunk
     public int PaddedChunkSize => _paddedChunkSize ??= ChunkSize + 2;
     public int? _paddedChunkSize = null;
 
-    public int ChunkSize => _chunkSize ??= Generator.ChunkSize / VoxelSize;
+    public int ChunkSize => _chunkSize ??= Generator.ChunkSize;
     public int? _chunkSize = null;
 
     public Chunk()
