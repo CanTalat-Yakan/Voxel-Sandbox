@@ -66,6 +66,9 @@ public sealed class Chunk
         return this;
     }
 
+    public int GetGridY(int y) =>
+        y / (ChunkSize * VoxelSize) * (ChunkSize * VoxelSize);
+
     public Vector3Int GetChunkSize() =>
         Vector3Int.One * ChunkSize * VoxelSize;
 
