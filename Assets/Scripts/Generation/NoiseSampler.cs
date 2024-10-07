@@ -18,7 +18,7 @@ public sealed partial class NoiseSampler
 
     public void GenerateChunkContent(Chunk chunk, GameManager gameManager)
     {
-        _stopwatch.Start();
+        _stopwatch.Restart();
 
         GameManager = gameManager;
 
@@ -31,9 +31,7 @@ public sealed partial class NoiseSampler
 
         gameManager.Generator.ChunksToBuild.Enqueue(chunk);
 
-        _stopwatch.Stop();
         Output.Log($"CG: {_stopwatch.Elapsed.TotalMilliseconds * 1000:F0} µs");
-        _stopwatch.Reset();
     }
 }
 

@@ -16,7 +16,7 @@ public sealed class MeshBuilder
 
     public void GenerateMesh(Chunk chunk)
     {
-        _stopwatch.Start();
+        _stopwatch.Restart();
 
         int maxVoxels = chunk.ExposedVoxelPosition.Count;
 
@@ -50,9 +50,7 @@ public sealed class MeshBuilder
 
         chunk.IsChunkDirty = false;
 
-        _stopwatch.Stop();
         Output.Log($"MB: {_stopwatch.Elapsed.TotalMilliseconds * 1000:F0} µs");
-        _stopwatch.Reset();
     }
 
     private void AddVoxelFaces(Chunk chunk, Vector3Short voxelPosition, VoxelType voxelType, ref float[] vertices, ref int vertexFloatCount, ref int[] indices, ref int indexCount)
