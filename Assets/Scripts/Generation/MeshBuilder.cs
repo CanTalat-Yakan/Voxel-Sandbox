@@ -18,7 +18,7 @@ public sealed class MeshBuilder
     {
         _stopwatch.Start();
 
-        int maxVoxels = chunk.ExposedVoxelData.Count;
+        int maxVoxels = chunk.ExposedVoxelPosition.Count;
 
         int maxVertices = maxVoxels * MaxFacesPerVoxel * VerticesPerFace;
         int maxIndices = maxVoxels * MaxFacesPerVoxel * IndicesPerFace;
@@ -31,9 +31,12 @@ public sealed class MeshBuilder
         int vertexFloatCount = 0;
         int indexCount = 0;
 
-        foreach (var voxelPosition in chunk.ExposedVoxelData)
+        for (ushort index = 0; index < chunk.ExposedVoxelPosition.Count; index++)
             // Add faces for each visible side of the voxel
-            AddVoxelFaces(chunk, voxelPosition, chunk.GetVoxelType(voxelPosition), ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
+            AddVoxelFaces(chunk, 
+                chunk.ExposedVoxelPosition[index], 
+                chunk.GetVoxelType(chunk.ExposedVoxelPosition[index]), 
+                ref vertices, ref vertexFloatCount, ref indices, ref indexCount);
 
         if (vertexFloatCount == 0)
             return;

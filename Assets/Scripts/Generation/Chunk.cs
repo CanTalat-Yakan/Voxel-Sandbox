@@ -12,8 +12,9 @@ public sealed class Chunk
     public VoxelType[] VoxelTypeData;
     public NoiseData[] NoiseData;
 
-    public List<Vector3Short> ExposedVoxelData = new();
+    public List<Vector3Short> ExposedVoxelPosition = new();
 
+    public bool IsChunkDirty = false;
     public bool IsChunkFromChunk = false;
     public bool IsTopChunkGenerated = false;
     public bool IsBottomChunkGenerated = false;
@@ -74,7 +75,7 @@ public sealed class Chunk
      && position.Z >= 1 && position.Z <= ChunkSize;
 
     public void SetExposedVoxel(ref Vector3Short position) =>
-        ExposedVoxelData.Add(position);
+        ExposedVoxelPosition.Add(position);
 
     public VoxelType GetVoxelType(Vector3Short position) =>
         VoxelTypeData[ToIndex(ref position)];
