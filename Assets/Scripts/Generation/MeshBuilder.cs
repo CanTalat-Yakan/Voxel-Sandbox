@@ -99,6 +99,8 @@ public sealed class MeshBuilder
         else if (normalIndex == 2 && Enum.IsDefined(typeof(VoxelType), enumName + "_Front"))
             textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Front");
 
+        // Calculate minus one times two to get from the range 1-30 to 0-29 to 0-58 for half blocks
+        // The shader divides it by two and adds 1 again
         byte x = (byte)((voxelPosition.X - 1) * 2);
         byte y = (byte)((voxelPosition.Y - 1) * 2);
         byte z = (byte)((voxelPosition.Z - 1) * 2);

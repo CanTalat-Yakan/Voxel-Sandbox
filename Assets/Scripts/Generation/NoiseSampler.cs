@@ -95,9 +95,9 @@ public sealed partial class NoiseSampler
 
         CheckChunkVertically(chunk, noiseData);
 
-        int x = voxelPosition.X;
+        int x = voxelPosition.X * chunk.VoxelSize + chunk.WorldPosition.X;
         int y = voxelPosition.Y * chunk.VoxelSize + chunk.WorldPosition.Y;
-        int z = voxelPosition.Z;
+        int z = voxelPosition.Z * chunk.VoxelSize + chunk.WorldPosition.Z;
 
         if (y < surfaceHeight)
         {
@@ -110,10 +110,7 @@ public sealed partial class NoiseSampler
                     sample = y - 1 < bedrockHeight ? VoxelType.DiamondOre : VoxelType.Stone;
                 else if (y + undergroundDetail < surfaceHeight)
                 {
-                    int noiseX = x * chunk.VoxelSize + chunk.WorldPosition.X;
-                    int noiseZ = z * chunk.VoxelSize + chunk.WorldPosition.Z;
-
-                    double caveValue = GetCaveNoise(noiseX, y * 2, noiseZ);
+                    double caveValue = GetCaveNoise(x, y * 2, z);
 
                     if (caveValue < 0.6)
                         sample = VoxelType.Stone;
@@ -158,7 +155,7 @@ public sealed partial class NoiseSampler
             return;
 
         int gridY = chunk.GetGridY(SampleNoise(chunk, Vector3Short.UnitXZ).SurfaceHeight);
-        chunk.WorldPosition = chunk.WorldPosition.Set(y: gridY);
+        chunk.UnscaledPosition.Set(y: gridY);
     }
 
     private void CheckChunkVertically(Chunk chunk, NoiseData noiseData)
@@ -169,32 +166,38 @@ public sealed partial class NoiseSampler
             AddChunkBelow(chunk);
     }
 
-    private void AddChunkOnTop(Chunk chunk)
+    private void AddChunkOnTop(Chunk chunk, bool checkChunkFromChunk = true)
     {
-        if (chunk.TopChunk is not null || chunk.IsChunkFromChunk)
+        if (chunk.TopChunk is not null)
+            return;
+
+        if (checkChunkFromChunk && chunk.IsChunkFromChunk)
             return;
 
         chunk.TopChunk = PoolManager.GetPool<Chunk>().Get().Initialize(GameManager,
             chunk.LevelOfDetail,
-            chunk.WorldPosition.X,
-            chunk.WorldPosition.Z,
-            chunk.GetGridY(chunk.WorldPosition.Y + chunk.ChunkSize * chunk.VoxelSize + 1), false);
+            chunk.UnscaledPosition.X,
+            chunk.UnscaledPosition.Z,
+            chunk.UnscaledPosition.Y + 1);
 
         chunk.TopChunk.IsChunkFromChunk = true;
 
         GameManager.ChunkGenerationTask(chunk.TopChunk);
     }
 
-    private void AddChunkBelow(Chunk chunk)
+    private void AddChunkBelow(Chunk chunk, bool checkChunkFromChunk = true)
     {
-        if (chunk.BottomChunk is not null || chunk.IsChunkFromChunk)
+        if (chunk.BottomChunk is not null)
+            return;
+
+        if (checkChunkFromChunk && chunk.IsChunkFromChunk)
             return;
 
         chunk.BottomChunk = PoolManager.GetPool<Chunk>().Get().Initialize(GameManager, 
             chunk.LevelOfDetail, 
-            chunk.WorldPosition.X, 
-            chunk.WorldPosition.Z, 
-            chunk.GetGridY(chunk.WorldPosition.Y - 1), false);
+            chunk.UnscaledPosition.X, 
+            chunk.UnscaledPosition.Z, 
+            chunk.UnscaledPosition.Y - 1);
 
         chunk.BottomChunk.IsChunkFromChunk = true;
 

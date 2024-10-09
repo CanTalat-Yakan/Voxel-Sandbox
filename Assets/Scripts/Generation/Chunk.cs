@@ -20,7 +20,9 @@ public sealed class Chunk
     public Chunk TopChunk;
     public Chunk BottomChunk;
 
-    public Vector3Int WorldPosition { get; set; }
+    public Vector3Int WorldPosition => UnscaledPosition * ScaledChunkSize;
+    public Vector3Int UnscaledPosition;
+
     public int LevelOfDetail { get; private set; }
 
     public int MaxVoxelCapacity => _maxVoxelCapacity ??= PaddedChunkSizeSquared * PaddedChunkSize + PaddedChunkSizeSquared;
@@ -51,17 +53,12 @@ public sealed class Chunk
             NoiseData[i] = new();
     }
 
-    public Chunk Initialize(GameManager gameManager, int levelOfDetail, int x, int z, int? y = null, bool scaleChunkSize = true)
+    public Chunk Initialize(GameManager gameManager, int levelOfDetail, int x, int z, int? y = null)
     {
         Mesh ??= gameManager.Entity.Manager.CreateEntity().AddComponent<Mesh>();
 
         LevelOfDetail = levelOfDetail;
-        WorldPosition = new(x, 0, z);
-
-        if (y is not null)
-            WorldPosition = new(x, y.Value, z);
-        if (scaleChunkSize)
-            WorldPosition *= ChunkSize;
+        UnscaledPosition = y is null ? new(x, 0, z) : new(x, y.Value, z);
 
         _voxelSize = null;
         _scaledChunkSize = null;
@@ -80,7 +77,7 @@ public sealed class Chunk
     }
 
     public int GetGridY(int y) =>
-        FloorDivision(y, ScaledChunkSize) * ScaledChunkSize;
+        FloorDivision(y, ScaledChunkSize);
 
     private static int FloorDivision(int a, int b) =>
         a >= 0 ? a / b : (a - (b - 1)) / b;
