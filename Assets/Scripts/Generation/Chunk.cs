@@ -52,8 +52,9 @@ public sealed class Chunk
     {
         Mesh ??= gameManager.Entity.Manager.CreateEntity().AddComponent<Mesh>();
 
-        WorldPosition = y is not null ? new(x, y.Value, z) : new(x, 0, z);
         LevelOfDetail = levelOfDetail;
+        WorldPosition = y is not null ? new(x, y.Value, z) : new(x, 0, z);
+        WorldPosition *= ChunkSize;
 
         _voxelSize = null;
 
