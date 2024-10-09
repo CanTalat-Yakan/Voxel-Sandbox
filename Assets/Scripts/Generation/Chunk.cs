@@ -4,7 +4,7 @@ using Engine.Components;
 
 namespace VoxelSandbox;
 
-public sealed class Chunk
+public sealed partial class Chunk
 {
     public Mesh Mesh;
 
@@ -25,14 +25,14 @@ public sealed class Chunk
 
     public int LevelOfDetail { get; private set; }
 
-    public int MaxVoxelCapacity => _maxVoxelCapacity ??= PaddedChunkSizeSquared * PaddedChunkSize + PaddedChunkSizeSquared;
-    private int? _maxVoxelCapacity = null;
-
     public int PaddedChunkSizeSquared => _paddedChunkSizeSquared ??= PaddedChunkSize * PaddedChunkSize;
     private int? _paddedChunkSizeSquared = null;
 
     public int PaddedChunkSize => _paddedChunkSize ??= ChunkSize + 2;
     public int? _paddedChunkSize = null;
+
+    public int ChunkSizeSquared => _chunkSizeSquared ??= ChunkSize * ChunkSize;
+    private int? _chunkSizeSquared = null;
 
     public int ChunkSize => _chunkSize ??= Generator.ChunkSize;
     public int? _chunkSize = null;
@@ -45,8 +45,8 @@ public sealed class Chunk
 
     public Chunk()
     {
-        SolidVoxelData = new BitArray(MaxVoxelCapacity);
-        VoxelTypeData = new VoxelType[MaxVoxelCapacity];
+        SolidVoxelData = new BitArray(PaddedChunkSizeSquared * PaddedChunkSize + PaddedChunkSizeSquared);
+        VoxelTypeData = new VoxelType[ChunkSizeSquared * ChunkSize + ChunkSizeSquared];
         NoiseData = new NoiseData[PaddedChunkSizeSquared];
 
         for (int i = 0; i < NoiseData.Length; i++)
@@ -75,7 +75,43 @@ public sealed class Chunk
 
         return this;
     }
+}
 
+public sealed partial class Chunk
+{
+    public bool IsVoxelEmpty(ref Vector3Short position) =>
+        !IsVoxelSolid(ref position);
+
+    public bool IsVoxelSolid(ref Vector3Short position) =>
+        SolidVoxelData[ToSolidVoxelDataIndex(ref position)] == true;
+
+    public void SetEmptyVoxel(ref Vector3Short position) =>
+        SolidVoxelData[ToSolidVoxelDataIndex(ref position)] = false;
+
+    public void SetSolidVoxel(ref Vector3Short position) =>
+        SolidVoxelData[ToSolidVoxelDataIndex(ref position)] = true;
+
+    public VoxelType GetVoxelType(Vector3Short position) =>
+        VoxelTypeData[ToVoxelTypeDataIndex(ref position)];
+
+    public VoxelType GetVoxelType(ref Vector3Short position) =>
+        VoxelTypeData[ToVoxelTypeDataIndex(ref position)];
+
+    public void SetVoxelType(ref Vector3Short position, ref VoxelType voxelType) =>
+        VoxelTypeData[ToVoxelTypeDataIndex(ref position)] = voxelType;
+
+    public NoiseData GetNoiseData(int x, int z) =>
+        NoiseData[ToNoiseDataIndex(x, z)];
+
+    public void SetNoiseData(int x, int z, NoiseData noiseData) =>
+        NoiseData[ToNoiseDataIndex(x, z)] = noiseData;
+
+    public void SetExposedVoxel(ref Vector3Short position) =>
+        ExposedVoxelPosition.Add(position);
+}
+
+public sealed partial class Chunk
+{
     public int GetGridY(int y) =>
         FloorDivision(y, ScaledChunkSize);
 
@@ -89,43 +125,16 @@ public sealed class Chunk
         position.X >= 1 && position.X <= ChunkSize
      && position.Y >= 1 && position.Y <= ChunkSize
      && position.Z >= 1 && position.Z <= ChunkSize;
+}
 
-    public void SetExposedVoxel(ref Vector3Short position) =>
-        ExposedVoxelPosition.Add(position);
-
-    public VoxelType GetVoxelType(Vector3Short position) =>
-        VoxelTypeData[ToIndex(ref position)];
-
-    public VoxelType GetVoxelType(ref Vector3Short position) =>
-        VoxelTypeData[ToIndex(ref position)];
-
-    public void SetVoxelType(ref Vector3Short position, ref VoxelType voxelType) =>
-        VoxelTypeData[ToIndex(ref position)] = voxelType;
-
-    public bool IsVoxelEmpty(ref Vector3Short position) =>
-        !IsVoxelSolid(ref position);
-
-    public bool IsVoxelSolid(ref Vector3Short position) =>
-        SolidVoxelData[ToIndex(ref position)] == true;
-
-    public void SetEmptyVoxel(ref Vector3Short position) =>
-        SolidVoxelData[ToIndex(ref position)] = false;
-
-    public void SetSolidVoxel(ref Vector3Short position) =>
-        SolidVoxelData[ToIndex(ref position)] = true;
-
-    public NoiseData GetNoiseData(int x, int z) =>
-        NoiseData[ToIndex(x, z)];
-
-    public void SetNoiseData(int x, int z, NoiseData noiseData) =>
-        NoiseData[ToIndex(x, z)] = noiseData;
-
-    public int ToIndex() =>
-        WorldPosition.X + WorldPosition.Z * PaddedChunkSize + WorldPosition.Y * PaddedChunkSizeSquared;
-
-    public int ToIndex(ref Vector3Short position) =>
+public sealed partial class Chunk
+{
+    public int ToSolidVoxelDataIndex(ref Vector3Short position) =>
         position.X + position.Z * PaddedChunkSize + position.Y * PaddedChunkSizeSquared;
 
-    public int ToIndex(int x, int z) =>
+    public int ToVoxelTypeDataIndex(ref Vector3Short position) =>
+        position.X - 1 + (position.Z - 1) * ChunkSize + (position.Y - 1) * ChunkSizeSquared;
+
+    public int ToNoiseDataIndex(int x, int z) =>
         x + z * PaddedChunkSize;
 }

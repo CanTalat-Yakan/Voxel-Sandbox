@@ -46,7 +46,8 @@ public sealed partial class NoiseSampler
         if (!SampleVoxel(chunk, ref voxelPosition, out var voxelType))
             return;
 
-        chunk.SetVoxelType(ref voxelPosition, ref voxelType);
+        if (chunk.IsWithinBounds(ref voxelPosition))
+            chunk.SetVoxelType(ref voxelPosition, ref voxelType);
         chunk.SetSolidVoxel(ref voxelPosition);
 
         Vector3Short adjacentVoxelPosition = new();
@@ -75,7 +76,8 @@ public sealed partial class NoiseSampler
 
             if (adjacentVoxelType is not VoxelType.None)
             {
-                chunk.SetVoxelType(ref adjacentVoxelPosition, ref adjacentVoxelType);
+                if (chunk.IsWithinBounds(ref adjacentVoxelPosition))
+                    chunk.SetVoxelType(ref adjacentVoxelPosition, ref adjacentVoxelType);
                 chunk.SetSolidVoxel(ref adjacentVoxelPosition);
             }
         }
@@ -83,10 +85,15 @@ public sealed partial class NoiseSampler
 
     private bool SampleVoxel(Chunk chunk, ref Vector3Short voxelPosition, out VoxelType sample)
     {
-        sample = chunk.GetVoxelType(ref voxelPosition);
+        sample = VoxelType.None;
 
-        if (sample is not VoxelType.None)
-            return true;
+        if (chunk.IsWithinBounds(ref voxelPosition))
+        {
+            sample = chunk.GetVoxelType(ref voxelPosition);
+
+            if (sample is not VoxelType.None)
+                return true;
+        }
 
         var noiseData = SampleNoise(chunk, voxelPosition.X, voxelPosition.Z);
         int surfaceHeight = noiseData.SurfaceHeight;
@@ -193,10 +200,10 @@ public sealed partial class NoiseSampler
         if (checkChunkFromChunk && chunk.IsChunkFromChunk)
             return;
 
-        chunk.BottomChunk = PoolManager.GetPool<Chunk>().Get().Initialize(GameManager, 
-            chunk.LevelOfDetail, 
-            chunk.UnscaledPosition.X, 
-            chunk.UnscaledPosition.Z, 
+        chunk.BottomChunk = PoolManager.GetPool<Chunk>().Get().Initialize(GameManager,
+            chunk.LevelOfDetail,
+            chunk.UnscaledPosition.X,
+            chunk.UnscaledPosition.Z,
             chunk.UnscaledPosition.Y - 1);
 
         chunk.BottomChunk.IsChunkFromChunk = true;
