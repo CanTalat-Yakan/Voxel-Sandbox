@@ -59,8 +59,6 @@ public sealed partial class NoiseSampler
 
         foreach (var direction in Vector3Int.Directions)
         {
-            bool atBorder = chunk.IsAtBoundsBorder(ref adjacentVoxelPosition);
-
             adjacentVoxelType = VoxelType.None;
             adjacentVoxelPosition.Set(
                 (byte)(x + direction.X),
@@ -72,8 +70,8 @@ public sealed partial class NoiseSampler
             {
                 chunk.SetExposedVoxel(ref voxelPosition);
 
-                if (!atBorder)
-                    return;
+                //if (!chunk.IsAtBoundsBorder(ref adjacentVoxelPosition))
+                //    return;
             }
             else if (adjacentVoxelPosition.Y > chunk.ChunkSize)
                 AddChunkOnTop(chunk);
