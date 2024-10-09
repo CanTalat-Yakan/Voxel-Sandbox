@@ -70,8 +70,8 @@ public sealed partial class NoiseSampler
             {
                 chunk.SetExposedVoxel(ref voxelPosition);
 
-                //if (!chunk.IsAtBoundsBorder(ref adjacentVoxelPosition))
-                //    return;
+                if (chunk.IsAtBoundsBorder(ref adjacentVoxelPosition))
+                    return;
             }
             else if (adjacentVoxelPosition.Y > chunk.ChunkSize)
                 AddChunkOnTop(chunk);
