@@ -8,7 +8,11 @@ using Engine.Utilities;
 
 namespace VoxelSandbox;
 
-public record NoiseData(ushort SurfaceHeight, ushort MountainHeight, byte UndergroundDetail, byte BedrockHeight);
+public class NoiseData()
+{
+    public bool initialized = false;
+    public ushort SurfaceHeight, UndergroundDetail, BedrockHeight;
+}
 
 public sealed partial class NoiseSampler
 {
@@ -86,7 +90,6 @@ public sealed partial class NoiseSampler
 
         var noiseData = SampleNoise(chunk, voxelPosition.X, voxelPosition.Z);
         int surfaceHeight = noiseData.SurfaceHeight;
-        int mountainHeight = noiseData.MountainHeight;
         int undergroundDetail = noiseData.UndergroundDetail;
         int bedrockHeight = noiseData.BedrockHeight;
 
@@ -131,22 +134,17 @@ public sealed partial class NoiseSampler
     private NoiseData SampleNoise(Chunk chunk, int x, int z)
     {
         NoiseData noiseData = chunk.GetNoiseData(x, z);
-        if (noiseData is not null)
+        if (noiseData.initialized)
             return noiseData;
 
         int noiseX = x * chunk.VoxelSize + chunk.WorldPosition.X;
         int noiseZ = z * chunk.VoxelSize + chunk.WorldPosition.Z;
 
-        ushort surfaceHeight = GetSurfaceHeight(noiseX, noiseZ);
-        ushort mountainHeight = GetMountainHeight(noiseX, noiseZ);
-        byte undergroundDetail = GetUndergroundDetail(noiseX, noiseZ);
-        byte bedrockHeight = GetBedrockNoise();
+        noiseData.SurfaceHeight = (ushort)(GetSurfaceHeight(noiseX, noiseZ) + GetMountainHeight(noiseX, noiseZ));
+        noiseData.UndergroundDetail = GetUndergroundDetail(noiseX, noiseZ);
+        noiseData.BedrockHeight = GetBedrockNoise();
 
-        surfaceHeight += mountainHeight;
-
-        noiseData = new(surfaceHeight, mountainHeight, undergroundDetail, bedrockHeight);
-
-        chunk.SetNoiseData(x, z, noiseData);
+        noiseData.initialized = true;
 
         return noiseData;
     }
@@ -154,99 +152,53 @@ public sealed partial class NoiseSampler
 
 public sealed partial class NoiseSampler
 {
-    private int GetGridY(int y, int chunkSizeY) =>
-        y / chunkSizeY * chunkSizeY;
-
     private void SetGridY(Chunk chunk)
     {
         if (chunk.IsChunkFromChunk)
             return;
 
-        bool result = false;
-        do result = Generator.GeneratedChunks[chunk.LevelOfDetail].TryRemove(chunk.WorldPosition, out _);
-        while (!result);
-
-        int gridY = GetGridY(SampleNoise(chunk, Vector3Short.UnitXZ).SurfaceHeight, chunk.ChunkSize * chunk.VoxelSize);
+        int gridY = chunk.GetGridY(SampleNoise(chunk, Vector3Short.UnitXZ).SurfaceHeight);
         chunk.WorldPosition = chunk.WorldPosition.Set(y: gridY);
-
-        result = false;
-        do result = Generator.GeneratedChunks[chunk.LevelOfDetail].TryAdd(chunk.WorldPosition, chunk);
-        while (!result);
     }
 
     private void CheckChunkVertically(Chunk chunk, NoiseData noiseData)
     {
-        if (!chunk.IsBottomChunkGenerated && noiseData.SurfaceHeight < chunk.WorldPosition.Y)
-            chunk.IsBottomChunkGenerated = true;
-        else if (!chunk.IsTopChunkGenerated && noiseData.SurfaceHeight > chunk.WorldPosition.Y + chunk.ChunkSize * chunk.VoxelSize)
-            chunk.IsTopChunkGenerated = true;
-        else return;
-
-        Vector3Int chunkPosition = new(chunk.WorldPosition.X, GetGridY(noiseData.SurfaceHeight, chunk.ChunkSize * chunk.VoxelSize), chunk.WorldPosition.Z);
-        if (Generator.GeneratedChunks[chunk.LevelOfDetail].ContainsKey(chunkPosition))
-            return;
-
-        Chunk newChunk = PoolManager.GetPool<Chunk>().Get();
-        newChunk.Initialize(GameManager, chunkPosition, chunk.LevelOfDetail);
-        newChunk.IsChunkFromChunk = true;
-
-        bool result = false;
-        do result = Generator.GeneratedChunks[chunk.LevelOfDetail].TryAdd(chunkPosition, newChunk);
-        while (!result);
-
-        GameManager.ChunkGenerationTask(newChunk);
+        if (chunk.TopChunk is null && noiseData.SurfaceHeight > chunk.WorldPosition.Y + chunk.ChunkSize * chunk.VoxelSize)
+            AddChunkOnTop(chunk);
+        else if (chunk.BottomChunk is null && noiseData.SurfaceHeight < chunk.WorldPosition.Y)
+            AddChunkBelow(chunk);
     }
 
     private void AddChunkOnTop(Chunk chunk)
     {
-        if (chunk.IsTopChunkGenerated || chunk.IsChunkFromChunk)
+        if (chunk.TopChunk is not null || chunk.IsChunkFromChunk)
             return;
 
-        chunk.IsTopChunkGenerated = true;
-
-        Vector3Int newChunkPosition = new(
+        chunk.TopChunk = PoolManager.GetPool<Chunk>().Get().Initialize(GameManager,
+            chunk.LevelOfDetail,
             chunk.WorldPosition.X,
-            chunk.GetGridY(chunk.WorldPosition.Y + chunk.ChunkSize * chunk.VoxelSize + 1),
-            chunk.WorldPosition.Z);
+            chunk.WorldPosition.Z,
+            chunk.GetGridY(chunk.WorldPosition.Y + chunk.ChunkSize * chunk.VoxelSize + 1));
 
-        if (Generator.GeneratedChunks[chunk.LevelOfDetail].ContainsKey(newChunkPosition))
-            return;
+        chunk.TopChunk.IsChunkFromChunk = true;
 
-        Chunk newChunk = PoolManager.GetPool<Chunk>().Get();
-        newChunk.Initialize(GameManager, newChunkPosition, chunk.LevelOfDetail);
-        newChunk.IsChunkFromChunk = true;
-
-        bool result = false;
-        do result = Generator.GeneratedChunks[chunk.LevelOfDetail].TryAdd(newChunkPosition, newChunk);
-        while (!result);
-
-        GameManager.ChunkGenerationTask(newChunk);
+        GameManager.ChunkGenerationTask(chunk.TopChunk);
     }
 
     private void AddChunkBelow(Chunk chunk)
     {
-        if (chunk.IsBottomChunkGenerated || chunk.IsChunkFromChunk)
+        if (chunk.BottomChunk is not null || chunk.IsChunkFromChunk)
             return;
 
-        chunk.IsBottomChunkGenerated = true;
+        chunk.BottomChunk = PoolManager.GetPool<Chunk>().Get().Initialize(GameManager, 
+            chunk.LevelOfDetail, 
+            chunk.WorldPosition.X, 
+            chunk.WorldPosition.Z, 
+            chunk.GetGridY(chunk.WorldPosition.Y - 1));
 
-        Vector3Int newChunkPosition = new(
-            chunk.WorldPosition.X,
-            chunk.GetGridY(chunk.WorldPosition.Y - 1),
-            chunk.WorldPosition.Z);
+        chunk.BottomChunk.IsChunkFromChunk = true;
 
-        if (Generator.GeneratedChunks[chunk.LevelOfDetail].ContainsKey(newChunkPosition))
-            return;
-
-        Chunk newChunk = PoolManager.GetPool<Chunk>().Get();
-        newChunk.Initialize(GameManager, newChunkPosition, chunk.LevelOfDetail);
-        newChunk.IsChunkFromChunk = true;
-
-        bool result = false;
-        do result = Generator.GeneratedChunks[chunk.LevelOfDetail].TryAdd(newChunkPosition, newChunk);
-        while (!result);
-
-        GameManager.ChunkGenerationTask(newChunk);
+        GameManager.ChunkGenerationTask(chunk.BottomChunk);
     }
 }
 

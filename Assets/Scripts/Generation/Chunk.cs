@@ -16,8 +16,9 @@ public sealed class Chunk
 
     public bool IsChunkDirty = true;
     public bool IsChunkFromChunk = false;
-    public bool IsTopChunkGenerated = false;
-    public bool IsBottomChunkGenerated = false;
+
+    public Chunk TopChunk;
+    public Chunk BottomChunk;
 
     public Vector3Int WorldPosition { get; set; }
     public int LevelOfDetail { get; private set; }
@@ -42,13 +43,16 @@ public sealed class Chunk
         SolidVoxelData = new BitArray(MaxVoxelCapacity);
         VoxelTypeData = new VoxelType[MaxVoxelCapacity];
         NoiseData = new NoiseData[PaddedChunkSizeSquared];
+
+        for (int i = 0; i < NoiseData.Length; i++)
+            NoiseData[i] = new();
     }
 
-    public Chunk Initialize(GameManager gameManager, Vector3Int worldPosition, int levelOfDetail)
+    public Chunk Initialize(GameManager gameManager, int levelOfDetail, int x, int z, int? y = null)
     {
         Mesh ??= gameManager.Entity.Manager.CreateEntity().AddComponent<Mesh>();
 
-        WorldPosition = worldPosition;
+        WorldPosition = y is not null ? new(x, y.Value, z) : new(x, 0, z);
         LevelOfDetail = levelOfDetail;
 
         _voxelSize = null;
@@ -61,7 +65,7 @@ public sealed class Chunk
         SolidVoxelData.SetAll(false);
 
         for (int i = 0; i < NoiseData.Length; i++)
-            NoiseData[i] = null;
+            NoiseData[i].initialized = false;
 
         return this;
     }
@@ -85,7 +89,7 @@ public sealed class Chunk
 
     public VoxelType GetVoxelType(Vector3Short position) =>
         VoxelTypeData[ToIndex(ref position)];
-    
+
     public VoxelType GetVoxelType(ref Vector3Short position) =>
         VoxelTypeData[ToIndex(ref position)];
 
@@ -103,12 +107,15 @@ public sealed class Chunk
 
     public void SetSolidVoxel(ref Vector3Short position) =>
         SolidVoxelData[ToIndex(ref position)] = true;
-    
+
     public NoiseData GetNoiseData(int x, int z) =>
         NoiseData[ToIndex(x, z)];
 
     public void SetNoiseData(int x, int z, NoiseData noiseData) =>
         NoiseData[ToIndex(x, z)] = noiseData;
+
+    public int ToIndex() =>
+        WorldPosition.X + WorldPosition.Z * PaddedChunkSize + WorldPosition.Y * PaddedChunkSizeSquared;
 
     public int ToIndex(ref Vector3Short position) =>
         position.X + position.Z * PaddedChunkSize + position.Y * PaddedChunkSizeSquared;

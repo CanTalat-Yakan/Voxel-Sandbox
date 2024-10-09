@@ -6,7 +6,7 @@ namespace VoxelSandbox;
 
 public sealed class Generator
 {
-    public static Dictionary<int, ConcurrentDictionary<Vector3Int, Chunk>> GeneratedChunks = new();
+    public static Dictionary<int, ConcurrentDictionary<(int, int), Chunk>> GeneratedChunks = new();
 
     public const int ChunkSize = 30;
 
@@ -25,7 +25,7 @@ public sealed class Generator
         for (int i = 0; i < LODCount; i++)
             GeneratedChunks[i] = new();
 
-        UpdateChunks(new Vector3Int(0, 0, 0));
+        UpdateChunks(Vector3Int.Zero);
     }
 
     public static void SetVoxel(Vector3Int worldPosition, VoxelType voxelType)
@@ -40,18 +40,27 @@ public sealed class Generator
 
     public static void GetChunkFromPosition(Vector3Int worldPosition, out Chunk chunk, out Vector3Short localVoxelPosition)
     {
-        Vector3Int chunkPosition = new();
-
-        // Use FloorDiv for correct chunk positioning
-        chunkPosition.X = FloorDivision(worldPosition.X, ChunkSize) * ChunkSize;
-        chunkPosition.Y = FloorDivision(worldPosition.Y, ChunkSize) * ChunkSize;
-        chunkPosition.Z = FloorDivision(worldPosition.Z, ChunkSize) * ChunkSize;
+        int x = FloorDivision(worldPosition.X, ChunkSize) * ChunkSize;
+        int y = FloorDivision(worldPosition.Y, ChunkSize) * ChunkSize;
+        int z = FloorDivision(worldPosition.Z, ChunkSize) * ChunkSize;
 
         chunk = null;
-        if (GeneratedChunks[0].ContainsKey(chunkPosition))
-            chunk = GeneratedChunks[0][chunkPosition];
+        if (GeneratedChunks[0].ContainsKey((x, z)))
+            chunk = GeneratedChunks[0][(x, z)];
 
-        localVoxelPosition = (worldPosition - chunkPosition).ToVector3Byte();
+        int surfaceChunkY = FloorDivision(chunk.WorldPosition.Y, ChunkSize) * ChunkSize;
+
+        int chunkYCount = (y - surfaceChunkY) / ChunkSize;
+
+        if (chunkYCount > 0)
+            for (int i = 0; i < Math.Abs(chunkYCount); i++)
+                chunk = chunk.TopChunk;
+
+        if (chunkYCount < 0)
+            for (int i = 0; i < Math.Abs(chunkYCount); i++)
+                chunk = chunk.BottomChunk;
+
+        localVoxelPosition = new(worldPosition.X - x, worldPosition.Y - y, worldPosition.Z - z);
     }
 
     private static int FloorDivision(int a, int b) =>
@@ -91,30 +100,34 @@ public sealed class Generator
             for (int j = -chunkCountXZ(i); j <= chunkCountXZ(i); j++)
             {
                 // Front
-                CheckChunk(currentLOD(i), new(
-                    centerChunkPosition.X + i * chunkSize(i) - originOffset(i), 0,
-                    centerChunkPosition.Z + j * chunkSize(i) - lodOffset(i)));
+                CheckChunk(
+                    currentLOD(i),
+                    centerChunkPosition.X + i * chunkSize(i) - originOffset(i),
+                    centerChunkPosition.Z + j * chunkSize(i) - lodOffset(i));
 
                 // Back
-                CheckChunk(currentLOD(i), new(
-                    centerChunkPosition.X - (i + 1) * chunkSize(i) + originOffset(i), 0,
-                    centerChunkPosition.Z - (j - 1) * chunkSize(i) - lodOffset(i)));
+                CheckChunk(
+                    currentLOD(i),
+                    centerChunkPosition.X - (i + 1) * chunkSize(i) + originOffset(i),
+                    centerChunkPosition.Z - (j - 1) * chunkSize(i) - lodOffset(i));
 
                 // Right
-                CheckChunk(currentLOD(i), new(
-                    centerChunkPosition.X + j * chunkSize(i), 0,
-                    centerChunkPosition.Z + (i + 1) * chunkSize(i) - originOffset(i) - lodOffset(i)));
+                CheckChunk(
+                    currentLOD(i),
+                    centerChunkPosition.X + j * chunkSize(i),
+                    centerChunkPosition.Z + (i + 1) * chunkSize(i) - originOffset(i) - lodOffset(i));
 
                 // Left
-                CheckChunk(currentLOD(i), new(
-                    centerChunkPosition.X - (j + 1) * chunkSize(i), 0,
-                    centerChunkPosition.Z - i * chunkSize(i) + originOffset(i) - lodOffset(i)));
+                CheckChunk(
+                    currentLOD(i), 
+                    centerChunkPosition.X - (j + 1) * chunkSize(i),
+                    centerChunkPosition.Z - i * chunkSize(i) + originOffset(i) - lodOffset(i));
             }
     }
 
-    private void CheckChunk(int levelOfDetail, Vector3Int chunkWorldPosition)
+    private void CheckChunk(int levelOfDetail, int x, int z)
     {
-        if (GeneratedChunks[levelOfDetail].Keys.Contains(chunkWorldPosition))
+        if (GeneratedChunks[levelOfDetail].Keys.Contains((x, z)))
         {
             //Chunk oldChunk = GeneratedChunks[levelOfDetail][chunkWorldPosition];
             //PoolManager.GetPool<Chunk>().Return(oldChunk.Reset());
@@ -123,8 +136,8 @@ public sealed class Generator
         else
         {
             Chunk newChunk = PoolManager.GetPool<Chunk>().Get();
-            newChunk.Initialize(GameManager, chunkWorldPosition, levelOfDetail);
-            GeneratedChunks[levelOfDetail].TryAdd(chunkWorldPosition, newChunk);
+            newChunk.Initialize(GameManager, levelOfDetail, x, z);
+            GeneratedChunks[levelOfDetail].TryAdd((x, z), newChunk);
             ChunksToGenerate.Enqueue(newChunk);
         }
     }

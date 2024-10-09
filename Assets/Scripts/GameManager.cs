@@ -22,7 +22,7 @@ public sealed class GameManager : Component
 
         Camera.Main.Entity.Transform.SetPosition(y: 1100);
 
-        Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerController>().Initialize(this);
+        //Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerController>().Initialize(this);
     }
 
     public override void OnStart() =>
