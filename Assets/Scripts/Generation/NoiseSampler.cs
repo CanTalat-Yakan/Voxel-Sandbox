@@ -50,8 +50,8 @@ public sealed partial class NoiseSampler
             chunk.SetVoxelType(ref voxelPosition, ref voxelType);
         chunk.SetSolidVoxel(ref voxelPosition);
 
-        Vector3Short adjacentVoxelPosition = new();
         VoxelType adjacentVoxelType = VoxelType.None;
+        Vector3Short adjacentVoxelPosition = new();
 
         int x = voxelPosition.X;
         int y = voxelPosition.Y;
@@ -59,16 +59,22 @@ public sealed partial class NoiseSampler
 
         foreach (var direction in Vector3Int.Directions)
         {
+            bool atBorder = chunk.IsAtBoundsBorder(ref adjacentVoxelPosition);
+
+            adjacentVoxelType = VoxelType.None;
             adjacentVoxelPosition.Set(
                 (byte)(x + direction.X),
                 (byte)(y + direction.Y),
                 (byte)(z + direction.Z));
 
-            adjacentVoxelType = VoxelType.None;
-
             // If the adjacent voxel was not found, the current iterated voxel is exposed
             if (chunk.IsVoxelEmpty(ref adjacentVoxelPosition) && !SampleVoxel(chunk, ref adjacentVoxelPosition, out adjacentVoxelType))
+            {
                 chunk.SetExposedVoxel(ref voxelPosition);
+
+                if (!atBorder)
+                    return;
+            }
             else if (adjacentVoxelPosition.Y > chunk.ChunkSize)
                 AddChunkOnTop(chunk);
             else if (adjacentVoxelPosition.Y == 0)

@@ -125,6 +125,11 @@ public sealed partial class Chunk
         position.X >= 1 && position.X <= ChunkSize
      && position.Y >= 1 && position.Y <= ChunkSize
      && position.Z >= 1 && position.Z <= ChunkSize;
+
+    public bool IsAtBoundsBorder(ref Vector3Short position) =>
+        position.X == 1 && position.X == ChunkSize
+     && position.Y == 1 && position.Y == ChunkSize
+     && position.Z == 1 && position.Z == ChunkSize;
 }
 
 public sealed partial class Chunk
