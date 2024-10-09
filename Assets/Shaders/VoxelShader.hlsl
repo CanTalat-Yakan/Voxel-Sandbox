@@ -24,7 +24,7 @@ PSInputVoxel VS(VSInputVoxel input)
     int vertexIndex = attributes.x;
     int normalIndex = attributes.y;
     int textureIndex = attributes.z;
-    int lightIndex = attributes.w;
+    int indent = attributes.w;
     
     output.normal = GetNormal(normalIndex);
     output.tangent = GetTangent(normalIndex);

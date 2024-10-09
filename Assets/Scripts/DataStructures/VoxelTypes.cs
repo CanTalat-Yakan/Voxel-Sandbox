@@ -21,16 +21,16 @@ public enum VoxelType : ushort
 public static class VoxelData
 {
     // Pack X, Y, Z (each 5 bits), vertexIndex (2 bits), normalIndex (3 bits), textureIndex (8 bits) and lightInfo (4 bits) into a 32-bit integer
-    public static float PackFloat(byte x, byte y, byte z, byte vertexIndex, byte normalIndex, ushort textureIndex, byte lightIndex)
+    public static float PackFloat(byte x, byte y, byte z, byte vertexIndex, byte normalIndex, ushort textureIndex, byte indent)
     {
-        uint packed = ((uint)lightIndex << 28)      // 4 bits: bits 28-31
-                    | ((uint)textureIndex << 20)    // 8 bits: bits 20-27
-                    | ((uint)normalIndex << 17)     // 3 bits: bits 17-19
-                    | ((uint)vertexIndex << 15)     // 2 bits: bits 15-16
-                    | ((uint)z << 10)               // 5 bits: bits 10-14
-                    | ((uint)y << 5)                // 5 bits: bits 5-9
-                    | ((uint)x);                    // 5 bits: bits 0-4
-
+        uint packed = ((uint)indent << 31)          // 1 bit:  31
+                    | ((uint)textureIndex << 23)    // 8 bits: 23-30
+                    | ((uint)normalIndex << 20)     // 3 bits: 20-22
+                    | ((uint)vertexIndex << 18)     // 2 bits: 18-19
+                    | ((uint)z << 12)               // 6 bits: 12-17
+                    | ((uint)y << 6)                // 6 bits: 6-11
+                    | x;                            // 6 bits: 0-5
+         
         // Convert the packed integer into a float
         return BitConverter.ToSingle(BitConverter.GetBytes(packed), 0);
     }

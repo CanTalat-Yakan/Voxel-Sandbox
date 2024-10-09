@@ -99,53 +99,53 @@ public sealed class MeshBuilder
         else if (normalIndex == 2 && Enum.IsDefined(typeof(VoxelType), enumName + "_Front"))
             textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Front");
 
-        byte x = (byte)voxelPosition.X;
-        byte y = (byte)voxelPosition.Y;
-        byte z = (byte)voxelPosition.Z;
+        byte x = (byte)((voxelPosition.X - 1) * 2);
+        byte y = (byte)((voxelPosition.Y - 1) * 2);
+        byte z = (byte)((voxelPosition.Z - 1) * 2);
 
         // Define vertex offsets based on the normal index
         (byte offsetX, byte offsetY, byte offsetZ)[] vertexOffsets = normalIndex switch
         {
             0 => // Top
             [
-                (0, 1, 0),
-                (0, 1, 1),
-                (1, 1, 1),
-                (1, 1, 0)
+                (0, 2, 0),
+                (0, 2, 2),
+                (2, 2, 2),
+                (2, 2, 0)
             ],
             1 => // Bottom
             [
                 (0, 0, 0),
-                (1, 0, 0),
-                (1, 0, 1),
-                (0, 0, 1)
+                (2, 0, 0),
+                (2, 0, 2),
+                (0, 0, 2)
             ],
             2 => // Front
             [
-                (1, 0, 1),
-                (1, 1, 1),
-                (0, 1, 1),
-                (0, 0, 1)
+                (2, 0, 2),
+                (2, 2, 2),
+                (0, 2, 2),
+                (0, 0, 2)
             ],
             3 => // Back
             [
                 (0, 0, 0),
-                (0, 1, 0),
-                (1, 1, 0),
-                (1, 0, 0)
+                (0, 2, 0),
+                (2, 2, 0),
+                (2, 0, 0)
             ],
             4 => // Right
             [
-                (1, 0, 0),
-                (1, 1, 0),
-                (1, 1, 1),
-                (1, 0, 1)
+                (2, 0, 0),
+                (2, 2, 0),
+                (2, 2, 2),
+                (2, 0, 2)
             ],
             5 => // Left
             [
-                (0, 0, 1),
-                (0, 1, 1),
-                (0, 1, 0),
+                (0, 0, 2),
+                (0, 2, 2),
+                (0, 2, 0),
                 (0, 0, 0)
             ],
             _ => throw new ArgumentException("Invalid normal index")

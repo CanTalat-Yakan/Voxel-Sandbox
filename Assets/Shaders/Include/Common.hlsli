@@ -30,23 +30,23 @@ float3 UnpackPosition(float packedFloat)
 {
     uint packed = asuint(packedFloat);
 
-    float X = packed & 0x1F; // 5 bits: bits 0-4
-    float Y = (packed >> 5) & 0x1F; // 5 bits: bits 5-9
-    float Z = (packed >> 10) & 0x1F; // 5 bits: bits 10-14
+    float X = packed & 0x3F; // 6 bits: 0-5
+    float Y = (packed >> 6) & 0x3F; // 6 bits: 6-11
+    float Z = (packed >> 12) & 0x3F; // 6 bits: 12-17
 
-    return float3(X, Y, Z);
+    return (float3(X, Y, Z) / 2) + 1;
 }
 
 int4 UnpackAttributes(float packedFloat)
 {
     uint packed = asuint(packedFloat);
 
-    uint vertexIndex = (packed >> 15) & 0x3; // 2 bits: bits 15-16
-    uint normalIndex = (packed >> 17) & 0x7; // 3 bits: bits 17-19
-    uint textureIndex = (packed >> 20) & 0xFF; // 8 bits: bits 20-27
-    uint lightIndex = (packed >> 28) & 0xF; // 4 bits: bits 28-31
+    uint vertexIndex = (packed >> 18) & 0x3; // 2 bits: 18-19
+    uint normalIndex = (packed >> 20) & 0x7; // 3 bits: 20-22
+    uint textureIndex = (packed >> 23) & 0xFF; // 8 bits: 23-30
+    uint indent = (packed >> 31) & 0x1; // 1 bit: 31
 
-    return int4(vertexIndex, normalIndex, textureIndex, lightIndex);
+    return int4(vertexIndex, normalIndex, textureIndex, indent);
 }
 
 float GetAtlasTileSize(int rowsColumns = 4)
