@@ -18,11 +18,12 @@ public sealed class MeshBuilder
     {
         _stopwatch.Restart();
 
-        int maxVoxels = chunk.ExposedVoxelPosition.Count;
+        int maxVoxels = (int)Math.Pow(chunk.ChunkSize, 3);
 
         int maxVertices = maxVoxels * MaxFacesPerVoxel * VerticesPerFace;
         int maxIndices = maxVoxels * MaxFacesPerVoxel * IndicesPerFace;
         int compressionFactor = maxVertices > 1000 ? 2 : 1;
+        compressionFactor = 1;
 
         // Preallocate arrays
         var vertices = new float[maxVertices / compressionFactor];
@@ -41,9 +42,17 @@ public sealed class MeshBuilder
         chunk.Mesh.Entity.Transform.LocalPosition = chunk.WorldPosition.ToVector3();
         chunk.Mesh.Entity.Transform.LocalScale *= chunk.VoxelSize;
 
+        chunk.Mesh.IsEnabled = false;
         chunk.Mesh.SetMeshData(vertices, indices, GetPositions(chunk), new InputLayoutHelper().AddFloat());
-        chunk.Mesh.SetMaterialTextures([new("TextureAtlas.png", 0)]);
-        chunk.Mesh.SetMaterialPipeline("VoxelShader");
+
+        if (!chunk.MeshInitialized)
+        {
+            chunk.Mesh.SetMaterialTextures([new("TextureAtlas.png", 0)]);
+            chunk.Mesh.SetMaterialPipeline("VoxelShader");
+
+            chunk.MeshInitialized = true;
+        }
+        chunk.Mesh.IsEnabled = true;
 
         chunk.IsChunkDirty = false;
 

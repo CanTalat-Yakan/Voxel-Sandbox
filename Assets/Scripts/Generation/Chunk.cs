@@ -7,6 +7,7 @@ namespace VoxelSandbox;
 public sealed partial class Chunk
 {
     public Mesh Mesh;
+    public bool MeshInitialized;
 
     public BitArray SolidVoxelData;
     public VoxelType[] VoxelTypeData;
@@ -102,9 +103,6 @@ public sealed partial class Chunk
 
     public NoiseData GetNoiseData(int x, int z) =>
         NoiseData[ToNoiseDataIndex(x, z)];
-
-    public void SetNoiseData(int x, int z, NoiseData noiseData) =>
-        NoiseData[ToNoiseDataIndex(x, z)] = noiseData;
 
     public void SetExposedVoxel(ref Vector3Short position) =>
         ExposedVoxelPosition.Add(position);

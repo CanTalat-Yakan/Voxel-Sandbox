@@ -33,13 +33,13 @@ namespace VoxelSandbox
             if (TargetVoxelPosition is not null && _cube is not null)
                 _cube.Transform.LocalPosition = TargetVoxelPosition.Value.ToVector3() + Vector3.One / 2;
 
-            //if (TargetVoxelPosition is not null)
-            //    if (Input.GetButton(MouseButton.Left, InputState.Down))
-            //        Generator.SetVoxel(TargetVoxelPosition.Value, VoxelType.None);
+            if (TargetVoxelPosition is not null)
+                if (Input.GetButton(MouseButton.Left, InputState.Down))
+                    Generator.SetVoxel(TargetVoxelPosition.Value, VoxelType.None);
 
-            //if (AdjacentVoxelPosition is not null)
-            //    if (Input.GetButton(MouseButton.Right, InputState.Down))
-            //        Generator.SetVoxel(AdjacentVoxelPosition.Value, VoxelType.Sand);
+            if (AdjacentVoxelPosition is not null)
+                if (Input.GetButton(MouseButton.Right, InputState.Down))
+                    Generator.SetVoxel(AdjacentVoxelPosition.Value, VoxelType.Sand);
         }
 
         private void PerformRayCast()

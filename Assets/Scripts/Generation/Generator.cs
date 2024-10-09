@@ -11,7 +11,7 @@ public sealed class Generator
     public const int ChunkSize = 30;
 
     public static readonly int LODCount = 1;
-    public static readonly int NativeRadius = 12;
+    public static readonly int NativeRadius = 8;
 
     public static ConcurrentQueue<Chunk> ChunksToGenerate = new();
     public static ConcurrentQueue<Chunk> ChunksToBuild = new();
