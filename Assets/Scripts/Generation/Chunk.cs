@@ -23,9 +23,6 @@ public sealed class Chunk
     public Vector3Int WorldPosition { get; set; }
     public int LevelOfDetail { get; private set; }
 
-    public int VoxelSize => _voxelSize ??= (int)Math.Pow(2, LevelOfDetail);
-    private int? _voxelSize = null;
-
     public int MaxVoxelCapacity => _maxVoxelCapacity ??= PaddedChunkSizeSquared * PaddedChunkSize + PaddedChunkSizeSquared;
     private int? _maxVoxelCapacity = null;
 
@@ -38,6 +35,12 @@ public sealed class Chunk
     public int ChunkSize => _chunkSize ??= Generator.ChunkSize;
     public int? _chunkSize = null;
 
+    public int ScaledChunkSize => _scaledChunkSize ??= ChunkSize * VoxelSize;
+    public int? _scaledChunkSize = null;
+
+    public int VoxelSize => _voxelSize ??= (int)Math.Pow(2, LevelOfDetail);
+    private int? _voxelSize = null;
+
     public Chunk()
     {
         SolidVoxelData = new BitArray(MaxVoxelCapacity);
@@ -48,15 +51,20 @@ public sealed class Chunk
             NoiseData[i] = new();
     }
 
-    public Chunk Initialize(GameManager gameManager, int levelOfDetail, int x, int z, int? y = null)
+    public Chunk Initialize(GameManager gameManager, int levelOfDetail, int x, int z, int? y = null, bool scaleChunkSize = true)
     {
         Mesh ??= gameManager.Entity.Manager.CreateEntity().AddComponent<Mesh>();
 
         LevelOfDetail = levelOfDetail;
-        WorldPosition = y is not null ? new(x, y.Value, z) : new(x, 0, z);
-        WorldPosition *= ChunkSize;
+        WorldPosition = new(x, 0, z);
+
+        if (y is not null)
+            WorldPosition = new(x, y.Value, z);
+        if (scaleChunkSize)
+            WorldPosition *= ChunkSize;
 
         _voxelSize = null;
+        _scaledChunkSize = null;
 
         return this;
     }
@@ -72,7 +80,7 @@ public sealed class Chunk
     }
 
     public int GetGridY(int y) =>
-        FloorDivision(y, ChunkSize * VoxelSize) * ChunkSize * VoxelSize;
+        FloorDivision(y, ScaledChunkSize) * ScaledChunkSize;
 
     private static int FloorDivision(int a, int b) =>
         a >= 0 ? a / b : (a - (b - 1)) / b;

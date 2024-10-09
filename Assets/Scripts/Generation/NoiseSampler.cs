@@ -178,7 +178,7 @@ public sealed partial class NoiseSampler
             chunk.LevelOfDetail,
             chunk.WorldPosition.X,
             chunk.WorldPosition.Z,
-            chunk.GetGridY(chunk.WorldPosition.Y + chunk.ChunkSize * chunk.VoxelSize + 1));
+            chunk.GetGridY(chunk.WorldPosition.Y + chunk.ChunkSize * chunk.VoxelSize + 1), false);
 
         chunk.TopChunk.IsChunkFromChunk = true;
 
@@ -194,7 +194,7 @@ public sealed partial class NoiseSampler
             chunk.LevelOfDetail, 
             chunk.WorldPosition.X, 
             chunk.WorldPosition.Z, 
-            chunk.GetGridY(chunk.WorldPosition.Y - 1));
+            chunk.GetGridY(chunk.WorldPosition.Y - 1), false);
 
         chunk.BottomChunk.IsChunkFromChunk = true;
 
