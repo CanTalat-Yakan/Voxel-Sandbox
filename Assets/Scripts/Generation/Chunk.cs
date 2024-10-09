@@ -104,8 +104,11 @@ public sealed partial class Chunk
     public NoiseData GetNoiseData(int x, int z) =>
         NoiseData[ToNoiseDataIndex(x, z)];
 
-    public void SetExposedVoxel(ref Vector3Short position) =>
+    public void AddExposedVoxel(ref Vector3Short position) =>
         ExposedVoxelPosition.Add(position);
+
+    public void RemoveExposedVoxel(ref Vector3Short position) =>
+        ExposedVoxelPosition.Remove(position);
 }
 
 public sealed partial class Chunk

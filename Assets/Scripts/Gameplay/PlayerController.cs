@@ -10,7 +10,8 @@ namespace VoxelSandbox
 {
     public class PlayerController : Component
     {
-        public CharacterCollider CharacterCollider;
+        public CharacterCollider CharacterCollider = new();
+
         public Camera Camera;
 
         // Movement and rotation settings
@@ -26,17 +27,17 @@ namespace VoxelSandbox
 
         private bool _isGrounded = false;
 
-
         public void Initialize(GameManager gameManager)
         {
             Entity.Transform.SetPosition(y: 1100);
 
+            var cube = gameManager.Entity.Manager.CreatePrimitive();
+
             Camera = gameManager.Entity.Manager.CreateCamera(name: "Camera");
 
-            var cube = gameManager.Entity.Manager.CreatePrimitive();
-            Entity.AddComponent<RayCaster>().Initialize(cube.Entity, Camera.Entity);
+            Entity.AddComponent<RayCaster>().Initialize(gameManager, cube.Entity, Camera.Entity);
 
-            CharacterCollider = Entity.AddComponent<CharacterCollider>();
+            CharacterCollider.Initialize(gameManager);
         }
 
         public override void OnUpdate()

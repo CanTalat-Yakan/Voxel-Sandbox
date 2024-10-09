@@ -28,19 +28,21 @@ public sealed class Generator
         UpdateChunks(Vector3Int.Zero);
     }
 
-    public static void SetVoxel(Vector3Int worldPosition, VoxelType voxelType)
+    public void SetVoxel(NoiseSampler noiseSampler, Vector3Int worldPosition, VoxelType voxelType)
     {
-        GetChunkFromPosition(worldPosition, out var chunk, out var localVoxelPosition);
+        GetChunkFromPosition(worldPosition, out var chunk, out var voxelPosition);
 
-        chunk.SetVoxelType(ref localVoxelPosition, ref voxelType);
-        chunk.SetEmptyVoxel(ref localVoxelPosition);
+        if (voxelType is VoxelType.None)
+            noiseSampler.RemoveExposedVoxel(chunk, voxelPosition);
+        else
+            noiseSampler.AddExposedVoxel(chunk, voxelPosition, voxelType);
 
         ChunksToBuild.Enqueue(chunk);
     }
 
-    public static void GetChunkFromPosition(Vector3Int worldPosition, out Chunk chunk, out Vector3Short localVoxelPosition)
+    public void GetChunkFromPosition(Vector3Int worldPosition, out Chunk chunk, out Vector3Short voxelPosition)
     {
-        localVoxelPosition = Vector3Short.Zero;
+        voxelPosition = Vector3Short.Zero;
 
         int x = FloorDivision(worldPosition.X);
         int y = FloorDivision(worldPosition.Y);
@@ -76,8 +78,8 @@ public sealed class Generator
                     return;
                 }
 
-        localVoxelPosition = new(
-            worldPosition.X - x * ChunkSize, 
+        voxelPosition = new(
+            worldPosition.X - x * ChunkSize,
             worldPosition.Y - y * ChunkSize,
             worldPosition.Z - z * ChunkSize);
     }

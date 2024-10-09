@@ -41,21 +41,22 @@ public sealed partial class NoiseSampler
 
 public sealed partial class NoiseSampler
 {
-    private void AddExposedVoxel(Chunk chunk, Vector3Short voxelPosition)
+    public void AddExposedVoxel(Chunk chunk, Vector3Short voxelPosition, VoxelType voxelType = VoxelType.None)
     {
-        if (!SampleVoxel(chunk, ref voxelPosition, out var voxelType))
-            return;
+        if (voxelType is VoxelType.None)
+            if (!SampleVoxel(chunk, ref voxelPosition, out voxelType))
+                return;
 
         if (chunk.IsWithinBounds(ref voxelPosition))
             chunk.SetVoxelType(ref voxelPosition, ref voxelType);
         chunk.SetSolidVoxel(ref voxelPosition);
 
-        VoxelType adjacentVoxelType = VoxelType.None;
-        Vector3Short adjacentVoxelPosition = new();
-
         int x = voxelPosition.X;
         int y = voxelPosition.Y;
         int z = voxelPosition.Z;
+
+        VoxelType adjacentVoxelType = VoxelType.None;
+        Vector3Short adjacentVoxelPosition = new();
 
         foreach (var direction in Vector3Int.Directions)
         {
@@ -68,7 +69,7 @@ public sealed partial class NoiseSampler
             // If the adjacent voxel was not found, the current iterated voxel is exposed
             if (chunk.IsVoxelEmpty(ref adjacentVoxelPosition) && !SampleVoxel(chunk, ref adjacentVoxelPosition, out adjacentVoxelType))
             {
-                chunk.SetExposedVoxel(ref voxelPosition);
+                chunk.AddExposedVoxel(ref voxelPosition);
 
                 if (chunk.IsAtBoundsBorder(ref adjacentVoxelPosition))
                     return;
@@ -84,6 +85,37 @@ public sealed partial class NoiseSampler
                     chunk.SetVoxelType(ref adjacentVoxelPosition, ref adjacentVoxelType);
                 chunk.SetSolidVoxel(ref adjacentVoxelPosition);
             }
+        }
+    }
+
+    public void RemoveExposedVoxel(Chunk chunk, Vector3Short voxelPosition)
+    {
+        VoxelType voxelType = VoxelType.None;
+        chunk.SetVoxelType(ref voxelPosition, ref voxelType);
+        chunk.SetEmptyVoxel(ref voxelPosition);
+        chunk.RemoveExposedVoxel(ref voxelPosition);
+
+        int x = voxelPosition.X;
+        int y = voxelPosition.Y;
+        int z = voxelPosition.Z;
+
+        if (y > chunk.ChunkSize)
+            AddChunkOnTop(chunk);
+        else if (y == 0)
+            AddChunkBelow(chunk);
+
+        Vector3Short adjacentVoxelPosition = new();
+
+        foreach (var direction in Vector3Int.Directions)
+        {
+            adjacentVoxelPosition.Set(
+                (byte)(x + direction.X),
+                (byte)(y + direction.Y),
+                (byte)(z + direction.Z));
+
+            // If the adjacent voxel was not found, the current iterated voxel is exposed
+            if (!chunk.IsVoxelEmpty(ref adjacentVoxelPosition))
+                chunk.AddExposedVoxel(ref adjacentVoxelPosition);
         }
     }
 

@@ -1,10 +1,8 @@
 ﻿using System.Numerics;
 
-using Engine.ECS;
-
 namespace VoxelSandbox;
 
-public class CharacterCollider : Component
+public class CharacterCollider
 {
     // Player dimensions
     public float PlayerHeight = 1.8f;
@@ -15,6 +13,15 @@ public class CharacterCollider : Component
     public Vector3 Velocity;
 
     public bool IsGrounded { get; private set; }
+
+    GameManager _gameManager;
+    Generator _generator;
+
+    public void Initialize(GameManager gameManager)
+    {
+        _gameManager = gameManager;
+        _generator = gameManager.Generator;
+    }
 
     public Vector3 Move(Vector3 currentPosition, Vector3 desiredMovement)
     {
@@ -117,7 +124,7 @@ public class CharacterCollider : Component
                 for (int z = (int)Math.Floor(playerMin.Z); z <= (int)Math.Floor(playerMax.Z); z++)
                 {
                     Vector3Int voxelPosition = new(x, y, z);
-                    Generator.GetChunkFromPosition(voxelPosition, out var chunk, out var localVoxelPosition);
+                    _generator.GetChunkFromPosition(voxelPosition, out var chunk, out var localVoxelPosition);
 
                     if (chunk is not null && chunk.SolidVoxelData is not null)
                         if (chunk.IsVoxelSolid(ref localVoxelPosition))
