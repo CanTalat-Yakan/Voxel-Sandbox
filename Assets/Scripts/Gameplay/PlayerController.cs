@@ -101,6 +101,9 @@ namespace VoxelSandbox
             // Use the collider to move and get the final position
             Vector3 finalPosition = CharacterCollider.Move(Entity.Transform.LocalPosition, desiredMovement);
 
+            if (finalPosition.Y < 0)
+                finalPosition.Y = 1200;
+
             // Update position directly
             Entity.Transform.LocalPosition = finalPosition;
 

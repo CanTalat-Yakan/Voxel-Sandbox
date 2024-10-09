@@ -40,6 +40,8 @@ public sealed class Generator
 
     public static void GetChunkFromPosition(Vector3Int worldPosition, out Chunk chunk, out Vector3Short localVoxelPosition)
     {
+        localVoxelPosition = Vector3Short.Zero;
+
         int x = FloorDivision(worldPosition.X, ChunkSize) * ChunkSize;
         int y = FloorDivision(worldPosition.Y, ChunkSize) * ChunkSize;
         int z = FloorDivision(worldPosition.Z, ChunkSize) * ChunkSize;
@@ -47,18 +49,34 @@ public sealed class Generator
         chunk = null;
         if (GeneratedChunks[0].ContainsKey((x, z)))
             chunk = GeneratedChunks[0][(x, z)];
+        else return;
 
-        int surfaceChunkY = FloorDivision(chunk.WorldPosition.Y, ChunkSize) * ChunkSize;
+        if (chunk.WorldPosition.Y == 0)
+            return;
 
-        int chunkYCount = (y - surfaceChunkY) / ChunkSize;
+        int chunkYCount = (y - chunk.WorldPosition.Y) / ChunkSize;
 
         if (chunkYCount > 0)
             for (int i = 0; i < Math.Abs(chunkYCount); i++)
-                chunk = chunk.TopChunk;
+                if (chunk.TopChunk is not null)
+                    chunk = chunk.TopChunk;
+                else
+                {
+                    chunk = null;
+
+                    return;
+                }
 
         if (chunkYCount < 0)
             for (int i = 0; i < Math.Abs(chunkYCount); i++)
-                chunk = chunk.BottomChunk;
+                if (chunk.BottomChunk is not null)
+                    chunk = chunk.BottomChunk;
+                else
+                {
+                    chunk = null;
+
+                    return;
+                }
 
         localVoxelPosition = new(worldPosition.X - x, worldPosition.Y - y, worldPosition.Z - z);
     }
@@ -119,7 +137,7 @@ public sealed class Generator
 
                 // Left
                 CheckChunk(
-                    currentLOD(i), 
+                    currentLOD(i),
                     centerChunkPosition.X - (j + 1) * chunkSize(i),
                     centerChunkPosition.Z - i * chunkSize(i) + originOffset(i) - lodOffset(i));
             }
