@@ -36,7 +36,7 @@ public sealed class GameManager : Component
 
     public void ChunkGenerationTask(Chunk chunk = null)
     {
-        if (Generator.ChunksToGenerate.IsEmpty)
+        if (_processingChunkGeneration || Generator.ChunksToGenerate.IsEmpty)
             return;
 
         if (chunk is null)

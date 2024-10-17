@@ -250,7 +250,7 @@ public sealed partial class NoiseSampler
 
 public sealed partial class NoiseSampler
 {
-    public static int Seed = 1234;
+    public static int Seed = 12345;
 
     private static Random Random = new(Seed);
     private static SimplexPerlin s_perlinPrimitive = new(Seed, LibNoise.NoiseQuality.Fast);

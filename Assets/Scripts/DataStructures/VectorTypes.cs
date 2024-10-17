@@ -2,7 +2,6 @@
 
 public struct Vector3Short
 {
-    //System.Int16 data;
     public ushort Data { get; set; }
 
     public int X => (Data >> 0) & 0b00011111;    // Bits 0–4 (5 bits)
@@ -207,118 +206,5 @@ public struct Vector3Int
         a.X == b.X && a.Y == b.Y && a.Z == b.Z;
 
     public static bool operator !=(Vector3Int a, Vector3Int b) =>
-        !(a == b);
-}
-
-public struct Vector2Int
-{
-    public int X { get; set; }
-    public int Z { get; set; }
-
-    public static readonly Vector2Int Zero = new(0, 0);
-    public static readonly Vector2Int One = new(1, 1);
-    public static readonly Vector2Int UnitX = new(1, 0);
-    public static readonly Vector2Int UnitZ = new(0, 1);
-
-    public static readonly Vector2Int Front = new(0, 1);
-    public static readonly Vector2Int Back = new(0, -1);
-    public static readonly Vector2Int Right = new(1, 0);
-    public static readonly Vector2Int Left = new(-1, 0);
-
-    public static readonly Vector2Int[] Directions =
-    {
-        Front,
-        Back,
-        Right,
-        Left
-    };
-
-    public Vector2Int(int x, int z)
-    {
-        X = x;
-        Z = z;
-    }
-
-    public Vector2Int Set(int x, int z)
-    {
-        X = x;
-        Z = z;
-
-        return this;
-    }
-
-    public Vector2Int Set(int? x = null, int? z = null)
-    {
-        if (x is not null)
-            X = x.Value;
-        if (z is not null)
-            Z = z.Value;
-
-        return this;
-    }
-
-    public override string ToString() =>
-        $"({X}, {Z})";
-
-    public static Vector3Int FromVector3(System.Numerics.Vector3 vector) =>
-        new((int)vector.X, (int)vector.Y, (int)vector.Z);
-
-    public System.Numerics.Vector3 ToVector3() =>
-        new(X, 0, Z);
-
-    public Vector3Short ToVector3Short() =>
-        new(X, 0, Z);
-
-    public override bool Equals(object obj)
-    {
-        if (obj is Vector2Int other)
-            return X == other.X && Z == other.Z;
-
-        return false;
-    }
-
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            int hash = 17;
-            hash = hash * 31 + X.GetHashCode();
-            hash = hash * 31 + Z.GetHashCode();
-            return hash;
-        }
-    }
-
-    public static Vector2Int operator *(Vector2Int a, int b)
-    {
-        a.X *= b;
-        a.Z *= b;
-
-        return a;
-    }
-
-    public static Vector2Int operator /(Vector2Int a, int b)
-    {
-        a.X /= b;
-        a.Z /= b;
-
-        return a;
-    }
-
-    public static Vector2Int operator +(Vector2Int a, int b) =>
-        a.Set(a.X + b, a.Z + b);
-
-    public static Vector2Int operator +(Vector2Int a, Vector3Short b) =>
-        a.Set(a.X + b.X, a.Z + b.Z);
-
-    public static Vector2Int operator +(Vector2Int a, Vector3Int b) =>
-        a.Set(a.X + b.X, a.Z + b.Z);
-
-    public static Vector2Int operator -(Vector2Int a, Vector3Int b) =>
-        a.Set(a.X - b.X, a.Z - b.Z);
-
-    public static bool operator ==(Vector2Int a, Vector2Int b) =>
-        a.X == b.X && a.Z == b.Z;
-
-    public static bool operator !=(Vector2Int a, Vector2Int b) =>
         !(a == b);
 }

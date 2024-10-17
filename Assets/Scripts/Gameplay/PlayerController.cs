@@ -31,7 +31,11 @@ namespace VoxelSandbox
         {
             Entity.Transform.SetPosition(y: 1100);
 
-            var cube = gameManager.Entity.Manager.CreatePrimitive();
+            var cube = gameManager.Entity.Manager.CreateEntity().AddComponent<Mesh>();
+            cube.SetMeshData(Assets.Meshes["Cube.obj"]);
+            cube.SetRootSignature();
+            cube.SetMaterialPipeline("SimpleLit");
+            cube.SetMaterialTextures([new("Transparent.png", 0)]);
 
             Camera = gameManager.Entity.Manager.CreateCamera(name: "Camera");
 
