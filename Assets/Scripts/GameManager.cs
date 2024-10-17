@@ -17,15 +17,15 @@ public sealed class GameManager : Component
 
     public override void OnAwake()
     {
-        Entity.Manager.ReturnEntity(Entity.Manager.GetEntityFromTag("DefaultBoot"));
-        Input.SetLockMouse(true);
-
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlas.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
         Camera.Main.Entity.Transform.SetPosition(y: 1100);
 
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerController>().Initialize(this);
+
+        Entity.Manager.ReturnEntity(Entity.Manager.GetEntityFromTag("DefaultBoot"));
+        Input.SetLockMouse(true);
     }
 
     public override void OnStart() =>
