@@ -4,7 +4,7 @@ internal class Program
 {
     [STAThread]
     private static void Main() =>
-        new Engine.Program().Run(true, new() { WindowCommand = WindowCommand.Normal}, Frame);
+        new Engine.Program().Run(true, null, Frame);
 
     private static bool _initialized = false;
     public static void Frame()

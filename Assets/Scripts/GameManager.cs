@@ -17,6 +17,8 @@ public sealed class GameManager : Component
 
     public override void OnAwake()
     {
+        Input.SetLockMouse(true);
+
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlas.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
