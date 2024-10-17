@@ -1,7 +1,5 @@
 using System.Numerics;
 
-using Vortice.DirectInput;
-
 using Engine.ECS;
 using Engine.Utilities;
 using Engine.Components;

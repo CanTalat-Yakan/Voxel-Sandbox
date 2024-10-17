@@ -8,6 +8,9 @@ namespace VoxelSandbox;
 
 public sealed class GameManager : Component
 {
+    public static bool LOCKED { get; private set; } = false;
+    public static bool UNLOCKED => !LOCKED;
+
     public Generator Generator = new();
 
     public NoiseSampler NoiseSampler = new();
@@ -25,7 +28,7 @@ public sealed class GameManager : Component
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerController>().Initialize(this);
 
         Entity.Manager.ReturnEntity(Entity.Manager.GetEntityFromTag("DefaultBoot"));
-        Input.SetLockMouse(true);
+        Entity.Manager.ReturnEntity(Entity.Manager.GetEntityFromTag("DefaultCamera"));
     }
 
     public override void OnStart() =>
@@ -35,6 +38,11 @@ public sealed class GameManager : Component
     {
         ChunkGenerationTask();
         MeshBuildingTask();
+
+        if (Input.GetKey(Key.Escape, InputState.Down))
+            LOCKED = UNLOCKED;
+
+        Input.SetLockMouse(UNLOCKED);
     }
 
     public void ChunkGenerationTask(Chunk chunk = null)
