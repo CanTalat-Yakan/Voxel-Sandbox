@@ -47,6 +47,7 @@ public sealed class MeshBuilder
             chunk.Mesh.SetMaterialTextures([new("TextureAtlas.png", 0)]);
             chunk.Mesh.SetRootSignature();
             chunk.Mesh.SetMaterialPipeline("VoxelShader");
+            chunk.Mesh.Order = 0;
 
             chunk.MeshInitialized = true;
         }

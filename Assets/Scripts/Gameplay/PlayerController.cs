@@ -34,8 +34,10 @@ namespace VoxelSandbox
             cube.SetRootSignature();
             cube.SetMaterialPipeline("SimpleLit");
             cube.SetMaterialTextures([new("Transparent.png", 0)]);
+            cube.Order = byte.MaxValue;
 
             Camera = gameManager.Entity.Manager.CreateCamera(name: "Camera");
+            Camera.Entity.Transform.SetPosition(y: 1100);
 
             Entity.AddComponent<RayCaster>().Initialize(gameManager, cube.Entity, Camera.Entity);
 
@@ -50,7 +52,7 @@ namespace VoxelSandbox
             HandleRotation();
             HandleMovement();
 
-            Camera.Entity.Transform.LocalPosition = Entity.Transform.Position + Vector3.UnitY * 1.8f;
+            Camera.Entity.Transform.LocalPosition = Entity.Transform.Position + Vector3.UnitY * CharacterCollider.PlayerHeight;
         }
 
         private void HandleRotation()

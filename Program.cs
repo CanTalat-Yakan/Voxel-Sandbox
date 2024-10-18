@@ -1,17 +1,18 @@
-﻿using Engine.DataStructures;
-
-internal class Program
+﻿internal class Program
 {
+    private static bool _initialized = false;
+
     [STAThread]
     private static void Main() =>
-        new Engine.Program().Run(true, null, Frame);
+        new Engine.Program().Run(true, false, null, Frame);
 
-    private static bool _initialized = false;
     public static void Frame()
     {
-        if (!_initialized)
-            Engine.Kernel.Instance.SystemManager.MainEntityManager.CreateEntity().AddComponent<VoxelSandbox.GameManager>();
+        if (_initialized)
+            return;
 
         _initialized = true;
+
+        Engine.Kernel.Instance.SystemManager.MainEntityManager.CreateEntity().AddComponent<VoxelSandbox.GameManager>();
     }
 }

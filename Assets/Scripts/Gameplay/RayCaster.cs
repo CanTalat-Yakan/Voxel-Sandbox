@@ -56,7 +56,7 @@ public class RayCaster : Component
         HitNormal = Vector3.Zero;
 
         // Ensure _camera is assigned
-        if (_camera == null)
+        if (_camera is null)
             return;
 
         // Get the camera's position and direction

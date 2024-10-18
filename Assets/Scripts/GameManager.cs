@@ -9,7 +9,6 @@ namespace VoxelSandbox;
 public sealed class GameManager : Component
 {
     public static bool LOCKED { get; private set; } = false;
-    public static bool UNLOCKED => !LOCKED;
 
     public Generator Generator = new();
 
@@ -23,12 +22,11 @@ public sealed class GameManager : Component
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlas.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
-        Camera.Main.Entity.Transform.SetPosition(y: 1100);
+        foreach (var entity in Entity.Manager.Entities.Values.ToArray())
+            if (entity != Entity && entity.Data.Tag != "DefaultSky" && entity.Data.Tag)
+                Entity.Manager.ReturnEntity(entity);
 
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerController>().Initialize(this);
-
-        Entity.Manager.ReturnEntity(Entity.Manager.GetEntityFromTag("DefaultBoot"));
-        Entity.Manager.ReturnEntity(Entity.Manager.GetEntityFromTag("DefaultCamera"));
     }
 
     public override void OnStart() =>
@@ -38,11 +36,16 @@ public sealed class GameManager : Component
     {
         ChunkGenerationTask();
         MeshBuildingTask();
+    }
 
+    public override void OnLateUpdate()
+    {
         if (Input.GetKey(Key.Escape, InputState.Down))
-            LOCKED = UNLOCKED;
+            LOCKED = !LOCKED;
 
-        Input.SetLockMouse(UNLOCKED);
+        Input.SetMouseLockState(!LOCKED);
+        if (!LOCKED)
+            Input.SetMouseRelativePosition(0.5f, 0.5f);
     }
 
     public void ChunkGenerationTask(Chunk chunk = null)
