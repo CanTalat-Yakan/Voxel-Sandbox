@@ -1,5 +1,4 @@
 ﻿using Engine;
-using Engine.Components;
 using Engine.ECS;
 using Engine.Loader;
 using Engine.Utilities;
@@ -21,10 +20,6 @@ public sealed class GameManager : Component
     {
         ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlas.png");
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
-
-        foreach (var entity in Entity.Manager.Entities.Values.ToArray())
-            if (entity != Entity && entity.Data.Tag != "DefaultSky" && entity.Data.Tag)
-                Entity.Manager.ReturnEntity(entity);
 
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerController>().Initialize(this);
     }

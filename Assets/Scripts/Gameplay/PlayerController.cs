@@ -29,15 +29,15 @@ namespace VoxelSandbox
         {
             Entity.Transform.SetPosition(y: 1100);
 
+            Camera = gameManager.Entity.Manager.CreateCamera(name: "Camera");
+            Camera.Entity.Transform.SetPosition(y: 1100);
+
             var cube = gameManager.Entity.Manager.CreateEntity().AddComponent<Mesh>();
             cube.SetMeshData(Assets.Meshes["Cube.obj"]);
             cube.SetRootSignature();
             cube.SetMaterialPipeline("SimpleLit");
             cube.SetMaterialTextures([new("Transparent.png", 0)]);
             cube.Order = byte.MaxValue;
-
-            Camera = gameManager.Entity.Manager.CreateCamera(name: "Camera");
-            Camera.Entity.Transform.SetPosition(y: 1100);
 
             Entity.AddComponent<RayCaster>().Initialize(gameManager, cube.Entity, Camera.Entity);
 
