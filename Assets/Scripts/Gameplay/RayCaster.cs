@@ -33,6 +33,9 @@ public class RayCaster : Component
 
     public override void OnUpdate()
     {
+        if (GameManager.LOCKED || _camera is null)
+            return;
+
         PerformRayCast();
 
         // Example usage: Update a cube's position to visualize the hit voxel

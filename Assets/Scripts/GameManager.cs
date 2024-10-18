@@ -1,5 +1,6 @@
 ﻿using Engine;
 using Engine.ECS;
+using Engine.Essentials;
 using Engine.Loader;
 using Engine.Utilities;
 
@@ -22,6 +23,9 @@ public sealed class GameManager : Component
         Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
 
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerController>().Initialize(this);
+        Entity.Manager.CreateEntity(name: "Sky").AddComponent<DefaultSky>().Initialize();
+
+        Input.SetMouseRelativePosition(0.5f, 0.5f);
     }
 
     public override void OnStart() =>
@@ -39,8 +43,7 @@ public sealed class GameManager : Component
             LOCKED = !LOCKED;
 
         Input.SetMouseLockState(!LOCKED);
-        if (!LOCKED)
-            Input.SetMouseRelativePosition(0.5f, 0.5f);
+        if (!LOCKED) Input.SetMouseRelativePosition(0.5f, 0.5f);
     }
 
     public void ChunkGenerationTask(Chunk chunk = null)
