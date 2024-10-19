@@ -56,7 +56,7 @@ public sealed class GameManager : Component
         if (_processingChunkGeneration)
             return;
 
-        if (Generator.ChunksToBuild.IsEmpty && chunk is null)
+        if (Generator.ChunksToGenerate.IsEmpty && chunk is null)
             return;
 
         if (chunk is null)
