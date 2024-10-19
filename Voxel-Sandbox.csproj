@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <PlatformTarget>x64</PlatformTarget>
     <OutputType>WinExe</OutputType>
-    <StartupObject>Program</StartupObject>
+    <StartupObject>VoxelSandbox.Program</StartupObject>
 	<PublishAot>true</PublishAot>
 	<RootNamespace />
   </PropertyGroup>
