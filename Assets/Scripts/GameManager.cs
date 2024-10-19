@@ -53,7 +53,10 @@ public sealed class GameManager : Component
 
     public void ChunkGenerationTask(Chunk chunk = null)
     {
-        if (_processingChunkGeneration || Generator.ChunksToGenerate.IsEmpty)
+        if (_processingChunkGeneration)
+            return;
+
+        if (Generator.ChunksToBuild.IsEmpty && chunk is null)
             return;
 
         if (chunk is null)
@@ -61,19 +64,22 @@ public sealed class GameManager : Component
                 return;
 
         _processingChunkGeneration = true;
-        Task.Run(() => { NoiseSampler.GenerateChunkContent(chunk, this); });
+        Task.Run(() => NoiseSampler.GenerateChunkContent(chunk, this));
         _processingChunkGeneration = false;
     }
 
     public void MeshBuildingTask(Chunk chunk = null)
     {
-        if (_processingChunkGeneration || Generator.ChunksToBuild.IsEmpty)
+        if (_processingChunkGeneration)
+            return;
+
+        if (Generator.ChunksToBuild.IsEmpty && chunk is null)
             return;
 
         if (chunk is null)
             if (!Generator.ChunksToBuild.TryDequeue(out chunk))
                 return;
 
-        Task.Run(() => { MeshBuilder.GenerateMesh(chunk); });
+        Task.Run(() => MeshBuilder.GenerateMesh(chunk));
     }
 }
