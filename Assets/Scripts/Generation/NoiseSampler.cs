@@ -250,10 +250,8 @@ public sealed partial class NoiseSampler
 
 public sealed partial class NoiseSampler
 {
-    public static int Seed = 12345;
-
-    private static Random Random = new(Seed);
-    private static SimplexPerlin s_perlinPrimitive = new(Seed, LibNoise.NoiseQuality.Fast);
+    private static Random Random = new(GameManager.Seed);
+    private static SimplexPerlin s_perlinPrimitive = new(GameManager.Seed, LibNoise.NoiseQuality.Fast);
 
     private Billow _surfaceNoiseMicro = new()
     {

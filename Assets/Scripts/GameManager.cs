@@ -10,6 +10,11 @@ public sealed class GameManager : Component
 {
     public static bool LOCKED { get; private set; } = false;
 
+    public static readonly int Seed = 12345;
+
+    public static readonly int LODCount = 1;
+    public static readonly int NativeRadius = 24;
+
     public Generator Generator = new();
 
     public NoiseSampler NoiseSampler = new();

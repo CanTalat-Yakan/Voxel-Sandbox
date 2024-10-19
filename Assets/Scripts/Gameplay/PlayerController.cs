@@ -30,7 +30,6 @@ namespace VoxelSandbox
             Entity.Transform.SetPosition(y: 1100);
 
             Camera = gameManager.Entity.Manager.CreateCamera(name: "Camera");
-            Camera.Entity.Transform.SetPosition(y: 1100);
 
             var cube = gameManager.Entity.Manager.CreateEntity().AddComponent<Mesh>();
             cube.SetMeshData(Assets.Meshes["Cube.obj"]);

@@ -10,8 +10,8 @@ public sealed class Generator
 
     public const int ChunkSize = 30;
 
-    public static readonly int LODCount = 1;
-    public static readonly int NativeRadius = 24;
+    public static readonly int LODCount = GameManager.LODCount;
+    public static readonly int NativeRadius = GameManager.NativeRadius;
 
     public static ConcurrentQueue<Chunk> ChunksToGenerate = new();
     public static ConcurrentQueue<Chunk> ChunksToBuild = new();
