@@ -34,7 +34,7 @@ namespace VoxelSandbox
             var cube = gameManager.Entity.Manager.CreateEntity().AddComponent<Mesh>();
             cube.SetMeshData(Assets.Meshes["Cube.obj"]);
             cube.SetRootSignature();
-            cube.SetMaterialPipeline("SimpleLit");
+            cube.SetMaterialPipeline("Unlit");
             cube.SetMaterialTextures([new("Transparent.png", 0)]);
             cube.Order = byte.MaxValue;
 
