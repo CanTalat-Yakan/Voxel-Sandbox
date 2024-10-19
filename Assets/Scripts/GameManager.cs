@@ -13,7 +13,7 @@ public sealed class GameManager : Component
     public static readonly int Seed = 12345;
 
     public static readonly int LODCount = 1;
-    public static readonly int NativeRadius = 24;
+    public static readonly int NativeRadius = 8;
 
     public Generator Generator = new();
 
@@ -47,8 +47,9 @@ public sealed class GameManager : Component
         if (Input.GetKey(Key.Escape, InputState.Down))
             LOCKED = !LOCKED;
 
+        if (!LOCKED) 
+            Input.SetMouseRelativePosition(0.5f, 0.5f);
         Input.SetMouseLockState(!LOCKED);
-        if (!LOCKED) Input.SetMouseRelativePosition(0.5f, 0.5f);
     }
 
     public void ChunkGenerationTask(Chunk chunk = null)
