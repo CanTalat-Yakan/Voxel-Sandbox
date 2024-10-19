@@ -24,8 +24,8 @@ public sealed class GameManager : Component
 
     public override void OnAwake()
     {
-        ImageLoader.LoadTexture(AssetsPaths.ASSETS + "Textures\\TextureAtlas.png");
-        Kernel.Instance.Context.CreateShader(AssetsPaths.ASSETS + "Shaders\\VoxelShader");
+        ImageLoader.LoadTexture(AssetPaths.ASSETS + "Textures\\TextureAtlas.png");
+        Kernel.Instance.Context.CreateShader(AssetPaths.ASSETS + "Shaders\\VoxelShader");
 
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerController>().Initialize(this);
         Entity.Manager.CreateEntity(name: "Sky").AddComponent<DefaultSky>().Initialize();
@@ -47,7 +47,7 @@ public sealed class GameManager : Component
         if (Input.GetKey(Key.Escape, InputState.Down))
             LOCKED = !LOCKED;
 
-        if (!LOCKED) 
+        if (!LOCKED)
             Input.SetMouseRelativePosition(0.5f, 0.5f);
         Input.SetMouseLockState(!LOCKED);
     }
