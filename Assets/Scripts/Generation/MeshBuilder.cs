@@ -42,13 +42,13 @@ public sealed class MeshBuilder
         chunk.Mesh.Entity.Transform.LocalScale *= chunk.VoxelSize;
 
         chunk.Mesh.SetMeshData(vertices, indices, GetPositions(chunk), new InputLayoutHelper().AddFloat());
+        chunk.Mesh.Order = 0;
 
         if (!chunk.MeshInitialized)
         {
             chunk.Mesh.SetRootSignature();
             chunk.Mesh.SetMaterialTextures([new("TextureAtlas.png", 0)]);
             chunk.Mesh.SetMaterialPipeline("VoxelShader");
-            chunk.Mesh.Order = 0;
 
             chunk.MeshInitialized = true;
         }
