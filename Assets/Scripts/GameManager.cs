@@ -43,7 +43,7 @@ public sealed class GameManager : Component
 
     public override void OnAwake()
     {
-        ImageLoader.LoadFile(AssetPaths.ASSETS + "Textures\\TextureAtlas.png");
+        ImageLoader.LoadTexture(AssetPaths.ASSETS + "Textures\\TextureAtlas.png");
         Kernel.Instance.Context.CreateShader(AssetPaths.ASSETS + "Shaders\\VoxelShader");
 
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerController>().Initialize(this);
@@ -76,17 +76,12 @@ public sealed class GameManager : Component
         if (Input.GetKey(Key.Escape, InputState.Down))
             LOCKED = !LOCKED;
 
-        if(LOCKED)
+        if (LOCKED)
         {
             Input.SetMouseRelativePosition(0.5f, 0.5f);
-            Input.SetMouseLockState(true);
-            Input.SetCursorIcon(null);
+            Input.SetMouseLockState(MouseLockState.LockedInvisible);
         }
-        else
-        {
-            Input.SetMouseLockState(false);
-            Input.SetCursorIcon(SystemCursor.IDC_ARROW);
-        }
+        Input.SetMouseLockState(MouseLockState.Unlocked);
     }
 
     public void ChunkGenerationTask(Chunk chunk = null)
