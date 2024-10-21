@@ -1,7 +1,6 @@
 ﻿using Engine;
 using Engine.ECS;
 using Engine.Essentials;
-using Engine.Interoperation;
 using Engine.Loader;
 using Engine.Utilities;
 
@@ -9,25 +8,7 @@ namespace VoxelSandbox;
 
 public sealed class GameManager : Component
 {
-    public static bool LOCKED
-    {
-        get => _locked;
-        private set
-        {
-            if (_locked != value)
-            {
-                _locked = value;
-                if (_locked)
-                    _lockedEvent?.Invoke();
-                else
-                    _unlockedEvent?.Invoke();
-            }
-        }
-    }
-    private static bool _locked;
-
-    private static Action _lockedEvent;
-    private static Action _unlockedEvent;
+    public static bool LOCKED { get; private set; } = true;
 
     public static readonly int Seed = 12345;
 
@@ -43,23 +24,11 @@ public sealed class GameManager : Component
 
     public override void OnAwake()
     {
-        ImageLoader.LoadTexture(AssetPaths.ASSETS + "Textures\\TextureAtlas.png");
+        ImageLoader.LoadFile(AssetPaths.ASSETS + "Textures\\TextureAtlas.png");
         Kernel.Instance.Context.CreateShader(AssetPaths.ASSETS + "Shaders\\VoxelShader");
 
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerController>().Initialize(this);
         Entity.Manager.CreateEntity(name: "Sky").AddComponent<DefaultSky>().Initialize();
-
-        _lockedEvent += () =>
-        {
-            //Input.SetMouseRelativePosition(0.5f, 0.5f);
-            //Input.SetMouseLockState(true);
-            //Input.SetCursorIcon(null);
-        };
-        _unlockedEvent += () =>
-        {
-            //Input.SetMouseLockState(false);
-            //Input.SetCursorIcon(SystemCursor.IDC_ARROW);
-        };
     }
 
     public override void OnStart() =>
@@ -77,11 +46,9 @@ public sealed class GameManager : Component
             LOCKED = !LOCKED;
 
         if (LOCKED)
-        {
-            Input.SetMouseRelativePosition(0.5f, 0.5f);
-            Input.SetMouseLockState(MouseLockState.LockedInvisible);
-        }
-        Input.SetMouseLockState(MouseLockState.Unlocked);
+            Input.SetMouseLockState(MouseLockState.LockedInvisible, 0.5, 0.5);
+        else
+            Input.SetMouseLockState(MouseLockState.Unlocked);
     }
 
     public void ChunkGenerationTask(Chunk chunk = null)
