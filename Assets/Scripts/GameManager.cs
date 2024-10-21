@@ -8,7 +8,7 @@ namespace VoxelSandbox;
 
 public sealed class GameManager : Component
 {
-    public static bool LOCKED { get; private set; } = false;
+    public static bool PAUSED { get; private set; } = false;
 
     public static readonly int Seed = 12345;
 
@@ -46,9 +46,9 @@ public sealed class GameManager : Component
     {
         if (Input.GetKey(Key.Escape, InputState.Down))
         {
-            LOCKED = !LOCKED;
+            PAUSED = !PAUSED;
 
-            if (LOCKED)
+            if (PAUSED)
                 Input.SetMouseLockState(MouseLockState.Unlocked);
             else
                 Input.SetMouseLockState(MouseLockState.LockedInvisible, 0.5, 0.5);

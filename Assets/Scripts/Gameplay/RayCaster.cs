@@ -33,7 +33,7 @@ public class RayCaster : Component
 
     public override void OnUpdate()
     {
-        if (GameManager.LOCKED || _camera is null)
+        if (GameManager.PAUSED || _camera is null)
             return;
 
         PerformRayCast();

@@ -45,7 +45,7 @@ namespace VoxelSandbox
 
         public override void OnUpdate()
         {
-            if (GameManager.LOCKED || Camera is null)
+            if (GameManager.PAUSED || Camera is null)
                 return;
 
             HandleRotation();
