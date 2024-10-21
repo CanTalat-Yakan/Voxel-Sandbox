@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-  	<PackageReference Include="3DEngine" Version="3.0.59" />
+  	<PackageReference Include="3DEngine" Version="3.0.61" />
   	<PackageReference Include="Costura.Fody" Version="5.7.0">
   	  <PrivateAssets>all</PrivateAssets>
   	</PackageReference>

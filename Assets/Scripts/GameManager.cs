@@ -8,7 +8,7 @@ namespace VoxelSandbox;
 
 public sealed class GameManager : Component
 {
-    public static bool LOCKED { get; private set; } = true;
+    public static bool LOCKED { get; private set; } = false;
 
     public static readonly int Seed = 12345;
 
@@ -29,6 +29,8 @@ public sealed class GameManager : Component
 
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerController>().Initialize(this);
         Entity.Manager.CreateEntity(name: "Sky").AddComponent<DefaultSky>().Initialize();
+
+        Input.SetMouseLockState(MouseLockState.LockedInvisible, 0.5, 0.5);
     }
 
     public override void OnStart() =>
@@ -43,12 +45,17 @@ public sealed class GameManager : Component
     public override void OnLateUpdate()
     {
         if (Input.GetKey(Key.Escape, InputState.Down))
+        {
             LOCKED = !LOCKED;
 
-        if (LOCKED)
-            Input.SetMouseLockState(MouseLockState.LockedInvisible, 0.5, 0.5);
-        else
-            Input.SetMouseLockState(MouseLockState.Unlocked);
+            if (LOCKED)
+                Input.SetMouseLockState(MouseLockState.Unlocked);
+            else
+                Input.SetMouseLockState(MouseLockState.LockedInvisible, 0.5, 0.5);
+        }
+
+        if (!LOCKED)
+            Input.SetCursorIcon();
     }
 
     public void ChunkGenerationTask(Chunk chunk = null)
