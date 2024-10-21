@@ -53,9 +53,6 @@ public sealed class GameManager : Component
             else
                 Input.SetMouseLockState(MouseLockState.LockedInvisible, 0.5, 0.5);
         }
-
-        if (!LOCKED)
-            Input.SetCursorIcon();
     }
 
     public void ChunkGenerationTask(Chunk chunk = null)

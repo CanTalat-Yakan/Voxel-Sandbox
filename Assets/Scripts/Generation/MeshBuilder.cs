@@ -184,7 +184,7 @@ public sealed class MeshBuilder
 
     private Vector3[] GetPositions(Chunk chunk)
     {
-        var chunkSize = chunk.GetChunkSize().ToVector3();
+        var chunkSize = chunk.GetChunkSize().ToVector3() + Vector3.One;
 
         return
         [
