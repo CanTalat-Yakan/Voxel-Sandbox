@@ -51,14 +51,14 @@ public sealed class GameManager : Component
 
         _lockedEvent += () =>
         {
-            Input.SetMouseRelativePosition(0.5f, 0.5f);
-            Input.SetMouseLockState(true);
-            Input.SetCursorIcon(null);
+            //Input.SetMouseRelativePosition(0.5f, 0.5f);
+            //Input.SetMouseLockState(true);
+            //Input.SetCursorIcon(null);
         };
         _unlockedEvent += () =>
         {
-            Input.SetMouseLockState(false);
-            Input.SetCursorIcon(SystemCursor.IDC_ARROW);
+            //Input.SetMouseLockState(false);
+            //Input.SetCursorIcon(SystemCursor.IDC_ARROW);
         };
     }
 
@@ -76,8 +76,17 @@ public sealed class GameManager : Component
         if (Input.GetKey(Key.Escape, InputState.Down))
             LOCKED = !LOCKED;
 
-        //Input.SetCursorIcon(LOCKED ? null : SystemCursor.IDC_ARROW);
-        //Input.SetMouseLockState(!LOCKED);
+        if(LOCKED)
+        {
+            Input.SetMouseRelativePosition(0.5f, 0.5f);
+            Input.SetMouseLockState(true);
+            Input.SetCursorIcon(null);
+        }
+        else
+        {
+            Input.SetMouseLockState(false);
+            Input.SetCursorIcon(SystemCursor.IDC_ARROW);
+        }
     }
 
     public void ChunkGenerationTask(Chunk chunk = null)
