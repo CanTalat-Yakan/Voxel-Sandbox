@@ -30,7 +30,7 @@ public sealed class GameManager : Component
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerController>().Initialize(this);
         Entity.Manager.CreateEntity(name: "Sky").AddComponent<DefaultSky>().Initialize();
 
-        Input.SetMouseLockState(MouseLockState.LockedInvisible, 0.5, 0.5);
+        //Input.SetMouseLockState(MouseLockState.LockedInvisible, 0.5, 0.5);
     }
 
     public override void OnStart() =>
