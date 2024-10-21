@@ -1,6 +1,7 @@
 ﻿using Engine;
 using Engine.ECS;
 using Engine.Essentials;
+using Engine.Interoperation;
 using Engine.Loader;
 using Engine.Utilities;
 
@@ -30,7 +31,7 @@ public sealed class GameManager : Component
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerController>().Initialize(this);
         Entity.Manager.CreateEntity(name: "Sky").AddComponent<DefaultSky>().Initialize();
 
-        //Input.SetMouseLockState(MouseLockState.LockedInvisible, 0.5, 0.5);
+        Input.SetMouseLockState(MouseLockState.LockedInvisible, 0.5, 0.5);
     }
 
     public override void OnStart() =>
@@ -53,6 +54,9 @@ public sealed class GameManager : Component
             else
                 Input.SetMouseLockState(MouseLockState.LockedInvisible, 0.5, 0.5);
         }
+
+        if (!PAUSED)
+            Input.SetCursorIcon(SystemCursor.IDC_CROSS);
     }
 
     public void ChunkGenerationTask(Chunk chunk = null)
