@@ -101,11 +101,11 @@ public sealed class MeshBuilder
         string enumName = voxelType.ToString();
 
         if (normalIndex == 0 && Enum.IsDefined(typeof(VoxelType), enumName + "_Top"))
-            textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Top");
+            textureIndex = (byte)(textureIndex + 1);
         else if (normalIndex == 1 && Enum.IsDefined(typeof(VoxelType), enumName + "_Bottom"))
-            textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Bottom");
+            textureIndex = (byte)(textureIndex + 2);
         else if (normalIndex == 2 && Enum.IsDefined(typeof(VoxelType), enumName + "_Front"))
-            textureIndex = (byte)Enum.Parse<VoxelType>(enumName + "_Front");
+            textureIndex = (byte)(textureIndex + 3);
 
         // Calculate minus one times two to get from the range 1-30 to 0-29 to 0-58 for half blocks
         // The shader divides it by two and adds 1 again
