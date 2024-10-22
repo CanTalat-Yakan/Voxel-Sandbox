@@ -168,9 +168,6 @@ public sealed partial class NoiseSampler
         return sample is not VoxelType.None;
     }
 
-    private NoiseData SampleNoise(Chunk chunk, Vector3Short position) =>
-        SampleNoise(chunk, position.X, position.Z);
-
     private NoiseData SampleNoise(Chunk chunk, int x, int z)
     {
         NoiseData noiseData = chunk.GetNoiseData(x, z);
@@ -197,7 +194,7 @@ public sealed partial class NoiseSampler
         if (chunk.IsChunkFromChunk)
             return;
 
-        int gridY = chunk.GetGridY(SampleNoise(chunk, Vector3Short.UnitXZ).SurfaceHeight);
+        int gridY = chunk.GetGridY(SampleNoise(chunk, 1, 1).SurfaceHeight);
         chunk.UnscaledPosition.Set(y: gridY);
     }
 
