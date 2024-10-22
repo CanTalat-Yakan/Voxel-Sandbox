@@ -64,7 +64,7 @@ public class PlayerController : Component
         Camera.Entity.Transform.EulerAngles -= _euler * Time.DeltaF * RotationSpeed;
 
         // Clamp Vertical Rotation to ~90 degrees up and down.
-        Camera.Entity.Transform.SetEulerAngles(Math.Clamp(Camera.Entity.Transform.EulerAngles.X, -89, 89));
+        Camera.Entity.Transform.SetEulerAngles(x: Math.Clamp(Camera.Entity.Transform.EulerAngles.X, -89, 89));
     }
 
     private void HandleMovement()
