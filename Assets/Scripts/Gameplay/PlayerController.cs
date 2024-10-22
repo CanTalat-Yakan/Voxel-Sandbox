@@ -103,6 +103,7 @@ public class PlayerController : Component
         // Use the collider to move and get the final position
         Vector3 finalPosition = CharacterCollider.Move(Entity.Transform.LocalPosition, desiredMovement);
 
+        // Teleport the player above the surface if it falls into the void
         if (finalPosition.Y < 0)
             finalPosition.Y = 1200;
 
