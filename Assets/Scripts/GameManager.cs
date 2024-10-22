@@ -52,11 +52,11 @@ public sealed class GameManager : Component
             if (PAUSED)
                 Input.SetMouseLockState(MouseLockState.Unlocked);
             else
-            {
                 Input.SetMouseLockState(MouseLockState.LockedInvisible, 0.5, 0.5);
-                Input.SetCursorIcon(SystemCursor.IDC_CROSS);
-            }
         }
+
+        if (!PAUSED)
+            Input.SetCursorIcon(SystemCursor.IDC_CROSS);
     }
 
     public void ChunkGenerationTask(Chunk chunk = null)
