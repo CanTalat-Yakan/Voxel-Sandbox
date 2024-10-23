@@ -5,7 +5,6 @@ cbuffer Properties : register(b10)
 {
 };
 
-
 Texture2D texture0 : register(t0);
 sampler sampler0 : register(s3);
 
@@ -54,6 +53,5 @@ float4 PS(PSInputVoxel input) : SV_TARGET
     finalColor *= 1 - skyBlend;
     finalColor += skyBlend * GetSkyColor(input.worldpos, input.camerapos);
     
-    // Return the final color with the original alpha
     return float4(finalColor, baseColor.a);
 }
