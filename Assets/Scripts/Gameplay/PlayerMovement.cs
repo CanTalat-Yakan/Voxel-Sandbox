@@ -6,9 +6,9 @@ using Engine.Components;
 
 namespace VoxelSandbox;
 
-public class PlayerController : Component
+public class PlayerMovement : Component
 {
-    public CharacterCollider CharacterCollider = new();
+    public CharacterController CharacterController = new();
 
     public Camera Camera;
 
@@ -40,7 +40,7 @@ public class PlayerController : Component
 
         Entity.AddComponent<RayCaster>().Initialize(gameManager, cube.Entity, Camera.Entity);
 
-        CharacterCollider.Initialize(gameManager);
+        CharacterController.Initialize(gameManager);
     }
 
     public override void OnUpdate()
@@ -51,7 +51,7 @@ public class PlayerController : Component
         HandleRotation();
         HandleMovement();
 
-        Camera.Entity.Transform.LocalPosition = Entity.Transform.Position + Vector3.UnitY * CharacterCollider.PlayerHeight;
+        Camera.Entity.Transform.LocalPosition = Entity.Transform.Position + Vector3.UnitY * CharacterController.PlayerHeight;
     }
 
     private void HandleRotation()
@@ -98,10 +98,10 @@ public class PlayerController : Component
         Vector3 desiredMovement = _velocity * Time.DeltaF;
 
         // Update collider's velocity reference
-        CharacterCollider.Velocity = _velocity;
+        CharacterController.Velocity = _velocity;
 
         // Use the collider to move and get the final position
-        Vector3 finalPosition = CharacterCollider.Move(Entity.Transform.LocalPosition, desiredMovement);
+        Vector3 finalPosition = CharacterController.Move(Entity.Transform.LocalPosition, desiredMovement);
 
         // Teleport the player above the surface if it falls into the void
         if (finalPosition.Y < 0)
@@ -111,9 +111,9 @@ public class PlayerController : Component
         Entity.Transform.LocalPosition = finalPosition;
 
         // Update _velocity in case it was modified during collision handling
-        _velocity = CharacterCollider.Velocity;
+        _velocity = CharacterController.Velocity;
 
         // Update grounded state
-        _isGrounded = CharacterCollider.IsGrounded;
+        _isGrounded = CharacterController.IsGrounded;
     }
 }

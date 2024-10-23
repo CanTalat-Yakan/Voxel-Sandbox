@@ -2,7 +2,7 @@
 
 namespace VoxelSandbox;
 
-public class CharacterCollider
+public class CharacterController
 {
     // Player dimensions
     public float PlayerHeight = 1.8f;
