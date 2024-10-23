@@ -38,8 +38,9 @@ PSInputVoxel VS(VSInputVoxel input)
 
 float4 PS(PSInputVoxel input) : SV_TARGET
 {
-    // Sample the base color texture
-    float4 baseColor = texture0.Sample(sampler0, input.uv);
+    float2 ddx_uv = ddx(input.uv) * GetAtlasTileSize();
+    float2 ddy_uv = ddy(input.uv) * GetAtlasTileSize();
+    float4 baseColor = texture0.SampleGrad(sampler0, input.uv, ddx_uv, ddy_uv);
 
     float3 finalColor = baseColor.rgb - max(0, dot(input.normal, float3(0.1, -0.5, 0.3)) * 0.25);
     finalColor -= max(0, dot(input.normal, float3(-0.1, -0.5, -0.3)) * 0.1);
