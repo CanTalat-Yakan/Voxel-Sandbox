@@ -1,6 +1,6 @@
 ﻿namespace VoxelSandbox;
 
-internal class Program
+class Program
 {
     [STAThread]
     private static void Main() =>
