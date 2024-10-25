@@ -5,8 +5,14 @@ using LibNoise.Primitive;
 
 using Engine.Essentials;
 using Engine.Utilities;
+using Engine.Components;
 
 namespace VoxelSandbox;
+
+public struct ComputeData
+{
+    float data;
+}
 
 public class NoiseData()
 {
@@ -18,6 +24,8 @@ public sealed partial class NoiseSampler
 {
     GameManager GameManager;
 
+    Compute ComputeShader = new();
+
     private Stopwatch _stopwatch = new();
 
     public void GenerateChunkContent(Chunk chunk, GameManager gameManager)
@@ -27,6 +35,8 @@ public sealed partial class NoiseSampler
         GameManager = gameManager;
 
         SetGridY(chunk);
+
+        //ComputeShader.Setup(new ComputeData());
 
         for (int x = 1; x <= chunk.ChunkSize; x++)
             for (int z = 1; z <= chunk.ChunkSize; z++)
