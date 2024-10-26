@@ -33,11 +33,12 @@ public sealed partial class NoiseSampler
 
         SetGridY(chunk);
 
-        ComputeShader.Initialize("ChunkNoiseGenerator", new RootSignatureHelper().AddUnorderedAccessViewTable().AddShaderResourceViewTable());
-        ComputeShader.Setup();
-        ComputeData data = new();
+        ComputeShader.Initialize("ChunkNoiseGenerator", new RootSignatureHelper()
+            .AddUnorderedAccessViewTable().AddShaderResourceViewTable());
+        //ComputeShader.Setup();
+        //ComputeData data = new();
         //data.SetData();
-        ComputeShader.Dispatch();
+        //ComputeShader.Dispatch();
 
         for (int x = 1; x <= chunk.ChunkSize; x++)
             for (int z = 1; z <= chunk.ChunkSize; z++)
