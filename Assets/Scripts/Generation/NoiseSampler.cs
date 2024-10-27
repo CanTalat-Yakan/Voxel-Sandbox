@@ -42,7 +42,7 @@ public sealed partial class NoiseSampler
             .AddUnorderedAccessViewTable().AddShaderResourceViewTable());
         //ComputeShader.Setup();
         ComputeData data = new();
-        data.SetData([new SomeData()], 0);
+        //data.SetData([new SomeData()], 0);
         //ComputeShader.Dispatch();
 
         for (int x = 1; x <= chunk.ChunkSize; x++)
