@@ -3,11 +3,11 @@
 using LibNoise.Filter;
 using LibNoise.Primitive;
 
+using Engine.Buffer;
 using Engine.Components;
 using Engine.Essentials;
 using Engine.Helper;
 using Engine.Utilities;
-using Engine.Buffer;
 
 namespace VoxelSandbox;
 
@@ -15,6 +15,11 @@ public class NoiseData()
 {
     public bool initialized = false;
     public ushort SurfaceHeight, UndergroundDetail, BedrockHeight;
+}
+
+public struct SomeData()
+{
+    public ushort somehing;
 }
 
 public sealed partial class NoiseSampler
@@ -32,12 +37,12 @@ public sealed partial class NoiseSampler
         GameManager = gameManager;
 
         SetGridY(chunk);
-
+        
         ComputeShader.Initialize("ChunkNoiseGenerator", new RootSignatureHelper()
             .AddUnorderedAccessViewTable().AddShaderResourceViewTable());
         //ComputeShader.Setup();
-        //ComputeData data = new();
-        //data.SetData();
+        ComputeData data = new();
+        data.SetData([new SomeData()], 0);
         //ComputeShader.Dispatch();
 
         for (int x = 1; x <= chunk.ChunkSize; x++)
