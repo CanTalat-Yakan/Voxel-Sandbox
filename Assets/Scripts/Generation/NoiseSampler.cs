@@ -3,10 +3,9 @@
 using LibNoise.Filter;
 using LibNoise.Primitive;
 
-using Engine.Buffer;
 using Engine.Components;
 using Engine.Essentials;
-using Engine.Helper;
+using Engine.Helpers;
 using Engine.Utilities;
 
 namespace VoxelSandbox;
@@ -40,9 +39,10 @@ public sealed partial class NoiseSampler
 
         ComputeShader.Initialize("ChunkNoiseGenerator", new RootSignatureHelper()
             .AddUnorderedAccessViewTable().AddShaderResourceViewTable());
+
+        ComputeShader.Context.ComputeContext.SetData(out var computeData, [new SomeData()], 0);
+
         //ComputeShader.Setup();
-        ComputeData data = new();
-        //data.SetData([new SomeData()], 0);
         //ComputeShader.Dispatch();
 
         for (int x = 1; x <= chunk.ChunkSize; x++)
