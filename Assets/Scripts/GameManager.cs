@@ -26,7 +26,7 @@ public sealed class GameManager : Component
 
     public override void OnAwake()
     {
-        ImageLoader.LoadFile(AssetPaths.TEXTURES + Project.TextureFiles.TextureAtlas + ".png");
+        ImageLoader.LoadFile(AssetPaths.ASSETS + Project.TextureFiles.TextureAtlas.GetPath());
 
         Kernel.Instance.Context.CreateShader(false, Project.ShaderFiles.VoxelShader.GetPath());
         Kernel.Instance.Context.CreateComputeShader(false, Project.ComputeShaderFiles.ChunkNoiseGenerator.GetPath());
