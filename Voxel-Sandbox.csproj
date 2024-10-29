@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-  	<PackageReference Include="3DEngine" Version="3.0.88" />
+  	<PackageReference Include="3DEngine" Version="3.0.87" />
   	<PackageReference Include="Costura.Fody" Version="5.7.0">
   	  <PrivateAssets>all</PrivateAssets>
   	</PackageReference>
@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	<Content Update="C:\Users\Can\.nuget\packages\3dengine\3.0.88\contentFiles\any\net8.0-windows10.0.22621\Assets\Resources\**\*">
+	<Content Update="C:\Users\Can\.nuget\packages\3dengine\3.0.87\contentFiles\any\net8.0-windows10.0.22621\Assets\Resources\**\*">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Content>
     <None Update="Assets\**\*">
@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Assets\Generator\FileNamesEnumGenerator.tt">
+    <None Update="Assets\Generators\FileNamesEnumGenerator.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FileNamesEnumGenerator.cs</LastGenOutput>
     </None>
@@ -46,7 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Assets\Generator\FileNamesEnumGenerator.cs">
+    <Compile Update="Assets\Generators\FileNamesEnumGenerator.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>FileNamesEnumGenerator.tt</DependentUpon>

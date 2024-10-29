@@ -4,6 +4,7 @@ using Engine.Essentials;
 using Engine.Interoperation;
 using Engine.Loader;
 using Engine.Utilities;
+using Project;
 
 namespace VoxelSandbox;
 
@@ -26,9 +27,9 @@ public sealed class GameManager : Component
     public override void OnAwake()
     {
         ImageLoader.LoadFile(AssetPaths.TEXTURES + Project.TextureFiles.TextureAtlas + ".png");
-        Kernel.Instance.Context.CreateShader(false, Project.ShaderFiles.VoxelShader.ToString());
-        Kernel.Instance.Context.CreateComputeShader(false, Project.ComputeShaderFiles.ChunkNoiseGenerator.ToString());
-
+        Kernel.Instance.Context.CreateShader(false, Project.ShaderFiles.VoxelShader.GetPath());
+        Kernel.Instance.Context.CreateComputeShader(false, Project.ComputeShaderFiles.ChunkNoiseGenerator.GetPath());
+        Path.GetFileNameWithoutExtension
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerMovement>().Initialize(this);
         Entity.Manager.CreateEntity(name: "Sky").AddComponent<DefaultSky>().Initialize();
 
