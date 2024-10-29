@@ -29,6 +29,8 @@ public sealed class GameManager : Component
         Kernel.Instance.Context.CreateShader(paths: AssetPaths.ASSETS + "Shaders\\VoxelShader");
         Kernel.Instance.Context.CreateComputeShader(paths: AssetPaths.ASSETS + "ComputeShaders\\ChunkNoiseGenerator");
 
+        Project.ComputeShaderFiles.
+
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerMovement>().Initialize(this);
         Entity.Manager.CreateEntity(name: "Sky").AddComponent<DefaultSky>().Initialize();
 
