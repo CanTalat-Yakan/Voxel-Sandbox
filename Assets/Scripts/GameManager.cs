@@ -26,8 +26,8 @@ public sealed class GameManager : Component
     public override void OnAwake()
     {
         ImageLoader.LoadFile(AssetPaths.TEXTURES + Project.TextureFiles.TextureAtlas + ".png");
-        Kernel.Instance.Context.CreateShader(paths: AssetPaths.SHADERS + Project.ShaderFiles.VoxelShader + ".hlsl");
-        Kernel.Instance.Context.CreateComputeShader(paths: AssetPaths.COMPUTE + Project.ComputeShaderFiles.ChunkNoiseGenerator + ".hlsl");
+        Kernel.Instance.Context.CreateShader(paths: AssetPaths.SHADERS + Project.ShaderFiles.VoxelShader);
+        Kernel.Instance.Context.CreateComputeShader(paths: AssetPaths.COMPUTE + Project.ComputeShaderFiles.ChunkNoiseGenerator);
 
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerMovement>().Initialize(this);
         Entity.Manager.CreateEntity(name: "Sky").AddComponent<DefaultSky>().Initialize();
