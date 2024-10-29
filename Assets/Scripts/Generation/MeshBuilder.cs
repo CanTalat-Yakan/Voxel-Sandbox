@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Numerics;
 
 using Engine.Helper;
+using Engine.Loader;
 using Engine.Utilities;
 
 namespace VoxelSandbox;
@@ -47,8 +48,8 @@ public sealed class MeshBuilder
         if (!chunk.MeshInitialized)
         {
             chunk.Mesh.SetRootSignature();
-            chunk.Mesh.SetMaterialTextures([new("TextureAtlas.png", 0)]);
-            chunk.Mesh.SetMaterialPipeline("VoxelShader");
+            chunk.Mesh.SetMaterialTextures(textureEntries: [new(Project.TextureFiles.TextureAtlas + ".png", 0)]);
+            chunk.Mesh.SetMaterialPipeline(Project.ShaderFiles.VoxelShader.ToString());
 
             chunk.MeshInitialized = true;
         }
