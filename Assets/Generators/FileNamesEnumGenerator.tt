@@ -145,17 +145,6 @@ string EscapeStringLiteral(string str) =>
 #>
 namespace Project;
 
-// Custom attribute to store asset paths
-[AttributeUsage(AttributeTargets.Field)]
-public class AssetPathAttribute : Attribute
-{
-    public string Path { get; }
-
-    public AssetPathAttribute(string path) =>
-        Path = path;
-}
-
-// Enums with asset paths as attributes
 <# 
 GenerateEnumWithAttributes("AnimationFiles", ANIMATIONS, "*.anim;*.fbx");
 GenerateEnumWithAttributes("AudioFiles", AUDIOS, "*.mp3;*.wav;*.ogg");
@@ -172,6 +161,16 @@ GenerateEnumWithAttributes("ShaderFiles", SHADERS, "*.hlsl");
 GenerateEnumWithAttributes("TextureFiles", TEXTURES, "*.png;*.jpg;*.jpeg;*.bmp;*.tga");
 GenerateEnumWithAttributes("VideoFiles", VIDEOS, "*.mp4;*.avi;*.mov");
 #>
+// Custom attribute to store asset paths
+[AttributeUsage(AttributeTargets.Field)]
+public class AssetPathAttribute : Attribute
+{
+    public string Path { get; }
+
+    public AssetPathAttribute(string path) =>
+        Path = path;
+}
+
 // Extension method to get the path from any enum value
 public static class AssetExtensions
 {

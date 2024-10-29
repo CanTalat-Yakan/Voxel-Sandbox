@@ -1,16 +1,5 @@
 ﻿namespace Project;
 
-// Custom attribute to store asset paths
-[AttributeUsage(AttributeTargets.Field)]
-public class AssetPathAttribute : Attribute
-{
-    public string Path { get; }
-
-    public AssetPathAttribute(string path) =>
-        Path = path;
-}
-
-// Enums with asset paths as attributes
 public enum ComputeShaderFiles
 {
     [AssetPath(@"ComputeShaders/ChunkNoiseGenerator.hlsl")]
@@ -53,6 +42,16 @@ public enum TextureFiles
     Screenshot,
     [AssetPath(@"Textures/TextureAtlas.png")]
     TextureAtlas,
+}
+
+// Custom attribute to store asset paths
+[AttributeUsage(AttributeTargets.Field)]
+public class AssetPathAttribute : Attribute
+{
+    public string Path { get; }
+
+    public AssetPathAttribute(string path) =>
+        Path = path;
 }
 
 // Extension method to get the path from any enum value
