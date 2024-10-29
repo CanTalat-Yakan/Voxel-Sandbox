@@ -37,7 +37,7 @@ public sealed partial class NoiseSampler
         GameManager = gameManager;
 
         SetGridY(chunk);
-        
+
         ComputeShader.Initialize("ChunkNoiseGenerator", new RootSignatureHelper()
             .AddUnorderedAccessViewTable().AddShaderResourceViewTable());
         //ComputeShader.Setup();
