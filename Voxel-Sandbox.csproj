@@ -1,55 +1,55 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <PlatformTarget>x64</PlatformTarget>
-    <OutputType>WinExe</OutputType>
-    <StartupObject>VoxelSandbox.Program</StartupObject>
-	<PublishAot>true</PublishAot>
-	<RootNamespace />
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<PlatformTarget>x64</PlatformTarget>
+		<OutputType>WinExe</OutputType>
+		<StartupObject>VoxelSandbox.Program</StartupObject>
+		<PublishAot>true</PublishAot>
+		<RootNamespace />
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;DEBUG;NET;NET8_0;</DefineConstants>
-  </PropertyGroup>
-  
-  <ItemGroup>
-   	<None Remove="FodyWeavers.xml" />
-  </ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DefineConstants>TRACE;DEBUG;NET;NET8_0;</DefineConstants>
+	</PropertyGroup>
 
-  <ItemGroup>
-  	<PackageReference Include="3DEngine" Version="3.0.87" />
-  	<PackageReference Include="Costura.Fody" Version="5.7.0">
-  	  <PrivateAssets>all</PrivateAssets>
-  	</PackageReference>
-  	<PackageReference Include="LibNoise.NetStandart" Version="0.2.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="FodyWeavers.xml" />
+	</ItemGroup>
 
-  <ItemGroup>
-	<Content Update="C:\Users\Can\.nuget\packages\3dengine\3.0.87\contentFiles\any\net8.0-windows10.0.22621\Assets\Resources\**\*">
-	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	</Content>
-    <None Update="Assets\**\*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="3DEngine" Version="3.0.87" />
+		<PackageReference Include="Costura.Fody" Version="5.7.0">
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="LibNoise.NetStandart" Version="0.2.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="Assets\Generators\FileNamesEnumGenerator.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>FileNamesEnumGenerator.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<Content Update="C:\Users\Can\.nuget\packages\3dengine\3.0.87\contentFiles\any\net8.0-windows10.0.22621\Assets\Resources\**\*">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<None Update="Assets\**\*">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="Assets\Generators\FileNamesEnumGenerator.tt">
+			<Generator>TextTemplatingFileGenerator</Generator>
+			<LastGenOutput>FileNamesEnumGenerator.cs</LastGenOutput>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Assets\Generators\FileNamesEnumGenerator.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>FileNamesEnumGenerator.tt</DependentUpon>
-    </Compile>
-  </ItemGroup>
+	<ItemGroup>
+		<Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Assets\Generators\FileNamesEnumGenerator.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>FileNamesEnumGenerator.tt</DependentUpon>
+		</Compile>
+	</ItemGroup>
 </Project>
