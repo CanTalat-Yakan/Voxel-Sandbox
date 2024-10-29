@@ -1,5 +1,6 @@
 using System.Numerics;
 
+using Engine;
 using Engine.ECS;
 using Engine.Utilities;
 using Engine.Components;
@@ -32,10 +33,10 @@ public class PlayerMovement : Component
         Camera = gameManager.Entity.Manager.CreateCamera(name: "Camera");
 
         var cube = gameManager.Entity.Manager.CreateEntity().AddComponent<Mesh>();
-        cube.SetMeshData(Assets.Meshes["Cube.obj"]);
         cube.SetRootSignature();
-        cube.SetMaterialPipeline("Unlit");
-        cube.SetMaterialTextures([new("Transparent.png", 0)]);
+        cube.SetMeshData(ModelFiles.Cube);
+        cube.SetMaterialPipeline(ShaderFiles.Unlit);
+        cube.SetMaterialTextures(TextureFiles.Transparent);
         cube.Order = byte.MaxValue;
 
         Entity.AddComponent<RayCaster>().Initialize(gameManager, cube.Entity, Camera.Entity);

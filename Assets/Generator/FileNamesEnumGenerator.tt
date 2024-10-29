@@ -10,8 +10,8 @@
 // Get the directory of the .tt file
 string templateDirectory = Path.GetDirectoryName(this.Host.TemplateFile);
 
-// Go up one directory to get the project directory
-string ASSETS = templateDirectory;
+// Go up one directory to get the asset directory
+string ASSETS = Path.GetFullPath(Path.Combine(templateDirectory, ".."));
 
 string SCENES = Path.Combine(ASSETS, "Scenes");
 string SHADERS = Path.Combine(ASSETS, "Shaders");
