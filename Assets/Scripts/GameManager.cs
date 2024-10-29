@@ -2,7 +2,7 @@
 using Engine.ECS;
 using Engine.Essentials;
 using Engine.Interoperation;
-using Engine.Loader;
+using Engine.Loaders;
 using Engine.Utilities;
 using Project;
 
@@ -29,7 +29,7 @@ public sealed class GameManager : Component
         ImageLoader.LoadFile(AssetPaths.TEXTURES + Project.TextureFiles.TextureAtlas + ".png");
         Kernel.Instance.Context.CreateShader(false, Project.ShaderFiles.VoxelShader.GetPath());
         Kernel.Instance.Context.CreateComputeShader(false, Project.ComputeShaderFiles.ChunkNoiseGenerator.GetPath());
-        Path.GetFileNameWithoutExtension
+
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerMovement>().Initialize(this);
         Entity.Manager.CreateEntity(name: "Sky").AddComponent<DefaultSky>().Initialize();
 
