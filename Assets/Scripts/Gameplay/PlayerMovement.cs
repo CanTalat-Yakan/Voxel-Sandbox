@@ -33,10 +33,10 @@ public class PlayerMovement : Component
         Camera = gameManager.Entity.Manager.CreateCamera(name: "Camera");
 
         var cube = gameManager.Entity.Manager.CreateEntity().AddComponent<Mesh>();
-        cube.SetRootSignature();
         cube.SetMeshData(ModelFiles.Cube);
-        cube.SetMaterialPipeline(ShaderFiles.Unlit);
-        cube.SetMaterialTextures(TextureFiles.Transparent);
+        cube.Material.SetRootSignature();
+        cube.Material.SetPipeline(ShaderFiles.Unlit);
+        cube.Material.SetTextures(TextureFiles.Transparent);
         cube.Order = byte.MaxValue;
 
         Entity.AddComponent<RayCaster>().Initialize(gameManager, cube.Entity, Camera.Entity);
