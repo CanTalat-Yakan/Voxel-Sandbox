@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Numerics;
 
 using Engine.Helpers;
-using Engine.Loaders;
 using Engine.Utilities;
 
 namespace VoxelSandbox;
