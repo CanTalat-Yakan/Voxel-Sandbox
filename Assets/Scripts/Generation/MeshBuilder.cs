@@ -49,8 +49,8 @@ public sealed class MeshBuilder
         {
             _ = Assets.PipelineStateObjects;
             chunk.Mesh.Material.SetRootSignature();
-            chunk.Mesh.Material.SetTextures(textureEntries: [new(Project.TextureFiles.TextureAtlas + ".png", 0)]);
-            chunk.Mesh.Material.SetPipeline(Project.ShaderFiles.VoxelShader.ToString());
+            chunk.Mesh.Material.SetTextures(Project.TextureFiles.TextureAtlas);
+            chunk.Mesh.Material.SetPipeline(Project.ShaderFiles.VoxelShader);
             chunk.MeshInitialized = true;
         }
 
