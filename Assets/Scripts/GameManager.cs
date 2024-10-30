@@ -1,6 +1,8 @@
 ﻿using Engine;
+using Engine.Components;
 using Engine.ECS;
 using Engine.Essentials;
+using Engine.Helpers;
 using Engine.Interoperation;
 using Engine.Loaders;
 using Engine.Utilities;
@@ -24,6 +26,11 @@ public sealed class GameManager : Component
 
     private bool _processingChunkGeneration = false;
 
+    public struct SomeData()
+    {
+        public float somehing;
+    }
+
     public override void OnAwake()
     {
         ImageLoader.LoadFile(Project.TextureFiles.TextureAtlas.GetFullPath());
@@ -35,6 +42,21 @@ public sealed class GameManager : Component
         Entity.Manager.CreateEntity(name: "Sky").AddComponent<DefaultSky>().Initialize();
 
         Input.SetMouseLockState(MouseLockState.LockedInvisible, 0.5, 0.5);
+
+        Compute computeShader = new();
+
+        computeShader.Initialize(Project.ComputeShaderFiles.ChunkNoiseGenerator, new RootSignatureHelper()
+            .AddUnorderedAccessViewTable().AddShaderResourceViewTable());
+
+        //computeShader.Setup();
+
+        //SomeData data = new() { somehing = 0 };
+        //computeShader.Context.ComputeContext.SetData(out var computeData, [data], 0);
+
+        //computeShader.Setup();
+        //computeShader.Dispatch();
+
+        //var readbackData = computeData.ReadData<SomeData>(1);
     }
 
     public override void OnStart() =>

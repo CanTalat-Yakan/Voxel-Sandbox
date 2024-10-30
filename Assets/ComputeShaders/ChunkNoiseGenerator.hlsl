@@ -1,15 +1,22 @@
-﻿// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CS
+﻿#pragma kernel CS
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
-RWTexture2D<float4> Result;
-//RWStructuredBuffer 
+struct SomeData
+{
+    float somehing;
+};
+
+RWStructuredBuffer<SomeData> Result;
 
 [numthreads(8, 8, 1)]
 void CS(uint3 id : SV_DispatchThreadID)
 {
-	// TODO: insert actual code here!
+    // Calculate a linear index based on thread IDs
+    uint index = id.x + id.y * 8;
 
-    Result[id.xy] = float4(id.x & id.y, (id.x & 15) / 15.0, (id.y & 15) / 15.0, 0.0);
+    // Create an instance of SomeData and assign a value
+    SomeData data;
+    data.somehing = 1.0f; // Assign your desired value here
+
+    // Write the data to the buffer at the calculated index
+    Result[index] = data;
 }

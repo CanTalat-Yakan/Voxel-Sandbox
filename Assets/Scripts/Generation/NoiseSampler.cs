@@ -16,16 +16,9 @@ public class NoiseData()
     public ushort SurfaceHeight, UndergroundDetail, BedrockHeight;
 }
 
-public struct SomeData()
-{
-    public ushort somehing;
-}
-
 public sealed partial class NoiseSampler
 {
     GameManager GameManager;
-
-    Compute ComputeShader = new();
 
     private Stopwatch _stopwatch = new();
 
@@ -36,14 +29,6 @@ public sealed partial class NoiseSampler
         GameManager = gameManager;
 
         SetGridY(chunk);
-
-        ComputeShader.Initialize(Project.ComputeShaderFiles.ChunkNoiseGenerator, new RootSignatureHelper()
-            .AddUnorderedAccessViewTable().AddShaderResourceViewTable());
-
-        //ComputeShader.Context.ComputeContext.SetData(out var computeData, [new SomeData()], 0);
-
-        //ComputeShader.Setup();
-        //ComputeShader.Dispatch();
 
         for (int x = 1; x <= chunk.ChunkSize; x++)
             for (int z = 1; z <= chunk.ChunkSize; z++)
