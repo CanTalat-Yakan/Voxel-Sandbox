@@ -28,8 +28,8 @@ public sealed class GameManager : Component
     {
         ImageLoader.LoadFile(Project.TextureFiles.TextureAtlas.GetFullPath());
 
-        Kernel.Instance.Context.CreateShader(false, Project.ShaderFiles.VoxelShader.GetPath());
-        Kernel.Instance.Context.CreateComputeShader(false, Project.ComputeShaderFiles.ChunkNoiseGenerator.GetPath());
+        Kernel.Instance.Context.CreateShader(localPaths: Project.ShaderFiles.VoxelShader.GetPath());
+        Kernel.Instance.Context.CreateComputeShader(localPaths: Project.ComputeShaderFiles.ChunkNoiseGenerator.GetPath());
 
         Entity.Manager.CreateEntity(name: "Controller").AddComponent<PlayerMovement>().Initialize(this);
         Entity.Manager.CreateEntity(name: "Sky").AddComponent<DefaultSky>().Initialize();
